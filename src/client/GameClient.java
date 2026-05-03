@@ -3,7 +3,9 @@ package client;
 import java.net.*;
 import java.util.*;
 import java.io.*;
+
 import org.json.JSONObject;
+import org.json.JSONException;
 
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TerminalPosition;
@@ -35,30 +37,28 @@ public class GameClient {
             TextGraphics tg = screen.newTextGraphics();
             while (true) {
                 // render
-                tg.setBackgroundColor(new TextColor.RGB(255,255,255));
-                tg.setForegroundColor(new TextColor.RGB(0,0,0));
-                tg.drawRectangle(new TerminalPosition (2,2), new TerminalSize(cols - 2 - 2, rows - 2 - 2), '+');
-                tg.setBackgroundColor(new TextColor.RGB(160,0,0));
-                tg.setForegroundColor(new TextColor.RGB(255,255,255));
-                tg.putString(cols/3, rows/2 - 1, "uwu putty scween too smol :3");
-                tg.putString(cols/3, rows/2, "need at least "+Protocol.MIN_COLS+"x"+Protocol.MIN_ROWS+", rn is " + cols + "x" + rows);
-                tg.putString(cols/3, rows/2 + 1, "[ PRESS ANY KEY TO EXIT ]");              
-
+                tg.setBackgroundColor(new TextColor.RGB(255, 255, 255));
+                tg.setForegroundColor(new TextColor.RGB(0, 0, 0));
+                tg.drawRectangle(new TerminalPosition(2, 2), new TerminalSize(cols - 2 - 2, rows - 2 - 2), '+');
+                tg.setBackgroundColor(new TextColor.RGB(160, 0, 0));
+                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                tg.putString(cols / 3, rows / 2 - 1, "uwu putty scween too smol :3");
+                tg.putString(cols / 3, rows / 2, "need at least " + Protocol.MIN_COLS + "x" + Protocol.MIN_ROWS + ", rn is " + cols + "x" + rows);
+                tg.putString(cols / 3, rows / 2 + 1, "[ PRESS ANY KEY TO EXIT ]");
                 // keystroke
                 screen.refresh();
                 if (screen.readInput().getKeyType() != null) break;
                 Thread.sleep(Protocol.TICK_MS);
             }
-            
+
             // cease
             screen.stopScreen();
             System.exit(0);
-        }
-        catch (Exception e) {
-            System.out.println("Exception caught: " + e);
+        } catch (Exception e) {
+            System.out.println("Exception caught GameClient unfit_screen: " + e);
         }
     }
-    
+
     private static void lanterna_init() {
         try {
             // bureaucracy
@@ -74,19 +74,19 @@ public class GameClient {
             // cleanup screen features
             screen.clear();
             screen.setCursorPosition(null); // hides cursor
-            
+
             if (cols < Protocol.MIN_COLS || rows < Protocol.MIN_ROWS) {
                 draw_unfit_screen();
             }
         } catch (Exception e) {
-              System.out.println("Exception caught: " + e);
+            System.out.println("Exception caught GameClient lanterna_init(): " + e);
         }
     }
-    
+
     public static void main(String[] args) {
         try {
             lanterna_init();
-            
+
             socket = new Socket("localhost", Protocol.PORT);
 
             // send to server
@@ -98,36 +98,36 @@ public class GameClient {
             reader = new BufferedReader(new InputStreamReader(istream));
 
             // join the server by sending a request first
-            String join = new JSONObject().put("type","JOIN").put("playerId","test").put("cols",cols).put("rows",rows).toString();
+            String join = new JSONObject().put("type", "JOIN").put("playerId", "test").put("cols", cols).put("rows", rows).toString();
             writer.println(join);
 
-//            String to_render = "";
+            //            String to_render = "";
             TextGraphics tg = screen.newTextGraphics();
-//            int shift = 0;
-            
+            //            int shift = 0;
+
             // text i/o
             Thread listener = new Thread(() -> {
+                String line = "";
                 try {
-                    String line = "";
                     while ((line = reader.readLine()) != null) {
-                    /// MUST CHANGE TO STH ELSE IG
+                        /// MUST CHANGE TO STH ELSE IG
                         JSONObject j = new JSONObject(line);
                         String _type = j.getString("type");
-                        String _playerId = j.getString("playerId");
-                        int _cols = j.optInt("color", 60);
-                        to_render = _type + " "  + _playerId + " " + _cols;
+                        //String _playerId = j.getString("playerId");
+                        int _color = j.optInt("color", 60);
+                        to_render = _type + " " /* + _playerId + " "*/ + _color;
                         shift++;
-                    } 
+                    }
                 } catch (Exception e) {
                     System.out.println("Exception caught GameClient listener thread: " + e);
                 }
             });
 
             listener.start();
-            
+
             // --- keystroke-render loop ---
             while (true) {
-                tg.putString(cols/3, rows/2 - 1 + shift, to_render);
+                tg.putString(cols / 3, rows / 2 - 1 + shift, to_render);
                 KeyStroke keystroke = screen.pollInput();
                 if (keystroke != null && keystroke.getKeyType() == KeyType.Escape) {
                     screen.stopScreen();
@@ -137,8 +137,8 @@ public class GameClient {
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
             }
-         } catch (Exception e) {
-               System.out.println("Exception caught: " + e);
-         }
-    }    
+        } catch (Exception e) {
+            System.out.println("Exception caught GameClient main(): " + e);
+        }
+    }
 }
