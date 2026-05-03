@@ -5,4 +5,6 @@ public class Protocol {
     public static final int TICK_MS = 50;
     public static int ARENA_WIDTH = 60; // can chsnge later if too small
     public static int ARENA_HEIGHT = 21;
+    public static final int MIN_COLS = 80;
+    public static final int MIN_ROWS = 40;
 }

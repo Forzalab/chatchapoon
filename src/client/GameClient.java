@@ -2,99 +2,133 @@ package client;
 
 import java.net.*;
 import java.util.*;
+import java.io.*;
 import org.json.JSONObject;
+
+import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.TerminalPosition;
+import com.googlecode.lanterna.screen.*;
+import com.googlecode.lanterna.terminal.*;
+import com.googlecode.lanterna.input.*;
+import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.graphics.*;
 import com.googlecode.lanterna.*;
 
+import shared.Protocol;
+
+// each client screen = ONE file run
+// so everything is static
 public class GameClient {
     // Render
-    private int cols = 0, rows = 0;
-    private Screen screen;
+    private static int cols = 0, rows = 0;
+    private static Screen screen;
 
     // Sockets
-    private Socket socket;
-    private PrintWriter writer;
-    private BufferedReader reader;
+    private static Socket socket;
+    private static PrintWriter writer;
+    private static BufferedReader reader;
 
-    private void draw_unfit_screen() {
-        // draw error to screen
-        MultiWindowTextGUI gui = new MultiWindowTextGUI(screen);
+    private static void draw_unfit_screen() {
+        try {
+            TextGraphics tg = screen.newTextGraphics();
+            while (true) {
+                // render
+                tg.setBackgroundColor(new TextColor.RGB(255,255,255));
+                tg.setForegroundColor(new TextColor.RGB(0,0,0));
+                tg.drawRectangle(new TerminalPosition (2,2), new TerminalSize(cols - 2 - 2, rows - 2 - 2), '+');
+                tg.setBackgroundColor(new TextColor.RGB(160,0,0));
+                tg.setForegroundColor(new TextColor.RGB(255,255,255));
+                tg.putString(cols/3, rows/2 - 1, "uwu putty scween too smol :3");
+                tg.putString(cols/3, rows/2, "need at least "+Protocol.MIN_COLS+"x"+Protocol.MIN_ROWS+", rn is " + cols + "x" + rows);
+                tg.putString(cols/3, rows/2 + 1, "[ PRESS ANY KEY TO EXIT ]");              
 
-        MessageDialog window = new MessageDialogBuilder()
-              .setTitle("smol screen bad")
-              .setText("screen too small! maximize screen, then restart game pls :3")
-              .build();
-        gui.addWindow(window);
-
-        // wait key q for quit
-        while (true) {
-            gui.updateScreen();
-            KeyStroke keystroke = screen.readInput();
-            if (keystroke.getKeyType() == KeyType.Escape) break;
-        }    
-
-        gui.clearScreen();
+                // keystroke
+                screen.refresh();
+                if (screen.readInput().getKeyType() != null) break;
+                Thread.sleep(Protocol.TICK_MS);
+            }
+            
+            // cease
+            screen.stopScreen();
+            System.exit(0);
+        }
+        catch (Exception e) {
+            System.out.println("Exception caught: " + e);
+        }
     }
     
-    private void lanterna_init() {
-        // bureaucracy
-        DefaultTerminalFactory factory = new DefaultTerminalFactory();
-        screen = factory.createScreen();
-        screen.startScreen();
+    private static void lanterna_init() {
+        try {
+            // bureaucracy
+            DefaultTerminalFactory factory = new DefaultTerminalFactory();
+            screen = factory.createScreen();
+            screen.startScreen();
 
-        // size
-        sz = screen.getTerminalSize();
-        cols = sz.getColumns();
-        rows = sz.getRows();
+            // size
+            TerminalSize sz = screen.getTerminalSize();
+            cols = sz.getColumns();
+            rows = sz.getRows();
 
-        // cleanup screen features
-        screen.enterPrivateMode(); //save screen state
-        screen.clear();
-        screen.setCursorPosition(null); // hides cursor
-
-        // plan: level 2 rendering, see lanterna github fmi.
-        
-        if (cols < Protocol.MIN_COLS || rows < Protocol.MIN_ROWS) {
-            draw_unfit_screen();
+            // cleanup screen features
+            screen.clear();
+            screen.setCursorPosition(null); // hides cursor
+            
+            if (cols < Protocol.MIN_COLS || rows < Protocol.MIN_ROWS) {
+                draw_unfit_screen();
+            }
+        } catch (Exception e) {
+              System.out.println("Exception caught: " + e);
         }
     }
     
     public static void main(String[] args) {
-        lanterna_init();
-        
-        socket = new Socket("localhost", Protocol.PORT);
+        try {
+            lanterna_init();
+            
+            socket = new Socket("localhost", Protocol.PORT);
 
-        // send to server
-        OutputStream ostream = socket.getOutputStream();
-        writer = new PrintWriter(ostream, true);
+            // send to server
+            OutputStream ostream = socket.getOutputStream();
+            writer = new PrintWriter(ostream, true);
 
-        // listen to server
-        InputStream istream = socket.getInputStream();
-        reader = new BufferedReader(new InputStreamReader(istream));
+            // listen to server
+            InputStream istream = socket.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(istream));
 
-        // join the server by sending a request first
-        String join = new JSONObject().put("type","JOIN").put("playerId","test").put("cols",cols).put("rows",rows).toString();
-        writer.println(join);
+            // join the server by sending a request first
+            String join = new JSONObject().put("type","JOIN").put("playerId","test").put("cols",cols).put("rows",rows).toString();
+            writer.println(join);
 
-        // text i/o
-        new Thread(() -> {
-            string line;
-            while ((line = reader.readLine()) != null /* replace with better condition, this is demo*/) {
+            // text i/o
+            new Thread(() -> {
+                String line;
                 try {
-                    Thread.sleep(Protocol.TICK_MS);
+                    int shift = 0;
+                    while ((line = reader.readLine()) != null) {
+                    /// MUST CHANGE TO STH ELSE IG
+                        TextGraphics tg = screen.newTextGraphics();
+                        JSONObject j = new JSONObject(line);
+                        String _type = j.getString("type");
+                        int _cols = j.optInt("cols", 60);
+                        tg.putString(cols/3, rows/2 - 1 + shift++, _type + cols);
+                        Thread.sleep(Protocol.TICK_MS);
+                        screen.refresh();
+                    } 
                 } catch (Exception e) {
                     System.out.println("Exception caught: " + e);
                 }
+            }).start();
+            
+            // --- keystroke loop ---
+            while (true) {
+                KeyStroke keystroke = screen.readInput();
+                if (keystroke.getKeyType() == KeyType.Escape) {
+                    screen.stopScreen();
+                    break;
+                }
             }
-        }).start();
-        
-        // --- keystroke loop ---
-        while (true) {
-            KeyStroke keystroke = screen.readInput();
-            if (keystroke.getKeyType() == KeyType.Escape) {
-                break;
-            }
-        }
-        
-        screen.exitPrivateMode();
+         } catch (Exception e) {
+               System.out.println("Exception caught: " + e);
+         }
     }    
 }
