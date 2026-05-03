@@ -22,6 +22,8 @@ public class GameClient {
     // Render
     private static int cols = 0, rows = 0;
     private static Screen screen;
+    private static int shift = 0;
+    private static String to_render = "";
 
     // Sockets
     private static Socket socket;
@@ -99,33 +101,40 @@ public class GameClient {
             String join = new JSONObject().put("type","JOIN").put("playerId","test").put("cols",cols).put("rows",rows).toString();
             writer.println(join);
 
+//            String to_render = "";
+            TextGraphics tg = screen.newTextGraphics();
+//            int shift = 0;
+            
             // text i/o
-            new Thread(() -> {
-                String line;
+            Thread listener = new Thread(() -> {
                 try {
-                    int shift = 0;
+                    String line = "";
                     while ((line = reader.readLine()) != null) {
                     /// MUST CHANGE TO STH ELSE IG
-                        TextGraphics tg = screen.newTextGraphics();
                         JSONObject j = new JSONObject(line);
                         String _type = j.getString("type");
                         int _cols = j.optInt("cols", 60);
-                        tg.putString(cols/3, rows/2 - 1 + shift++, _type + cols);
-                        Thread.sleep(Protocol.TICK_MS);
-                        screen.refresh();
+                        to_render = _type + cols;
+                        shift++;
                     } 
                 } catch (Exception e) {
                     System.out.println("Exception caught: " + e);
                 }
-            }).start();
+            });
+
+            listener.start();
             
-            // --- keystroke loop ---
+            // --- keystroke-render loop ---
             while (true) {
-                KeyStroke keystroke = screen.readInput();
-                if (keystroke.getKeyType() == KeyType.Escape) {
+                tg.putString(cols/3, rows/2 - 1 + shift, to_render);
+                KeyStroke keystroke = screen.pollInput();
+                if (keystroke != null && keystroke.getKeyType() == KeyType.Escape) {
                     screen.stopScreen();
+                    listener.interrupt();
                     break;
                 }
+                screen.refresh();
+                Thread.sleep(Protocol.TICK_MS);
             }
          } catch (Exception e) {
                System.out.println("Exception caught: " + e);
