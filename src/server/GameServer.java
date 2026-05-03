@@ -21,13 +21,16 @@ public class GameServer {
     			Socket s = ss.accept();
     			ClientHandler ch = new ClientHandler(s);
     			clients.add(ch);
+    			ch.run();
     			
                 new Thread(() -> {
                     while (true) {
                         try {
                             Thread.sleep(Protocol.TICK_MS);
                             String fakeState = new JSONObject().put("type","STATE").put("wave",1).toString();
-                            for (ClientHandler _ch : clients) _ch.send(fakeState);
+                            for (ClientHandler _ch : clients) {
+                                _ch.send(fakeState);
+                            }
                         } catch (Exception e) {
                             System.out.println("Exception caught: " + e);
                         }

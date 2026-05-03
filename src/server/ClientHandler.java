@@ -19,7 +19,7 @@ public class ClientHandler implements Runnable {
 
     // "push" a msg line into writer
     public synchronized void send(String msg) {
-        if (writer != null) writer.println("[CLIENT] " + msg);
+        if (writer != null) writer.println(msg);
     }
     
     public void run() {
