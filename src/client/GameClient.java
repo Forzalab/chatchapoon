@@ -113,12 +113,13 @@ public class GameClient {
                     /// MUST CHANGE TO STH ELSE IG
                         JSONObject j = new JSONObject(line);
                         String _type = j.getString("type");
-                        int _cols = j.optInt("cols", 60);
-                        to_render = _type + _cols;
+                        String _playerId = j.getString("playerId");
+                        int _cols = j.optInt("color", 60);
+                        to_render = _type + " "  + _playerId + " " + _cols;
                         shift++;
                     } 
                 } catch (Exception e) {
-                    System.out.println("Exception caught: " + e);
+                    System.out.println("Exception caught GameClient listener thread: " + e);
                 }
             });
 

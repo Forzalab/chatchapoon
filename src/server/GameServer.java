@@ -40,7 +40,6 @@ public class GameServer {
     			clients.add(ch);
     			
                 new Thread(ch).start();
-                String fakeState = new JSONObject().put("type","JOIN_ACK").toString();
 
     		    System.out.println("Client connected!");
     		}

@@ -34,6 +34,13 @@ public class ClientHandler implements Runnable {
 
             // enter the queueing ( msg is feed thru send() )
             String line = "";
+            JSONObject j = new JSONObject(line);
+             String _type = j.getString("type");
+             String _playerId = j.getString("playerId");
+
+             String ackState = new JSONObject().put("type","JOIN_ACK").put("playerId",_playerId).put("color",0).toString();
+             incoming.add(ackState);
+             
             while ((line = reader.readLine()) != null) {
                 incoming.add(line);
             }
