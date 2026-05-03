@@ -114,7 +114,7 @@ public class GameClient {
                         JSONObject j = new JSONObject(line);
                         String _type = j.getString("type");
                         int _cols = j.optInt("cols", 60);
-                        to_render = _type + cols;
+                        to_render = _type + _cols;
                         shift++;
                     } 
                 } catch (Exception e) {
