@@ -113,6 +113,10 @@ public class GameClient {
                         /// MUST CHANGE TO STH ELSE IG
                         JSONObject j = new JSONObject(line);
                         String _type = j.getString("type");
+                        // JOIN_ACK test
+                        if (_type.equals("JOIN_ACK")) {
+                                throw new Exception("JOIN_ACK recieved (GameClient, L118)");
+                        }
                         //String _playerId = j.getString("playerId");
                         int _color = j.optInt("color", 60);
                         to_render = _type + " " /* + _playerId + " "*/ + _color;
