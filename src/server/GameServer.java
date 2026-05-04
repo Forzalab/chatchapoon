@@ -15,6 +15,7 @@ public class GameServer {
     static List < ClientHandler > clients = new CopyOnWriteArrayList < ClientHandler > ();
 
     // JSONObject serves as struct
+    static Random r = new Random();
 
     public static void main(String[] args) throws Exception {
         // socket handshake
@@ -27,7 +28,7 @@ public class GameServer {
                 while (true) {
                     try {
                         Thread.sleep(Protocol.TICK_MS);
-                        String fakeState = new JSONObject().put("type", "STATE").put("wave", 1).toString();
+                        String fakeState = new JSONObject().put("type", "STATE").put("playerId","!!! L30 GameServer.java DUMBASS !!!").put("color", r.nextInt(100)).toString();
                         for (ClientHandler _ch: clients) {
                             _ch.send(fakeState);
                         }
@@ -40,12 +41,12 @@ public class GameServer {
             while (true) {
                 Socket s = ss.accept();
                 ClientHandler ch = new ClientHandler(s);
-                clients.add(ch);
 
                 new Thread(ch).start();
 
                 System.out.println("Client connected!");
             }
+            
         } catch (Exception e) {
             System.out.println("Exception caught GameServer socket main thread: " + e);
         }

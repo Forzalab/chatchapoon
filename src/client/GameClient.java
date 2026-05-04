@@ -24,8 +24,8 @@ public class GameClient {
     // Render
     private static int cols = 0, rows = 0;
     private static Screen screen;
-    private static int shift = 0;
-    private static String to_render = "";
+    private static volatile int shift = 0; // volatile force update value for N threads potentially reading it
+    private static volatile String to_render = "";
 
     // Sockets
     private static Socket socket;
@@ -98,12 +98,12 @@ public class GameClient {
             reader = new BufferedReader(new InputStreamReader(istream));
 
             // join the server by sending a request first
-            String join = new JSONObject().put("type", "JOIN").put("playerId", "test").put("cols", cols).put("rows", rows).toString();
+            String player_id = UUID.randomUUID().toString().substring(0,8);
+            String player_name = args.length > 0 ? args[0] : "anon";
+            String join = new JSONObject().put("type", "JOIN").put("playerId", player_id).put("cols", cols).put("rows", rows).put("name", player_name).toString();
             writer.println(join);
 
-            //            String to_render = "";
             TextGraphics tg = screen.newTextGraphics();
-            //            int shift = 0;
 
             // text i/o
             Thread listener = new Thread(() -> {
@@ -115,13 +115,13 @@ public class GameClient {
                         String _type = j.getString("type");
                         // JOIN_ACK test
                         if (_type.equals("JOIN_ACK")) {
-                                throw new Exception("JOIN_ACK recieved (GameClient, L118)");
+//                                throw new Exception("JOIN_ACK recieved (GameClient, L118)");
                         }
-                        //String _playerId = j.getString("playerId");
+                        String _playerId = j.getString("playerId");
                         int _color = j.optInt("color", 60);
-                        to_render = _type + " " /* + _playerId + " "*/ + _color;
+                        to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
                         shift++;
-                    }
+					}
                 } catch (Exception e) {
                     System.out.println("Exception caught GameClient listener thread: " + e);
                 }
@@ -131,7 +131,7 @@ public class GameClient {
 
             // --- keystroke-render loop ---
             while (true) {
-                tg.putString(cols / 3, rows / 2 - 1 + shift, to_render);
+                tg.putString(cols/5, shift%rows, to_render);
                 KeyStroke keystroke = screen.pollInput();
                 if (keystroke != null && keystroke.getKeyType() == KeyType.Escape) {
                     screen.stopScreen();

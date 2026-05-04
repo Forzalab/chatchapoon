@@ -3,6 +3,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
+
 import org.json.JSONObject;
 
 public class ClientHandler implements Runnable {
@@ -41,9 +42,12 @@ public class ClientHandler implements Runnable {
             String ackState = new JSONObject().put("type", "JOIN_ACK").put("playerId", _playerId).put("color", 14).toString();
             send(ackState);
 
+            GameServer.clients.add(this); // GameServer::clients lol
+            
             while ((line = reader.readLine()) != null) {
                 incoming.add(line);
             }
+
         } catch (Exception e) {
             System.out.println("Exception thrown ClientHandler main: " + e);
         }
