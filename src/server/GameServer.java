@@ -1,0 +1,54 @@
+package server;
+
+import java.net.*;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
+
+import org.json.JSONObject;
+import org.json.JSONException;
+
+import shared.Protocol;
+
+// called ONCE, no multiple isntances!!!!!
+public class GameServer {
+    static List < ClientHandler > clients = new CopyOnWriteArrayList < ClientHandler > ();
+
+    // JSONObject serves as struct
+    static Random r = new Random();
+
+    public static void main(String[] args) throws Exception {
+        // socket handshake
+        try {
+            ServerSocket ss = new ServerSocket(Protocol.PORT);
+            System.out.println("Starting on port " + Protocol.PORT);
+
+            // thread broadcast - SEPERATE from socket handlin'
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        Thread.sleep(Protocol.TICK_MS);
+                        String fakeState = new JSONObject().put("type", "STATE").put("playerId","!!! L30 GameServer.java DUMBASS !!!").put("color", r.nextInt(100)).toString();
+                        for (ClientHandler _ch: clients) {
+                            _ch.send(fakeState);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Exception caught GameServer broadcast thread: " + e);
+                    }
+                }
+            }).start();
+
+            while (true) {
+                Socket s = ss.accept();
+                ClientHandler ch = new ClientHandler(s);
+
+                new Thread(ch).start();
+
+                System.out.println("Client connected!");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Exception caught GameServer socket main thread: " + e);
+        }
+    }
+}
