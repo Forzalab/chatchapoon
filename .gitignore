@@ -30,8 +30,6 @@ replay_pid*
 *.orig
 
 # in .gitignore
-
-server.sh
 sh/server
 sh/sh
 sh/client
