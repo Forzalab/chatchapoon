@@ -51,7 +51,7 @@ public class Position {
         }
     }
     
-    public void iHaveValidatedB4Setting() { // ADHD-Proof Technology™
+    public synchronized void iHaveValidatedB4Setting() { // ADHD-Proof Technology™
         validated = true;
     }
 
