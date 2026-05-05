@@ -34,3 +34,6 @@ sh/server
 sh/sh
 sh/client
 sh/shared
+/*.java
+cli
+svr
