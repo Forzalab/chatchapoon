@@ -16,23 +16,28 @@ class Position {
         accumx += dx; // b4, is always < 1.0f
         int accumxInt = (int)accumx; // -2
         x += accumxInt; // plus naively
-        x %= Protocol.ARENA_WIDTH; // now mod. -1 % 6 = 5
+        x = (((x % Protocol.ARENA_WIDTH) + Protocol.ARENA_WIDTH) % Protocol.ARENA_WIDTH); // now, wtf stackoverflow
         accumx -= (float)accumxInt; // -2.5 - (-2.0) = -0.5
 
         // process y-axis
         accumy += dy; // b4, is always < 1.0f
         int accumyInt = (int)accumy; // -2
         y += accumyInt; // plus naively
-        y %= Protocol.ARENA_HEIGHT; // now mod. -1 % 6 = 5
+        y = (((y % Protocol.ARENA_HEIGHT) + Protocol.ARENA_HEIGHT) %   Protocol.ARENA_HEIGHT); // now, wtf stackoverflow
         accumy -= (float)accumyInt; // -2.5 - (-2.0) = -0.5
+
+        validated = false;
     }
 
     // override xy
+    // 0ls only call at respawn
     public synchronized void set(float x, float y) {
         this.x = (int)x;
         this.y = (int)y;
         accumx = (float)this.x - accumx;
         accumy = (float)this.y - accumy;
+
+        validated = false;
     }
 
     private void checker() {
