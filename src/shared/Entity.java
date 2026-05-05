@@ -1,7 +1,6 @@
 package shared;
 
 import java.io.*;
-import shared.Position;
 
 public class Entity {
     public volatile Position pos;
