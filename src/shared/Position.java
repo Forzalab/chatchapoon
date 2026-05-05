@@ -2,10 +2,10 @@ package shared;
 
 import java.io.*;
 
-class Position {
+public class Position {
     private volatile int x, y;
     private volatile float accumx, accumy;
-    private boolean validated = false;
+    private volatile boolean validated = false;
 
     // note to future self: VALIDATE B4 SETTING COORDS!!!
     public synchronized void accum(float dx, float dy) {
@@ -34,8 +34,8 @@ class Position {
     public synchronized void set(float x, float y) {
         this.x = (int)x;
         this.y = (int)y;
-        accumx = (float)this.x - accumx;
-        accumy = (float)this.y - accumy;
+        accumx = 0;
+        accumy = 0;
 
         validated = false;
     }
