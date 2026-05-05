@@ -34,9 +34,3 @@ sh/server
 sh/sh
 sh/client
 sh/shared
-Protocol.java
-client
-GameServer.java
-GameClient.java
-shared
-ClientHandler.java
