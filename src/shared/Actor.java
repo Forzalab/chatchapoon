@@ -26,7 +26,7 @@ public class Actor extends Entity {
             try {
                 if (hpMax <= 0)
                     throw new Exception("hpMax shouldnt be <= 0!");
-                this.setHP(_hpMax);
+                this.setHP(hpMax);
             } catch (Exception e) {
                 System.out.println("Exception caught in Actor.HP cstor: " + e);
             }
