@@ -8,3 +8,4 @@ src/shared/Protocol.java
 src/shared/Actor.java
 src/shared/Player.java
 src/shared/Entity.java
+src/shared/Enemy.java

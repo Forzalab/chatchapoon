@@ -69,8 +69,8 @@ public class Actor extends Entity {
     public Direction direction = Direction.N;
     public volatile HP hp;
     
-    Actor(Position pos, float vx, float vy, String type, String id, int hpMax, RenderProperty renderProperty) {
-        super(pos, vx, vy, type, id, renderProperty);
+    Actor(Position pos, float vx, float vy, String type, String id, int hpMax) {
+        super(pos, vx, vy, type, id);
         this.hp = new HP(hpMax);
     }
 }

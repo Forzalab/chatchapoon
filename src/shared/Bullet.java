@@ -17,7 +17,15 @@ public class Bullet extends Entity {
        this.id = id;
     }
 */
-    public Bullet(Position pos, float vx, float vy, String id, RenderProperty renderProperty) {
-        super(pos, vx, vy, "bullet", id, renderProperty);
+    public int damage;
+    public String ownerID;
+    public int splitDepth;
+    
+    public Bullet(Position pos, float vx, float vy, String id, int damage, String ownerID, int splitDepth) {
+        super(pos, vx, vy, "bullet", id);
+        this.renderProperty = new RenderProperty('*', RenderProperty.Color.WHITE);
+        this.ownerID = ownerID;
+        this.damage = damage;
+        this.splitDepth = splitDepth;
     }
 }

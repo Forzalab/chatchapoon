@@ -29,12 +29,11 @@ public class Entity {
     public final String type;
     public volatile RenderProperty renderProperty;
     
-    Entity(Position pos, float vx, float vy, String type, String id, RenderProperty renderProperty) {
+    Entity(Position pos, float vx, float vy, String type, String id) {
        this.pos = pos;
        this.vx = vx;
        this.vy = vy;
        this.type = type;
        this.id = id;
-       this.renderProperty = renderProperty;
     }
 }
