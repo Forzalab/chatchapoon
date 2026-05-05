@@ -1,4 +1,5 @@
 src/server/GameServer.java
 src/server/ClientHandler.java
 src/client/GameClient.java
+src/shared/Position.java
 src/shared/Protocol.java
