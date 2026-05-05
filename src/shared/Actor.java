@@ -20,6 +20,7 @@ public class Actor extends Entity {
         public final int _hpMax; // 'int' will bite me in the ass after
         public int deathTimer = 0; // some class need to handle subtraction lol
         public Boolean willRespawn = false;
+        private Boolean init = false;
         
         public HP(int hpMax) { 
             this._hpMax = hpMax; 
@@ -34,9 +35,10 @@ public class Actor extends Entity {
         
         public synchronized void setHP(int hp) {
             try {
-                if (_hp <= 0) throw new Exception("Actor already ded, double stabbing!");
+                if (_hp <= 0 && init) throw new Exception("Actor already ded, double stabbing!");
                 this._hp = (hp >= 0) ? hp : 0;
                 this._hp = (hp <= _hpMax) ? _hp : _hpMax;
+                this.init = true;
              } catch (Exception e) {
                 System.out.println("Exception caught in Actor.HP.setHP(): " + e);
              }

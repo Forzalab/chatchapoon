@@ -64,8 +64,11 @@ public class GameServer {
 
                     // GameState placeholder
                     
+
                     // broadcast
-                    String fakeState = new JSONObject().put("type", "STATE").put("playerId","!!! L68 GameServer.java DUMBASS !!!").put("color", r.nextInt(100)).toString();
+                    long current = System.currentTimeMillis();
+                    String fakeID = (current - start > 300000) ? "stale serv, pls restart" : "!!! L68 GameServer.java DUMBASS !!!";
+                    String fakeState = new JSONObject().put("type", "STATE").put("playerId",fakeID).put("color", r.nextInt(100)).toString();
                     broadcastAll(fakeState);
 
                     // sleep, or not if thread time exceeds 50ms
