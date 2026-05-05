@@ -83,11 +83,14 @@ public class GameClient {
         }
     }
 
+    // main({player_name, host})
     public static void main(String[] args) {
         try {
             lanterna_init();
 
-            socket = new Socket("localhost", Protocol.PORT);
+            String host = args.length > 1 ? args[1] : "localhost";
+            socket = new Socket(host, Protocol.PORT);
+//socket = new Socket("localhost", Protocol.PORT);
 
             // send to server
             OutputStream ostream = socket.getOutputStream();
@@ -99,7 +102,9 @@ public class GameClient {
 
             // join the server by sending a request first
             String player_id = UUID.randomUUID().toString().substring(0,8);
+
             String player_name = args.length > 0 ? args[0] : "anon";
+            
             String join = new JSONObject().put("type", "JOIN").put("playerId", player_id).put("cols", cols).put("rows", rows).put("name", player_name).toString();
             writer.println(join);
 
