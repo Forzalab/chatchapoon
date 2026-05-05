@@ -1,6 +1,7 @@
 src/server/GameServer.java
 src/server/ClientHandler.java
 src/client/GameClient.java
+src/shared/ItemEffect.java
 src/shared/Position.java
 src/shared/Bullet.java
 src/shared/Protocol.java
