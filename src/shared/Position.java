@@ -60,7 +60,7 @@ public class Position {
         return x;
     }
 
-    public int getRendery() {
+    public int getRenderY() {
         return y;
     }
 }
