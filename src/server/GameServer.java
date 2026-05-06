@@ -27,7 +27,7 @@ public class GameServer {
 
             if (type.equals("INPUT")) {
                 String cmd = json.getString("key");
-                String authorID = json.getString("playerID");
+                String authorID = json.getString("playerId");
                 alterState(cmd, authorID);
             }
             else if (type.equals("LEAVE")) {
