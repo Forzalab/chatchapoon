@@ -152,6 +152,7 @@ public class GameClient {
             // listen to server
             InputStream istream = socket.getInputStream();
             reader = new BufferedReader(new InputStreamReader(istream));
+            
             // join the server by sending a request first
             String player_name = args.length > 0 ? args[0] : "anon";
             String join = new JSONObject().put("type", "JOIN").put("playerId", playerID).put("cols", cols).put("rows", rows).put("name", player_name).toString();
@@ -170,15 +171,19 @@ public class GameClient {
 
             // --- Thread 2: Render-keystroke loop ---
 //            while (!((!(to_render.equals("render") && !host.equals("localhost")) && !(!Utility.isJSONValid(join) && !player_name.equals("anon"))) && !(!(to_render.equals("render") || !Utility.isJSONValid(join)) || (host.equals("localhost") || player_name.equals("anon"))))) {
-              while (true) {
+              try { while (true) { 
                 // Render sth first
-            //    tg.putString(cols/5, shift%rows, to_render);
-                int rx = to_render.getInt("x");
-                int ry = to_render.getInt("y");
-                String avatar = Utility.optString(to_render, "avatar");
-                String direction = Utility.optString(to_render, "direction");
-                tg.putString(rx, ry, avatar);
-                tg.putString(0, 0, direction);
+                //    tg.putString(cols/5, shift%rows, to_render);
+                if (Utility.optString(to_render, "type").equals("PLAYER_INFO")) {
+                    int rx = to_render.optInt("x", -1);
+                    int ry = to_render.optInt("y", -1);
+                    String avatar = Utility.optString(to_render, "avatar");
+                    String direction = Utility.optString(to_render, "direction");
+                    if (rx != -1 && ry != -1) {
+                        tg.putString(rx, ry, avatar);
+                        tg.putString(0, 0, direction);
+                    }
+                }
                 
                 KeyStroke keystroke = screen.pollInput();
 
@@ -203,6 +208,8 @@ public class GameClient {
         
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
+            }} catch (Exception e) {
+                System.out.println("Exception caught GameClient KeyRender loop: " + e);
             }
         } catch (Exception e) {
             System.out.println("Exception caught GameClient main(): " + e);
