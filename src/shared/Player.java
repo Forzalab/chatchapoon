@@ -57,7 +57,7 @@ public class Player extends Actor {
     // <item-name, Item> to which Item has amount
     public volatile Inventory inventory;
     public volatile int fireCooldown;
-   // no color (in RenderProperty)
+   // no color (in Avatar)
    // no isDead, maxHP, deathTimer (in Actor.HP.isDead())
 
     public Player(Position pos, float vx, float vy, String id, int hp_max) {

@@ -3,20 +3,22 @@ package shared;
 import java.io.*;
 
 public class Entity {
-    public class RenderProperty {
+    public static class Avatar {
         public enum Color {
             CYAN,
             YELLOW,
             MAGENTA,
             RED,
             GREEN,
-            WHITE
+            WHITE,
+            BLACK,
+            TRANSPARENT
         }
 
         public char avatar; // can change espc in gane
         public Color avatarColor; // can change
 
-        public RenderProperty(char avatar, Color color) {
+        public Avatar(char avatar, Color color) {
             this.avatar = avatar;
             this.avatarColor = color;
         }
@@ -27,7 +29,7 @@ public class Entity {
     public volatile float vy;
     public final String id;
     public final String type;
-    public volatile RenderProperty renderProperty;
+    public volatile Avatar avatar;
     
     Entity(Position pos, float vx, float vy, String type, String id) {
        this.pos = pos;

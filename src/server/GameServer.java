@@ -19,7 +19,7 @@ public class GameServer {
     static Random r = new Random();
 
     // https://stackoverflow.com/a/10174938
-    public Boolean isJSONValid(String test) {
+    public static Boolean isJSONValid(String test) {
         try {
             new JSONObject(test);
         } catch (JSONException ex) {
@@ -33,15 +33,30 @@ public class GameServer {
     }
 
     static synchronized void processIncomingQueue() {
-        for (ClientHandler _ch: clients) {
-            String msg;
-            while ((msg = _ch.incoming.poll()) != null) {
-                // process _ch msg here
-                
+        for (ClientHandler _ch: clients) { String msg; while ((msg = _ch.incoming.poll()) != null) {
+            // process _ch msg here
+            if (!isJSONValid(msg)) continue;
+
+            JSONObject json = new JSONObject(msg);
+            String type = json.getString("type");
+
+            if (type.equals("INPUT")) {
+                String cmd = json.getString("key");
+                String authorID = json.getString("playerID");
+                alterState(cmd, authorID);
+            }
+            else if (type.equals("LEAVE")) {
+                broadcastAll(msg); // relay old msg
+                System.out.println("Client disconnected!");
             }
         }
-    }
+     }}
 
+    static synchronized void alterState(String cmd, String authorID) {
+           // game loop here ig
+           // indirection to GameState
+    }
+    
     // selective filter done at cli-level
     // must be JSON
     static synchronized void broadcastAll(String msg) {

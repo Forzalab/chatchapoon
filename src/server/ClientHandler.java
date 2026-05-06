@@ -29,6 +29,7 @@ public class ClientHandler implements Runnable {
     // "push" a msg line into writer
     public synchronized void send(String msg) {
         if (writer != null) writer.println(msg);
+        if (writer.checkError()) writer.flush();
     }
 
     private synchronized void addPlayer() {
@@ -61,6 +62,14 @@ public class ClientHandler implements Runnable {
             this.playerId = j.getString("playerId");
             this.playerName = j.optString("name", "anon");
 
+            // force disconnect late player
+            if (GameServer.gameState.state == GameState.State.BATTLE) {
+                String rjtState = new JSONObject().put("type", "JOIN_REJECT").put("playerId", playerId).toString();
+                send(rjtState);
+                try { socket.close(); } catch (IOException ignored) {}
+                return;
+            }
+            
             String ackState = new JSONObject().put("type", "JOIN_ACK").put("playerId", playerId).put("color", 0).toString();
             send(ackState);
 

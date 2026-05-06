@@ -23,7 +23,7 @@ public class Bullet extends Entity {
     
     public Bullet(Position pos, float vx, float vy, String id, int damage, String ownerID, int splitDepth) {
         super(pos, vx, vy, "bullet", id);
-        this.renderProperty = new RenderProperty('*', RenderProperty.Color.WHITE);
+        this.avatar = new Avatar('*', Avatar.Color.WHITE);
         this.ownerID = ownerID;
         this.damage = damage;
         this.splitDepth = splitDepth;

@@ -9,11 +9,16 @@ public class GameState {
 List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, levelTimer, waveNumber + terrain[][]
 */
     private int[] idCounter = {0, 0, 0}; // hardcoded P E B
+    public static enum State {
+        BATTLE,
+        LOBBY
+    }
+    public State state = State.LOBBY;
     public List<Player> players = new CopyOnWriteArrayList<Player>();
     public List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
     public List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
     private HashMap<String, Player> playerIdMap = new HashMap<String, Player>();
-    public HashSet<Entity.RenderProperty.Color> colorTaken = new HashSet<Entity.RenderProperty.Color>();
+    public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
     public Player playerById(String id) {
         return playerIdMap.get(id);
     }
@@ -39,5 +44,13 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         if (levelTimer > 0) levelTimer--;
         // blah tick incr stuff go here
     }
-    private int terrain[][];
+    private int terrain[][] = new int[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
+    private Entity.Avatar[][] avatarMatrix;
+
+    public GameState() {
+        avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
+        for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
+            for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)
+                avatarMatrix[i][j] = new Entity.Avatar(' ', Entity.Avatar.Color.TRANSPARENT);
+    }
 }

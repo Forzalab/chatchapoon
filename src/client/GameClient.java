@@ -83,6 +83,36 @@ public class GameClient {
         }
     }
 
+
+    private static synchronized void processServerBroadcast(BufferedReader reader, TextGraphics tg) {
+        String line = "";
+        try {
+            while ((line = reader.readLine()) != null) {
+                /// MUST CHANGE TO STH ELSE IG
+                JSONObject j = new JSONObject(line);
+                String _type = j.getString("type");
+                // JOIN_ACK test
+                if (_type.equals("JOIN_REJECT")) {
+                    KeyStroke keystroke = screen.pollInput();
+                    do {
+                        tg.putString(cols/5, rows/2, "Rejected because game is ongoing!");
+                        tg.putString(cols/5, rows/2+1, "Press [ESC] to quit client.");
+                        screen.refresh();
+                    } while (keystroke != null && keystroke.getKeyType() == KeyType.Escape);
+                    screen.stopScreen();
+                }
+                else if (_type.equals("STATE")) {
+                    String _playerId = j.getString("playerId");
+                    int _color = j.optInt("color", 60);
+                    to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
+                    shift++;
+                }
+			}
+        } catch (Exception e) {
+            System.out.println("Exception caught GameClient listener thread: " + e);
+        }
+    }
+    
     // main({player_name, host})
     // player instance is "isolated" in each thread's main()
     public static void main(String[] args) {
@@ -113,24 +143,7 @@ public class GameClient {
 
             // text i/o
             Thread listener = new Thread(() -> {
-                String line = "";
-                try {
-                    while ((line = reader.readLine()) != null) {
-                        /// MUST CHANGE TO STH ELSE IG
-                        JSONObject j = new JSONObject(line);
-                        String _type = j.getString("type");
-                        // JOIN_ACK test
-                        if (_type.equals("JOIN_ACK")) {
-//                                throw new Exception("JOIN_ACK recieved (GameClient, L118)");
-                        }
-                        String _playerId = j.getString("playerId");
-                        int _color = j.optInt("color", 60);
-                        to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
-                        shift++;
-					}
-                } catch (Exception e) {
-                    System.out.println("Exception caught GameClient listener thread: " + e);
-                }
+                processServerBroadcast(reader, tg);
             });
 
             listener.start();
@@ -139,11 +152,17 @@ public class GameClient {
             while (true) {
                 tg.putString(cols/5, shift%rows, to_render);
                 KeyStroke keystroke = screen.pollInput();
+
+                // disconnect
                 if (keystroke != null && keystroke.getKeyType() == KeyType.Escape) {
+                    String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+                    writer.println(discnt);
+//                    listener.interrupt();
                     screen.stopScreen();
-                    listener.interrupt();
+                    socket.close();
                     break;
                 }
+                
                 // Register key
                 String key = Protocol.KEYBIND_MAP.getOrDefault(keystroke, "");
                 String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
