@@ -7,7 +7,7 @@ public class Position {
     private volatile float accumx, accumy;
     private volatile boolean validated = false;
 
-    public Position(int x, int y) {
+    public Position(int y, int x) {
         this.x = x;
         this.y = y;
         accumx = 0;
@@ -15,7 +15,7 @@ public class Position {
     }
     
     // note to future self: VALIDATE B4 SETTING COORDS!!!
-    public synchronized void accum(float dx, float dy) {
+    public synchronized void accum(float dy, float dx) {
         checker();
 
         // processs x-axis
@@ -38,7 +38,7 @@ public class Position {
 
     // override xy
     // 0ls only call at respawn
-    public synchronized void set(float x, float y) {
+    public synchronized void set(float y, float x) {
         this.x = (int)x;
         this.y = (int)y;
         accumx = 0;

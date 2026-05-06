@@ -89,6 +89,7 @@ public class ClientHandler implements Runnable {
         } finally {
             GameServer.clients.remove(this);
             removePlayer();
+            GameServer.gameState.playerIdMap.remove(playerId);
             try { socket.close(); } catch (IOException ignored) {}
         }
     }
