@@ -10,11 +10,12 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import shared.Protocol;
+import shared.GameState;
 
 // called ONCE, no multiple isntances!!!!!
 public class GameServer {
     static List < ClientHandler > clients = new CopyOnWriteArrayList < ClientHandler > ();
-    
+    static GameState gameState = new GameState();    
     static Random r = new Random();
 
     // https://stackoverflow.com/a/10174938
@@ -59,6 +60,7 @@ public class GameServer {
             new Thread(() -> {
             while (true) { try {
                     long start = System.currentTimeMillis();
+
                     // process Q
                     processIncomingQueue();
 

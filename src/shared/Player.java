@@ -60,7 +60,7 @@ public class Player extends Actor {
    // no color (in RenderProperty)
    // no isDead, maxHP, deathTimer (in Actor.HP.isDead())
 
-    public Player(Position pos, float vx, float vy, String type, String id, int hp_max) {
+    public Player(Position pos, float vx, float vy, String id, int hp_max) {
         super(pos, vx, vy, "player", id, hp_max);
     }
 }

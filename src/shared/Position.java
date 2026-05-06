@@ -7,6 +7,13 @@ public class Position {
     private volatile float accumx, accumy;
     private volatile boolean validated = false;
 
+    public Position(int x, int y) {
+        this.x = x;
+        this.y = y;
+        accumx = 0;
+        accumy = 0;
+    }
+    
     // note to future self: VALIDATE B4 SETTING COORDS!!!
     public synchronized void accum(float dx, float dy) {
         checker();

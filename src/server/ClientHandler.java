@@ -6,15 +6,17 @@ import java.util.concurrent.*;
 
 import org.json.JSONObject;
 
+import shared.*;
+
 public class ClientHandler implements Runnable {
     private Socket socket;
     private PrintWriter writer;
     private BufferedReader reader;
-
-
+    
     // player data for CH "branch"
     private String playerId = "";
     private String playerName = "";
+    private int playerIndex = -1;
     
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -28,6 +30,17 @@ public class ClientHandler implements Runnable {
         if (writer != null) writer.println(msg);
     }
 
+    private synchronized void addPlayer() {
+        // name is managed by CH, player is id-ed by id.
+        Player player = new Player(new Position(GameServer.r.nextInt(Protocol.ARENA_WIDTH), GameServer.r.nextInt( Protocol.ARENA_HEIGHT)), 0, 0, playerId, Protocol.PLAYER_MAX_HP);
+        GameServer.gameState.players.add(player);
+        playerIndex = GameServer.gameState.players.indexOf(player);
+    }
+
+    private synchronized void removePlayer() {
+        GameServer.gameState.players.remove(playerIndex);
+    }
+    
     public void run() {
         try {
             // write to client
@@ -50,8 +63,9 @@ public class ClientHandler implements Runnable {
             String ackState = new JSONObject().put("type", "JOIN_ACK").put("playerId", playerId).put("color", 0).toString();
             send(ackState);
 
-            GameServer.clients.add(this); // GameServer::clients lol
-
+            GameServer.clients.add(this); // GameServer::clients lol, CH
+            addPlayer(); // add into GameState list
+            
             // now await cli forevarrr
             while ((line = reader.readLine()) != null) {
                 incoming.add(line);
@@ -61,6 +75,7 @@ public class ClientHandler implements Runnable {
             System.out.println("Exception thrown ClientHandler main: " + e);
         } finally {
             GameServer.clients.remove(this);
+            removePlayer();
             try { socket.close(); } catch (IOException ignored) {}
         }
     }
