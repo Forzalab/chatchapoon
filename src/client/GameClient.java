@@ -69,9 +69,10 @@ public class GameClient {
             }
 
             // cease
-            screen.stopScreen();
+            try { screen.stopScreen(); } catch (IOException ioe) {}
             System.exit(0);
         } catch (Exception e) {
+            try { screen.stopScreen(); } catch (IOException ioe) {}
             System.out.println("Exception caught GameClient unfit_screen: " + e);
         }
     }
@@ -96,10 +97,10 @@ public class GameClient {
                 draw_unfit_screen();
             }
         } catch (Exception e) {
+            try { screen.stopScreen(); } catch (IOException ioe) {}
             System.out.println("Exception caught GameClient lanterna_init(): " + e);
         }
     }
-
 
     private static synchronized void processServerBroadcast(BufferedReader reader, TextGraphics tg) {
         String line = "";
@@ -109,28 +110,30 @@ public class GameClient {
                 JSONObject j = new JSONObject(line);
                 String _type = Utility.optString(j, "type");
                 String _playerId = Utility.optString(j, "playerId");
-                
+
+                if (_type == null) continue;
                 // JOIN_ACK test
-                if (_type.equals("JOIN_REJECT")) {
+                else if ("JOIN_REJECT".equals(_type)) {
                     KeyStroke keystroke = screen.pollInput();
                     do {
                         tg.putString(cols/5, rows/2, "Rejected because game is ongoing!");
                         tg.putString(cols/5, rows/2+1, "Press [ESC] to quit client.");
                         screen.refresh();
                     } while (keystroke != null && keystroke.getKeyType() == KeyType.Escape);
-                    screen.stopScreen();
+                    try { screen.stopScreen(); } catch (IOException ioe) {}
                 }
-                else if (_type.equals("STATE")) {
+                else if ("STATE".equals(_type)) {
 /*                    int _color = j.optInt("color", 60);
                     to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
                     shift++;*/
                     to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", _playerId);
                 }
-                else if (_type.equals("PLAYER_INFO") && _playerId.equals(playerID)) {
+                else if ("PLAYER_INFO".equals(_type) && playerID.equals(_playerId)) {
                     to_render = new JSONObject().put("avatar", "@").put("x", j.optInt("x", 0)).put("y", j.optInt("y", 0)).put("direction", Utility.optString(j, "direction"));
                 }
 			}
         } catch (Exception e) {
+            try { screen.stopScreen(); } catch (IOException ioe) {}
             System.out.println("Exception caught GameClient listener thread: " + e);
         }
     }
@@ -171,7 +174,10 @@ public class GameClient {
 
             // --- Thread 2: Render-keystroke loop ---
 //            while (!((!(to_render.equals("render") && !host.equals("localhost")) && !(!Utility.isJSONValid(join) && !player_name.equals("anon"))) && !(!(to_render.equals("render") || !Utility.isJSONValid(join)) || (host.equals("localhost") || player_name.equals("anon"))))) {
-              try { while (true) { 
+              while (true) { 
+                // skip null
+                if (to_render == null) continue;
+                
                 // Render sth first
                 //    tg.putString(cols/5, shift%rows, to_render);
                 if (Utility.optString(to_render, "type").equals("PLAYER_INFO")) {
@@ -186,13 +192,19 @@ public class GameClient {
                 }
                 
                 KeyStroke keystroke = screen.pollInput();
-
+                // pls check null keystroke always
+                if (keystroke == null) {            
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
+                
                 // Handle disconnect key
                 if (keystroke.getKeyType() == KeyType.Escape) {
                     String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
                     writer.println(discnt);
 //                    listener.interrupt();
-                    screen.stopScreen();
+                    try { screen.stopScreen(); } catch (IOException ioe) {}
                     socket.close();
                     break;
                 }
@@ -201,17 +213,17 @@ public class GameClient {
                 String key = KEYBIND_MAP.getOrDefault(keystroke, "");
                 
                 // Prevent accidental DDOS sending keys
-                if (keystroke != null && !key.isEmpty()) {
+                if (!key.isEmpty()) {
                     String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
                     writer.println(sendMsg);
                 }
         
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
-            }} catch (Exception e) {
-                System.out.println("Exception caught GameClient KeyRender loop: " + e);
             }
+            
         } catch (Exception e) {
+            try { screen.stopScreen(); } catch (IOException ioe) {}
             System.out.println("Exception caught GameClient main(): " + e);
         }
     }
