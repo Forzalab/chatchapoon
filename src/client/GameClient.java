@@ -48,6 +48,7 @@ public class GameClient {
         put(KeyStroke.fromString("q"), "ROTATE_CCW");
         put(KeyStroke.fromString("e"), "ROTATE_CW");
         put(KeyStroke.fromString("<Space>"), "SHOOT");
+        put(KeyStroke.fromString("<Esc>"), "PING");
     }};
 
     private static void draw_unfit_screen() {
@@ -122,6 +123,12 @@ public class GameClient {
                     } while (keystroke != null && keystroke.getKeyType() == KeyType.Escape);
                     try { screen.stopScreen(); } catch (IOException ioe) {}
                 }
+                else if ("JOIN_ACK".equals(_type)) {
+                    // recieve
+                    String key = KEYBIND_MAP.get(KeyStroke.fromString("<Esc>"));
+                    String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
+                    writer.println(sendMsg);
+                }
                 else if ("STATE".equals(_type)) {
 /*                    int _color = j.optInt("color", 60);
                     to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
@@ -132,12 +139,11 @@ public class GameClient {
                 else if ("PLAYER_INFO".equals(_type)) {
                     JSONObject jao = new JSONObject(line);
                     JSONArray ja = new JSONArray(jao.getJSONArray("players"));
-                    
                     for (int i = 0; i < ja.length() + 1 ; i++) {
                         // early returns.
                         // if player not found in one msg?
                         // tough luck, ask the server what it sent lol
-                        // as THIS player must be present in the server's `clients` list!
+                        // as THIS player must be present in the server's `clients` list! invariant.
                         if (i == ja.length()) return;
                         else if (ja.getJSONObject(i) == null) continue;
                         else if (playerID.equals(Utility.optString(ja.getJSONObject(i), "id"))) {
@@ -194,7 +200,12 @@ public class GameClient {
 //            while (!((!(to_render.equals("render") && !host.equals("localhost")) && !(!Utility.isJSONValid(join) && !player_name.equals("anon"))) && !(!(to_render.equals("render") || !Utility.isJSONValid(join)) || (host.equals("localhost") || player_name.equals("anon"))))) {
               while (true) { 
                 // skip null
-                if (to_render == null) continue;
+                // pls check null keystroke always
+                if (to_render == null) {            
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
                 
                 // Render sth first
                 //    tg.putString(cols/5, shift%rows, to_render);
@@ -208,6 +219,7 @@ public class GameClient {
                         tg.putString(0, 0, direction);
                     }
                 }
+
                 
                 KeyStroke keystroke = screen.pollInput();
                 // pls check null keystroke always
@@ -228,6 +240,7 @@ public class GameClient {
                 }
                 
                 // Register and send out key if not disconnect
+                // wont send anything if it isnt a valid mapped key
                 String key = KEYBIND_MAP.getOrDefault(keystroke, "");
                 
                 // Prevent accidental DDOS sending keys

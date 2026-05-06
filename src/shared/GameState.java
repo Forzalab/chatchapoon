@@ -17,7 +17,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public List<Player> players = new CopyOnWriteArrayList<Player>();
     public List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
     public List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
-    private HashMap<String, Player> playerIdMap = new HashMap<String, Player>();
+    public HashMap<String, Player> playerIdMap = new HashMap<String, Player>();
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
     public Player playerById(String id) {
         return playerIdMap.get(id);
@@ -44,7 +44,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         if (levelTimer > 0) levelTimer--;
         // blah tick incr stuff go here
     }
-    private int terrain[][] = new int[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
+    private int terrain[][] = new int[Protocol.ARENA_HEIGHT][Protocol.ARENA_WIDTH];
     private Entity.Avatar[][] avatarMatrix;
 
     public GameState() {

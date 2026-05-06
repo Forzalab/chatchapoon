@@ -50,7 +50,7 @@ public class Actor extends Entity {
 
         // VERY BAD. have to track 2 fucntion together. 
         // mut add soem form of takeDamge() somehow.
-        private synchronized void triggerRespawn(Boolean will_respawn) {
+        public synchronized void triggerRespawn(Boolean will_respawn) {
             deathTimer = (!will_respawn) ? Protocol.DEATH_COOLDOWN_PERM : Protocol.DEATH_COOLDOWN;
         }
 
