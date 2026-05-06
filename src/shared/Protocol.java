@@ -1,5 +1,8 @@
 package shared;
 
+import java.util.HashMap;
+import com.googlecode.lanterna.input.*;
+
 public class Protocol {
     public static final int PORT = 4267;
     public static final int TICK_MS = 50;
@@ -31,4 +34,16 @@ public class Protocol {
     public static final int DEATH_COOLDOWN = 60; // instant gratification 3s
     public static final int DEATH_COOLDOWN_PERM = -4968; // aptx idk
     public static final int PLAYER_MAX_HP = 300;
+
+    // key mapping
+    // used ONLY BY CLIENT
+    public static final HashMap<KeyStroke, String> KEYBIND_MAP = new HashMap<KeyStroke, String>() {{
+        put(KeyStroke.fromString("w"), "UP");
+        put(KeyStroke.fromString("a"), "LEFT");
+        put(KeyStroke.fromString("s"), "DOWN");
+        put(KeyStroke.fromString("d"), "RIGHT");
+        put(KeyStroke.fromString("q"), "ROTATE_CCW");
+        put(KeyStroke.fromString("e"), "ROTATE_CW");
+        put(KeyStroke.fromString("<Space>"), "SHOOT");
+    }};
 }

@@ -37,6 +37,7 @@ public class GameServer {
             String msg;
             while ((msg = _ch.incoming.poll()) != null) {
                 // process _ch msg here
+                
             }
         }
     }

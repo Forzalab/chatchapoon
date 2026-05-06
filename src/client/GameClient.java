@@ -16,7 +16,7 @@ import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.graphics.*;
 import com.googlecode.lanterna.*;
 
-import shared.Protocol;
+import shared.*;
 
 // each client screen = ONE file run
 // so everything is static
@@ -84,6 +84,7 @@ public class GameClient {
     }
 
     // main({player_name, host})
+    // player instance is "isolated" in each thread's main()
     public static void main(String[] args) {
         try {
             lanterna_init();
@@ -101,11 +102,11 @@ public class GameClient {
             reader = new BufferedReader(new InputStreamReader(istream));
 
             // join the server by sending a request first
-            String player_id = UUID.randomUUID().toString().substring(0,8);
+            String playerID = UUID.randomUUID().toString().substring(0,8);
 
             String player_name = args.length > 0 ? args[0] : "anon";
             
-            String join = new JSONObject().put("type", "JOIN").put("playerId", player_id).put("cols", cols).put("rows", rows).put("name", player_name).toString();
+            String join = new JSONObject().put("type", "JOIN").put("playerId", playerID).put("cols", cols).put("rows", rows).put("name", player_name).toString();
             writer.println(join);
 
             TextGraphics tg = screen.newTextGraphics();
@@ -143,6 +144,11 @@ public class GameClient {
                     listener.interrupt();
                     break;
                 }
+                // Register key
+                String key = Protocol.KEYBIND_MAP.getOrDefault(keystroke, "");
+                String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
+                writer.println(sendMsg);
+    
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
             }

@@ -17,7 +17,8 @@ public class ClientHandler implements Runnable {
     private String playerId = "";
     private String playerName = "";
     private int playerIndex = -1;
-    
+
+        
     public ClientHandler(Socket socket) {
         this.socket = socket;
     }
