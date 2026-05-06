@@ -13,6 +13,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
     List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
     private HashMap<String, Player> playerIdMap = new HashMap<String, Player>();
+    public HashSet<Entity.RenderProperty.Color> colorTaken = new HashSet<Entity.RenderProperty.Color>();
     public Player playerById(String id) {
         return playerIdMap.get(id);
     }
@@ -23,4 +24,20 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         else if (type == "bullet") newId += idCounter[2]++;
         return newId;
     }
+    private int tickCounter = 0, levelTimer = Protocol.LEVEL_DURATION_TICKS, waveNumber = 0;
+    public int getCurrentTick() {
+        return tickCounter;
+    }
+    public int getLevelTimeLeft() {
+        return levelTimer;
+    }
+    public int getWaveLevel() {
+        return waveNumber;
+    }
+    public void updateTick() {
+        tickCounter++;
+        if (levelTimer > 0) levelTimer--;
+        // blah tick incr stuff go here
+    }
+    private int terrain[][];
 }
