@@ -132,8 +132,12 @@ public class GameClient {
                 else if ("PLAYER_INFO".equals(_type)) {
                     JSONObject jao = new JSONObject(line);
                     JSONArray ja = new JSONArray(jao.getJSONArray("players"));
-
+                    
                     for (int i = 0; i < ja.length() + 1 ; i++) {
+                        // early returns.
+                        // if player not found in one msg?
+                        // tough luck, ask the server what it sent lol
+                        // as THIS player must be present in the server's `clients` list!
                         if (i == ja.length()) return;
                         else if (ja.getJSONObject(i) == null) continue;
                         else if (playerID.equals(Utility.optString(ja.getJSONObject(i), "id"))) {
