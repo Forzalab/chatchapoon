@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # symlink stage
-P="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-find "$P/src" -mindepth 2 -maxdepth 2 -type f -exec ln -sf -t "$P" {} + 2>/dev/null
-find "$P/sh" -mindepth 1 -maxdepth 2 -type f ! -name "${BASH_SOURCE[0]##*/}" -exec ln -sf -t "$P" {} + 2>/dev/null
+PARENT_DIR="$(dirname "$(dirname "$(realpath "$0")")")"
+for f in "$PARENT_DIR"/src/*/*.java; do
+    [[ -e "$f" ]] || continue
+    ln -sf "$f" "$PARENT_DIR/$(basename "$f")"
+done
 
 # build and run
 find src -name "*.java" > sources.txt
