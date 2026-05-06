@@ -16,8 +16,7 @@ public class Player extends Actor {
        this.vy = vy;
        this.type = type;
        this.id = id;
-    }
-*/
+    */
 
     public class Inventory {
         // i trust myself to not tocuh this list raw

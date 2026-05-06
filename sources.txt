@@ -6,6 +6,7 @@ src/shared/Position.java
 src/shared/Bullet.java
 src/shared/Protocol.java
 src/shared/GameState.java
+src/shared/Utility.java
 src/shared/Actor.java
 src/shared/Player.java
 src/shared/Entity.java

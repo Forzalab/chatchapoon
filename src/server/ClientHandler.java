@@ -63,13 +63,13 @@ public class ClientHandler implements Runnable {
             this.playerName = j.optString("name", "anon");
 
             // force disconnect late player
-            if (GameServer.gameState.state == GameState.State.BATTLE) {
+/*            if (GameServer.gameState.state == GameState.State.BATTLE) {
                 String rjtState = new JSONObject().put("type", "JOIN_REJECT").put("playerId", playerId).toString();
                 send(rjtState);
                 try { socket.close(); } catch (IOException ignored) {}
                 return;
             }
-            
+*/            
             String ackState = new JSONObject().put("type", "JOIN_ACK").put("playerId", playerId).put("color", 0).toString();
             send(ackState);
 
