@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.HashMap;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 import org.json.JSONException;
 
 import com.googlecode.lanterna.TerminalSize;
@@ -109,7 +110,6 @@ public class GameClient {
                 /// MUST CHANGE TO STH ELSE IG
                 JSONObject j = new JSONObject(line);
                 String _type = Utility.optString(j, "type");
-                String _playerId = Utility.optString(j, "playerId");
 
                 if (_type == null) continue;
                 // JOIN_ACK test
@@ -126,10 +126,24 @@ public class GameClient {
 /*                    int _color = j.optInt("color", 60);
                     to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
                     shift++;*/
+                    String _playerId = Utility.optString(j, "playerId");
                     to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", _playerId);
                 }
-                else if ("PLAYER_INFO".equals(_type) && playerID.equals(_playerId)) {
-                    to_render = new JSONObject().put("avatar", "@").put("x", j.optInt("x", 0)).put("y", j.optInt("y", 0)).put("direction", Utility.optString(j, "direction"));
+                else if ("PLAYER_INFO".equals(_type)) {
+                    JSONObject jao = new JSONObject(line);
+                    JSONArray ja = new JSONArray(jao.getJSONArray("players"));
+
+                    for (int i = 0; i < ja.length() + 1 ; i++) {
+                        if (i == ja.length()) return;
+                        else if (ja.getJSONObject(i) == null) continue;
+                        else if (playerID.equals(Utility.optString(ja.getJSONObject(i), "id"))) {
+                            j = ja.getJSONObject(i);
+                            break;
+                        }
+                    }
+                    
+                    String _playerId = Utility.optString(j, "playerId");
+                    to_render = new JSONObject().put("avatar", "@").put("x", j.optInt("x", 0)).put("y", j.optInt("y", 0)).put("direction", Utility.optString(j, "direction")).put("type", _type);
                 }
 			}
         } catch (Exception e) {
