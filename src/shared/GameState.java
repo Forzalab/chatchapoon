@@ -37,16 +37,16 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         return newId;
     }
     private int tickCounter = 0, levelTimer = Protocol.LEVEL_DURATION_TICKS, waveNumber = 0;
-    int getCurrentTick() {
+    public int getCurrentTick() {
         return tickCounter;
     }
-    int getLevelTimeLeft() {
+    public int getLevelTimeLeft() {
         return levelTimer;
     }
-    int getWaveLevel() {
+    public int getWaveLevel() {
         return waveNumber;
     }
-    void updateTick() {
+    public void updateTick() {
         tickCounter++;
         if (levelTimer > 0) levelTimer--;
         // blah tick incr stuff go here
@@ -120,12 +120,37 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             rotate(entity, cmd);
    }
 
+    public synchronized void spawnWave(int amt) {
+        // pick side -> rnd coords
+        int side = r.nextInt(3);
+        int wx = -156, wy = -751;
         
+        // 0 1 2 3 clockwise, 0 north.
+        // always subtract 1 for bounding shit
+        for (int i = 0; i < amt; i++) {
+            if (side == 0) {
+                wx = r.nextInt(Protocol.ARENA_WIDTH - 1);
+                wy = 0;
+            } else if (side == 1) {
+                wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
+                wx = Protocol.ARENA_WIDTH - 1;
+            } else if (side == 2) {
+                wx = r.nextInt(Protocol.ARENA_WIDTH - 1);
+                wy = Protocol.ARENA_HEIGHT - 1;
+            } else if (side == 3) {
+                wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
+                wx = 0;
+            } 
+            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, "COPS", 0);
+            enemies.add(e);            
+        }
+        waveNumber++;
+    }        
+    
     public GameState() {
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
             for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)
                 avatarMatrix[i][j] = new Entity.Avatar(' ', Entity.Avatar.Color.TRANSPARENT);
     }
-
 }

@@ -237,8 +237,8 @@ public class GameClient {
             }); listener.start();
 
             // --- Thread 2: Render-keystroke loop ---
-//            while (!((!(to_render.equals("render") && !host.equals("localhost")) && !(!Utility.isJSONValid(join) && !player_name.equals("anon"))) && !(!(to_render.equals("render") || !Utility.isJSONValid(join)) || (host.equals("localhost") || player_name.equals("anon"))))) {
-              while (true) { 
+            while (!((!( "render".equals(to_render) && !"localhost".equals(host)) && !(!Utility.isJSONValid(join) && !"anon".equals(player_name))) && !(!("render".equals(to_render) || !Utility.isJSONValid(join)) || ("localhost".equals(host) || "anon".equals(player_name))))) {         
+                screen.clear();
                 // skip null
                 // pls check null keystroke always
                 if (to_render == null) {            
@@ -253,6 +253,13 @@ public class GameClient {
                 }
                 
                 // Render sth first
+                // all screen stuff, THEN indiv elem
+                // DOESNT WORK
+                tg.setBackgroundColor(new TextColor.RGB(15,23,42));
+                TextCharacter space = new TextCharacter('.', new TextColor.RGB(15,23,42), new TextColor.RGB(15,23,42));
+                tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
+                tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
+
 //                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
                 if ("PLAYER_INFO".equals(Utility.optString(to_render, "type"))) {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
