@@ -60,7 +60,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     
     // Assuming enemies vx vy is fixed
     public synchronized void shiftPos(String cmd, Entity entity) {
-/*        entity.pos.iHaveValidatedB4Setting();
+        entity.pos.iHaveValidatedB4Setting();
         if (cmd.isEmpty()) return;
         else if ("UP".equals(cmd))
             entity.pos.accum(-1, 0);
@@ -70,11 +70,11 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             entity.pos.accum(0, -1);
         else if ("RIGHT".equals(cmd))
             entity.pos.accum(0, 1);
-  */  }
+   }
 
     public synchronized void alterState(String cmd, String authorID) {
         if (!moveCmds.contains(cmd)) return;
-/*        Entity entity = Entity.nullEntity;
+        Entity entity = Entity.nullEntity;
 
         // assume ID wont collide, or else there will be
         // dupl assignment
@@ -86,7 +86,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             if (authorID.equals(e.id)) entity = e;
 
         if (entity != Entity.nullEntity) shiftPos(cmd, entity);
-  */  }
+   }
 
         
     public GameState() {
