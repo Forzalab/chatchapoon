@@ -143,7 +143,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
                 wx = 0;
             } 
 
-            float rSpeed = (r.nextInt(10 - 4) + 4) * 0.01f;
+            float rSpeed = (r.nextInt(20 - 7) + 7) * 0.01f;
             Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, "COPS", 0, rSpeed);
             enemies.add(e);            
         }
@@ -155,24 +155,21 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         for (Enemy e : enemies) {
             int minDist = Protocol.ARENA_HEIGHT * Protocol.ARENA_WIDTH;
             int stepX = 0, stepY = 0;
-            Player pMinDist;
+            Player pWithMinDist;
             // nearest player to follow
             for (Player p : players) {
                 Position pe = e.pos, pp = p.pos;
-                int dX = pe.getRenderX() - pp.getRenderX();
-                int dY = pe.getRenderY() - pp.getRenderY();
-                int d1X = Utility.mod(dX, Protocol.ARENA_WIDTH);
-                int d1Y = Utility.mod(dY, Protocol.ARENA_HEIGHT);
-                int d2X = Utility.mod(-dX, Protocol.ARENA_WIDTH);
-                int d2Y = Utility.mod(-dY, Protocol.ARENA_HEIGHT);
-                int distX = (Math.abs(d1X) < Math.abs(d2X)) ? dX : -dX;
-                int distY = (Math.abs(d1Y) < Math.abs(d2Y)) ? dY : -dY;
+                int distX = pp.getRenderX() - pe.getRenderX(), distY = pp.getRenderY() - pe.getRenderY();
+                if (distX >  Protocol.ARENA_WIDTH/2) distX -= Protocol.ARENA_WIDTH;
+                if (distX < -Protocol.ARENA_WIDTH/2) distX += Protocol.ARENA_WIDTH;
+                if (distY >  Protocol.ARENA_WIDTH/2) distY -= Protocol.ARENA_WIDTH;
+                if (distY < -Protocol.ARENA_WIDTH/2) distY += Protocol.ARENA_WIDTH;
                 int dist = (int)Math.round(Math.sqrt(Math.pow(distX, 2.0) + Math.pow(distY, 2)));
                 if (minDist > dist) {
                     minDist = dist;
                     stepX = (int)Math.signum(distX);
                     stepY = (int)Math.signum(distY);
-                    pMinDist = p;
+                    pWithMinDist = p;
                 }
             }
             // do follow the player
