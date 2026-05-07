@@ -143,11 +143,13 @@ public class GameClient {
                     writer.println(sendMsg);
                 }
                 else if ("STATE".equals(_type)) {
-/*                    int _color = j.optInt("color", 60);
-                    to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
-                    shift++;*/
+/*                    if (!playerID.equals(Utility.optString(j, "id"))) continue;;
+                    int _color = j.optInt("color", 60);
+                    to_render = "[SERVER] " + _type + " | " + playerID + " | " + _color;
+                    shift++;
                     String _playerId = Utility.optString(j, "playerId");
-                    to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", _playerId);
+                    to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", playerID);*/
+                    to_render = new JSONObject().put("message", Utility.optString(j, "message"));
                 }
                 else if ("PLAYER_INFO".equals(_type)) {
                     JSONObject jao = new JSONObject(line);
@@ -232,7 +234,7 @@ public class GameClient {
                 }
                 
                 // Render sth first
-                //    tg.putString(cols/5, shift%rows, to_render);
+//                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
                 if (Utility.optString(to_render, "type").equals("PLAYER_INFO")) {
                     int rx = to_render.optInt("x", -1);
                     int ry = to_render.optInt("y", -1);
