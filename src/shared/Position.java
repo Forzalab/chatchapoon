@@ -49,12 +49,11 @@ public class Position {
 
     private void checker() {
         try {
-            if (validated == false)
-                throw new Exception("");
-            else validated = true;
+            if (validated == false) throw new Exception("");
         }
         catch (Exception e) {
             System.out.println("Exception caught at... u'know what? dumbass, u didnt validate sh*t b4 setting value, didnt u? run iHaveValidatedB4Setting() as a signature.");
+            System.exit(0);
         }
     }
     
@@ -63,11 +62,11 @@ public class Position {
     }
 
     // no wall collsion. ALL COLLISIKN R BASED ON WHATS ON SCREEN
-    public int getRenderX() {
+    public synchronized int getRenderX() {
         return x;
     }
 
-    public int getRenderY() {
+    public synchronized int getRenderY() {
         return y;
     }
 }

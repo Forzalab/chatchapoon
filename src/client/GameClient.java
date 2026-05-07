@@ -29,7 +29,8 @@ public class GameClient {
     private static Screen screen;
     private static volatile int shift = 0; // volatile force update value for N threads potentially reading it
     private static volatile JSONObject to_render;
-
+    private static TerminalPosition tp;
+    
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
     
@@ -51,6 +52,16 @@ public class GameClient {
         put(KeyStroke.fromString("<Esc>"), "PING");
     }};
 
+    private static void closeClient() {
+        try {
+            screen.setCursorPosition(tp);
+            screen.stopScreen();
+            writer.close();
+            reader.close();
+            socket.close();
+        } catch (Exception e) {}
+    }
+    
     private static void draw_unfit_screen() {
         try {
             TextGraphics tg = screen.newTextGraphics();
@@ -71,11 +82,11 @@ public class GameClient {
             }
 
             // cease
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.exit(0);
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
-            System.out.println("Exception caught GameClient unfit_screen: " + e);
+            closeClient();
+            System.out.println("Exception caught GameClient unfit_screen: " + e);                       System.exit(0);
         }
     }
 
@@ -92,6 +103,7 @@ public class GameClient {
             rows = sz.getRows();
 
             // cleanup screen features
+            tp = screen.getCursorPosition();
             screen.clear();
             screen.setCursorPosition(null); // hides cursor
 
@@ -99,8 +111,9 @@ public class GameClient {
                 draw_unfit_screen();
             }
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.out.println("Exception caught GameClient lanterna_init(): " + e);
+            System.exit(0);
         }
     }
 
@@ -121,7 +134,7 @@ public class GameClient {
                         tg.putString(cols/5, rows/2+1, "Press [ESC] to quit client.");
                         screen.refresh();
                     } while (keystroke != null && keystroke.getKeyType() == KeyType.Escape);
-                    try { screen.stopScreen(); } catch (IOException ioe) {}
+                    closeClient();
                 }
                 else if ("JOIN_ACK".equals(_type)) {
                     // recieve
@@ -155,10 +168,16 @@ public class GameClient {
                     String _playerId = Utility.optString(j, "playerId");
                     to_render = new JSONObject().put("avatar", "@").put("x", j.optInt("x", 0)).put("y", j.optInt("y", 0)).put("direction", Utility.optString(j, "direction")).put("type", _type);
                 }
+                // not ideal putting null here
+                // we can add other stuff later
+                // but works, for-now™
+//              if (reader.readLine() == null)
+//                    throw new Exception("Connection closed unexpectedly");
 			}
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.out.println("Exception caught GameClient listener thread: " + e);
+            System.exit(0);
         }
     }
     
@@ -206,6 +225,11 @@ public class GameClient {
                     Thread.sleep(Protocol.TICK_MS);
                     continue;
                 }
+                else if (to_render.isEmpty()) {            
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
                 
                 // Render sth first
                 //    tg.putString(cols/5, shift%rows, to_render);
@@ -234,8 +258,6 @@ public class GameClient {
                     String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
                     writer.println(discnt);
 //                    listener.interrupt();
-                    try { screen.stopScreen(); } catch (IOException ioe) {}
-                    socket.close();
                     break;
                 }
                 
@@ -252,10 +274,14 @@ public class GameClient {
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
             }
-            
+            // Closing action
+            closeClient();
+            System.exit(0);
+
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.out.println("Exception caught GameClient main(): " + e);
+            System.exit(0);
         }
     }
 }

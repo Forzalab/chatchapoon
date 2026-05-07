@@ -25,9 +25,14 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     }
     public String attendance(String type) {
         String newId = type;
-        if (type.equals("player")) newId += idCounter[0]++;
-        else if (type.equals("enemy")) newId += idCounter[1]++;
-        else if (type.equals("bullet")) newId += idCounter[2]++;
+        
+        if ("player".equals(type)) 
+            newId += idCounter[0]++;
+        else if ("enemy".equals(type)) 
+            newId += idCounter[1]++;
+        else if ("bullet".equals(type)) 
+            newId += idCounter[2]++;
+
         return newId;
     }
     private int tickCounter = 0, levelTimer = Protocol.LEVEL_DURATION_TICKS, waveNumber = 0;
@@ -55,31 +60,33 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     
     // Assuming enemies vx vy is fixed
     public synchronized void shiftPos(String cmd, Entity entity) {
+/*        entity.pos.iHaveValidatedB4Setting();
         if (cmd.isEmpty()) return;
-        else if (cmd == "UP")
+        else if ("UP".equals(cmd))
             entity.pos.accum(-1, 0);
-        else if (cmd == "DOWN")
-            entity.pos.accum(1, 0);        
-        else if (cmd == "LEFT")
-            entity.pos.accum(0, -1);        
-        else if (cmd == "RIGHT")
-            entity.pos.accum(0, 1);        
-    }
+        else if ("DOWN".equals(cmd))
+            entity.pos.accum(1, 0);
+        else if ("LEFT".equals(cmd))
+            entity.pos.accum(0, -1);
+        else if ("RIGHT".equals(cmd))
+            entity.pos.accum(0, 1);
+  */  }
 
     public synchronized void alterState(String cmd, String authorID) {
-        Entity entity = Entity.nullEntity;
+        if (!moveCmds.contains(cmd)) return;
+/*        Entity entity = Entity.nullEntity;
 
         // assume ID wont collide, or else there will be
         // dupl assignment
-        for (int i = 0; i < players.size(); i++)
-            if (players.get(i).id == authorID) entity = players.get(i);
-        for (int i = 0; i < enemies.size(); i++)
-            if (enemies.get(i).id == authorID) entity = enemies.get(i);
-        for (int i = 0; i < bullets.size(); i++)
-            if (bullets.get(i).id == authorID) entity = bullets.get(i);       
-            
-        if (moveCmds.contains(cmd) && entity != Entity.nullEntity) shiftPos(cmd, entity);
-    }
+        for (Entity e : players)
+            if (authorID.equals(e.id)) entity = e;
+        for (Entity e : enemies)
+            if (authorID.equals(e.id)) entity = e;
+        for (Entity e : bullets)
+            if (authorID.equals(e.id)) entity = e;
+
+        if (entity != Entity.nullEntity) shiftPos(cmd, entity);
+  */  }
 
         
     public GameState() {
