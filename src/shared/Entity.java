@@ -31,10 +31,12 @@ public class Entity {
         public int getVal() { return val; }
         private static final Direction[] vals = values();
         public Direction next() {
-            return vals[(this.ordinal() + 1) % vals.length];
+            int index = (this.ordinal() + 1) % vals.length;
+            return vals[((index <= 7)?index:0)];
         }
         public Direction prev() {
-            return vals[(this.ordinal() - 1 + vals.length) % vals.length];
+            int index = (this.ordinal() - 1 + vals.length) % vals.length;
+            return vals[((index <= 7)?index:7)];
         }
     };
         

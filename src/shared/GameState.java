@@ -83,9 +83,9 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         float speed = (d.getVal() % 2 == 0) ? Protocol.BULLET_CARDINAL : Protocol.BULLET_DIAGONAL;
         float vx = VX[d.getVal()] * speed;
         float vy = VY[d.getVal()] * speed;
-
         
         Bullet b = new Bullet(new Position(e.pos.getRenderY(), e.pos.getRenderX()), vx, vy, registerNewId("bullet"), 1, e.id, 0);
+        b.direction = d; // sus
         bullets.add(b);
     }
 

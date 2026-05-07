@@ -46,6 +46,10 @@ public class GameClient {
         put(KeyStroke.fromString("a"), "LEFT");
         put(KeyStroke.fromString("s"), "DOWN");
         put(KeyStroke.fromString("d"), "RIGHT");
+        put(KeyStroke.fromString("<Up>"), "UP");
+        put(KeyStroke.fromString("<Left>"), "LEFT");
+        put(KeyStroke.fromString("<Down>"), "DOWN");
+        put(KeyStroke.fromString("<Right>"), "RIGHT");
         put(KeyStroke.fromString("q"), "ROTATE_CCW");
         put(KeyStroke.fromString("e"), "ROTATE_CW");
         put(KeyStroke.fromString("<Space>"), "SHOOT");
@@ -123,8 +127,7 @@ public class GameClient {
     }
 
     // JSONArray -> tg rendering
-    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg) { try { 
-        screen.clear();
+    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava) { try { 
         for (int i = 0; i < ja.length(); i++) {
             // early returns.
             // if player not found in one msg?
@@ -135,15 +138,15 @@ public class GameClient {
             if (j == null) continue;
             int rx = j.optInt("x", -1);
             int ry = j.optInt("y", -1);
-            String avatar = "@"; // for now, will customize later
+            String avatar = ava; // for now, will customize later
             String direction = Utility.optString(j, "direction");
             if (rx != -1 && ry != -1) {
                 tg.putString(rx, ry, avatar);
+                tg.putString(0, 0, "  ");                
                 tg.putString(0, 0, direction);
 // enforce rendering proioty later?!?!!??
             }
         }
-        screen.refresh(); // !!!! would have problem if render anything else other than player
         
         } catch (Exception e) {
             closeClient();
@@ -252,8 +255,11 @@ public class GameClient {
                 // Render sth first
 //                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
                 if ("PLAYER_INFO".equals(Utility.optString(to_render, "type"))) {
-                    JSONArray ja = new JSONArray(to_render.getJSONArray("players"));
-                    if (ja != null) processPlayersArrayRender(ja, tg);
+                    JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
+                    JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));                           screen.clear();
+                    if (jap != null) processPlayersArrayRender(jap, tg, "@");
+                    if (jab != null) processPlayersArrayRender(jab, tg, "*");
+                    screen.refresh();
                 }
 
                 KeyStroke keystroke = screen.pollInput();

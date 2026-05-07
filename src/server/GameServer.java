@@ -76,7 +76,7 @@ public class GameServer {
                     for (Bullet bullet : gameState.bullets) {
                         bullet.pos.iHaveValidatedB4Setting();
                         if (bullet.timeLeft > 0) {
-                            bullet.pos.accum(bullet.vx, bullet.vy);
+                            bullet.pos.accum(bullet.vy, bullet.vx);
                             bullet.timeLeft--;
                         }
                         else
@@ -89,6 +89,19 @@ public class GameServer {
                     // broadcast PLAYER STATUS
                     JSONObject playerStateArrayJSON = new JSONObject();
                     JSONArray playerStateArray = new JSONArray();
+
+                    // TEMPORSRY!!!!!!!
+                    JSONArray bulletArray = new JSONArray();
+                    for (Bullet b : gameState.bullets) {
+                        bulletArray.put(new JSONObject()
+                            .put("direction", b.direction)
+                            .put("x", b.pos.getRenderX())
+                            .put("y", b.pos.getRenderY()));
+                    }
+                    
+                    playerStateArrayJSON.put("bullets", bulletArray);
+                    
+                    // player info
                     for (Player player : gameState.players) {
                         JSONObject playerState = new JSONObject();
                         playerState.put("id", player.id);
