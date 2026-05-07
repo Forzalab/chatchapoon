@@ -73,7 +73,16 @@ public class GameServer {
                     processIncomingQueue();
 
                     // GameState placeholder, do sth pls *poke stick* :[
-
+                    for (Bullet bullet : gameState.bullets) {
+                        if (bullet.timeLeft > 0) {
+                            bullet.pos.accum(bullet.vx, bullet.vy);
+                            bullet.timeLeft--;
+                        }
+                        else
+                            // hide corpses for now
+                            bullet.pos.set(-69, -420);
+                    }
+                    
                     // after state mutate, send it back to the
                     // country where it came from
                     // broadcast PLAYER STATUS

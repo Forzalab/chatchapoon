@@ -11,9 +11,6 @@ public class Actor extends Entity {
     public final String id;
     public final String type;
 */
-    public enum Direction {
-        N, NE, E, SE, S, SW, W, NW
-    };
 
     public class HP {
         private int _hp;
@@ -68,7 +65,6 @@ public class Actor extends Entity {
         }
     }
 
-    public Direction direction = Direction.N;
     public volatile HP hp;
     
     Actor(Position pos, float vx, float vy, String type, String id, int hpMax) {

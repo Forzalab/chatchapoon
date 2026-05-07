@@ -24,19 +24,25 @@ public class Entity {
         }
     }
     
+    public enum Direction {
+        N, NE, E, SE, S, SW, W, NW, NONE
+    };
+        
     public volatile Position pos;
     public volatile float vx;
     public volatile float vy;
     public final String id;
     public final String type;
+    public final Direction direction;
     public volatile Avatar avatar;
-        
+    
     Entity(Position pos, float vx, float vy, String type, String id) {
        this.pos = pos;
        this.vx = vx;
        this.vy = vy;
        this.type = type;
        this.id = id;
+       this.direction = Direction.NONE; // set direction for urself
     }
     
     public static final Entity nullEntity = new Entity(new Position(-420, -69), 0.0f, 0.0f, "", "");

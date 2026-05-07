@@ -123,7 +123,8 @@ public class GameClient {
     }
 
     // JSONArray -> tg rendering
-    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg) {
+    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg) { try { 
+        screen.clear();
         for (int i = 0; i < ja.length(); i++) {
             // early returns.
             // if player not found in one msg?
@@ -140,6 +141,14 @@ public class GameClient {
                 tg.putString(rx, ry, avatar);
                 tg.putString(0, 0, direction);
             }
+        }
+        screen.refresh(); // !!!! would have problem if render anything else other than player
+        
+        } catch (Exception e) {
+            closeClient();
+            System.out.println("Exception caught: processPlayersArrayRender " + e);
+            e.printStackTrace();
+            System.exit(0);
         }
     }
     

@@ -10,6 +10,7 @@ public class GameState {
 List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, levelTimer, waveNumber + terrain[][]
 */
     private int[] idCounter = {0, 0, 0}; // hardcoded P E B
+    private Random r = new Random();
     public static enum State {
         BATTLE,
         LOBBY
@@ -23,15 +24,15 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public Player playerById(String id) {
         return playerIdMap.get(id);
     }
-    public String attendance(String type) {
-        String newId = type;
+    public String registerNewId(String type) {
+        String newId = UUID.randomUUID().toString().substring(0,8);
         
         if ("player".equals(type)) 
-            newId += idCounter[0]++;
+            idCounter[0]++;
         else if ("enemy".equals(type)) 
-            newId += idCounter[1]++;
+            idCounter[1]++;
         else if ("bullet".equals(type)) 
-            newId += idCounter[2]++;
+            idCounter[2]++;
 
         return newId;
     }
@@ -72,8 +73,22 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             entity.pos.accum(0, 1);
    }
 
+    public synchronized void shootFrom(Entity e) {
+        float[] VX = { 0, Protocol.INV_SQRT2,  1,  Protocol.INV_SQRT2, 0, -Protocol.INV_SQRT2, -1, -Protocol.INV_SQRT2 };
+        float[] VY = {-1,-Protocol.INV_SQRT2,  0,  Protocol.INV_SQRT2, 1,  Protocol.INV_SQRT2,  0, -Protocol.INV_SQRT2 };
+
+        Entity.Direction d = e.direction;  // dont change direction ordering pls
+        if (d == Entity.Direction.NONE) return;
+        
+        float speed = (d.ordinal() % 2 == 0) ? Protocol.BULLET_CARDINAL : Protocol.BULLET_DIAGONAL;
+        float vx = VX[d.ordinal()] * speed;
+        float vy = VY[d.ordinal()] * speed;
+        
+        Bullet b = new Bullet(e.pos, vx, vy, registerNewId("bullet"), r.nextInt(15) + 25, e.id, 2);
+    }
+    
     public synchronized void alterState(String cmd, String authorID) {
-        if (!moveCmds.contains(cmd)) return;
+//        if (!moveCmds.contains(cmd)) return;
         Entity entity = Entity.nullEntity;
 
         // assume ID wont collide, or else there will be
@@ -85,7 +100,10 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         for (Entity e : bullets)
             if (authorID.equals(e.id)) entity = e;
 
-        if (entity != Entity.nullEntity) shiftPos(cmd, entity);
+        if (entity == Entity.nullEntity) return;
+
+        if (moveCmds.contains(cmd)) shiftPos(cmd, entity);
+        else if ("SHOOT".equals(cmd)) shootFrom(entity);
    }
 
         
