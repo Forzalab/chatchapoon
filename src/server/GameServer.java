@@ -93,7 +93,7 @@ public class GameServer {
 
                     // enemy stuff
                     if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                        gameState.spawnWave(3);
+                        gameState.spawnWave(2);
                     gameState.updateEnemies();
 
                     // == Encode result ==
