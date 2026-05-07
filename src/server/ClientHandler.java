@@ -35,7 +35,7 @@ public class ClientHandler implements Runnable {
 
     private synchronized void addPlayer() {
         // name is managed by CH, player is id-ed by id.
-        Player player = new Player(new Position(GameServer.r.nextInt(Protocol.ARENA_HEIGHT - 1), GameServer.r.nextInt( Protocol.ARENA_WIDTH - 1)), 0, 0, playerId, Protocol.PLAYER_MAX_HP);
+        Player player = new Player(new Position(GameServer.r.nextInt(Protocol.ARENA_HEIGHT - 1 - 5) + 5, GameServer.r.nextInt(Protocol.ARENA_WIDTH - 1 - 5) + 5), 0, 0, playerId, Protocol.PLAYER_MAX_HP);
         GameServer.gameState.players.add(player);
         playerIndex = GameServer.gameState.players.indexOf(player);
         GameServer.gameState.playerIdMap.put(playerId, player);

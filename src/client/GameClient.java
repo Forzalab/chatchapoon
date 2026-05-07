@@ -30,6 +30,7 @@ public class GameClient {
     private static volatile int shift = 0; // volatile force update value for N threads potentially reading it
     private static volatile JSONObject to_render;
     private static TerminalPosition tp;
+    private static String direction = "";
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
@@ -128,6 +129,7 @@ public class GameClient {
 
     // JSONArray -> tg rendering
     private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava) { try { 
+      // direction RENDER can be oevrriden if sth gets in its way (0,0)
         for (int i = 0; i < ja.length(); i++) {
             // early returns.
             // if player not found in one msg?
@@ -139,11 +141,15 @@ public class GameClient {
             int rx = j.optInt("x", -1);
             int ry = j.optInt("y", -1);
             String avatar = ava; // for now, will customize later
-            String direction = Utility.optString(j, "direction");
+
+            // check id to parse direction
+            if (playerID.equals(Utility.optString(j, "id")))
+                direction = Utility.optString(j, "direction");
+                
             if (rx != -1 && ry != -1) {
                 tg.putString(rx, ry, avatar);
                 tg.putString(0, 0, "  ");                
-                tg.putString(0, 0, direction);
+                if (direction != null) tg.putString(0, 0, direction);
 // enforce rendering proioty later?!?!!??
             }
         }
@@ -190,7 +196,7 @@ public class GameClient {
                     to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", playerID);*/
 //                    to_render = new JSONObject().put("message", Utility.optString(j, "message"));
                 }
-                else if ("PLAYER_INFO".equals(_type)) {
+                else if ("ENTITY_STATE".equals(_type)) {
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
 			}
@@ -227,7 +233,10 @@ public class GameClient {
 
             // prepare renderer
             TextGraphics tg = screen.newTextGraphics();
-            
+            tg.setBackgroundColor(new TextColor.RGB(15,23,42));
+            TextCharacter space = new TextCharacter('.', new TextColor.RGB(15,23,42), new TextColor.RGB(15,23,42));
+            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
+
             // EVERYTHING ABOVE RUNS ONCE
             // EVERYTHING BELOW RUNS IN A LOOP
 
@@ -238,7 +247,6 @@ public class GameClient {
 
             // --- Thread 2: Render-keystroke loop ---
             while (!((!( "render".equals(to_render) && !"localhost".equals(host)) && !(!Utility.isJSONValid(join) && !"anon".equals(player_name))) && !(!("render".equals(to_render) || !Utility.isJSONValid(join)) || ("localhost".equals(host) || "anon".equals(player_name))))) {         
-                screen.clear();
                 // skip null
                 // pls check null keystroke always
                 if (to_render == null) {            
@@ -254,18 +262,16 @@ public class GameClient {
                 
                 // Render sth first
                 // all screen stuff, THEN indiv elem
-                // DOESNT WORK
-                tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-                TextCharacter space = new TextCharacter('.', new TextColor.RGB(15,23,42), new TextColor.RGB(15,23,42));
-                tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
                 tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
 
 //                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
-                if ("PLAYER_INFO".equals(Utility.optString(to_render, "type"))) {
+                if ("ENTITY_STATE".equals(Utility.optString(to_render, "type"))) {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
-                    JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));                           screen.clear();
+                    JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
+                    JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
                     if (jap != null) processPlayersArrayRender(jap, tg, "@");
                     if (jab != null) processPlayersArrayRender(jab, tg, "*");
+                    if (jae != null) processPlayersArrayRender(jae, tg, "E");  
                     screen.refresh();
                 }
 

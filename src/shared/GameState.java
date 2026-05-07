@@ -21,6 +21,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
     public HashMap<String, Player> playerIdMap = new HashMap<String, Player>();
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
+
     public Player playerById(String id) {
         return playerIdMap.get(id);
     }
@@ -146,7 +147,35 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         }
         waveNumber++;
     }        
-    
+    public synchronized void updateEnemies() {
+        // O(enemies * players) not gud as Quadtree
+        // but fuck Quadtree
+        int minDist = Protocol.ARENA_HEIGHT * Protocol.ARENA_WIDTH;
+        int stepX = 0, stepY = 0;
+        Player pMinDist;
+        for (Enemy e : enemies) {
+            // nearest player to follow
+            for (Player p : players) {
+                Position pe = e.pos, pp = p.pos;
+                int distX = pe.getRenderX() - pp.getRenderX();
+                int distY = pe.getRenderY() - pp.getRenderY();
+                int distXT = (distX * (-1)) % Protocol.ARENA_WIDTH;
+                int distYT = (distY * (-1)) % Protocol.ARENA_HEIGHT;
+                int realDistX = (Math.abs(distX) < Math.abs(distXT)) ? distX : distXT;
+                int realDistY = (Math.abs(distY) < Math.abs(distYT)) ? distY : distYT;
+                int dist = (int)Math.round(Math.sqrt(Math.pow(realDistX, 2.0) + Math.pow(realDistY, 2)));
+                if (minDist > dist) {
+                    minDist = dist;
+                    stepX = (int)Math.signum(realDistX);
+                    stepY = (int)Math.signum(realDistY);
+                    pMinDist = p;
+                }
+            }
+            // do follow the player
+            e.pos.iHaveValidatedB4Setting();
+            e.pos.accum(stepY * 0.1f, stepX * 0.1f);
+        }
+    }
     public GameState() {
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
