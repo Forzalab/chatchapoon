@@ -117,6 +117,26 @@ public class GameClient {
         }
     }
 
+    // JSONArray -> tg rendering
+    private static synchronized void processPlayersArrayRender(JSONArray ja, TextGraphics tg) {
+        for (int i = 0; i < ja.length(); i++) {
+            // early returns.
+            // if player not found in one msg?
+            // tough luck, ask the server what it sent lol
+            // as THIS player must be present in the server's `clients` list! invariant.
+            if (ja.getJSONObject(i) == null) continue;
+            JSONObject j = ja.getJSONObject(i);
+            int rx = j.optInt("x", -1);
+            int ry = j.optInt("y", -1);
+            String avatar = Utility.optString(j, "avatar");
+            String direction = Utility.optString(j, "direction");
+            if (rx != -1 && ry != -1) {
+                tg.putString(rx, ry, avatar);
+                tg.putString(0, 0, direction);
+            }
+        }
+    }
+    
     private static synchronized void processServerBroadcast(BufferedReader reader, TextGraphics tg) {
         String line = "";
         try {
@@ -152,29 +172,8 @@ public class GameClient {
 //                    to_render = new JSONObject().put("message", Utility.optString(j, "message"));
                 }
                 else if ("PLAYER_INFO".equals(_type)) {
-                    JSONObject jao = new JSONObject(line);
-                    JSONArray ja = new JSONArray(jao.getJSONArray("players"));
-                    for (int i = 0; i < ja.length() + 1 ; i++) {
-                        // early returns.
-                        // if player not found in one msg?
-                        // tough luck, ask the server what it sent lol
-                        // as THIS player must be present in the server's `clients` list! invariant.
-                        if (i == ja.length()) return;
-                        else if (ja.getJSONObject(i) == null) continue;
-                        else if (playerID.equals(Utility.optString(ja.getJSONObject(i), "id"))) {
-                            j = ja.getJSONObject(i);
-                            break;
-                        }
-                    }
-                    
-                    String _playerId = Utility.optString(j, "playerId");
-                    to_render = new JSONObject().put("avatar", "@").put("x", j.optInt("x", 0)).put("y", j.optInt("y", 0)).put("direction", Utility.optString(j, "direction")).put("type", _type);
+                    to_render = new JSONObject(line); // shift handling onto render thread
                 }
-                // not ideal putting null here
-                // we can add other stuff later
-                // but works, for-now™
-//              if (reader.readLine() == null)
-//                    throw new Exception("Connection closed unexpectedly");
 			}
         } catch (Exception e) {
             closeClient();
@@ -236,17 +235,10 @@ public class GameClient {
                 // Render sth first
 //                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
                 if ("PLAYER_INFO".equals(Utility.optString(to_render, "type"))) {
-                    int rx = to_render.optInt("x", -1);
-                    int ry = to_render.optInt("y", -1);
-                    String avatar = Utility.optString(to_render, "avatar");
-                    String direction = Utility.optString(to_render, "direction");
-                    if (rx != -1 && ry != -1) {
-                        tg.putString(rx, ry, avatar);
-                        tg.putString(0, 0, direction);
-                    }
+                    JSONArray ja = new JSONArray(to_render.getJSONArray("players"));
+                    processPlayersArrayRender(ja, tg);
                 }
 
-                
                 KeyStroke keystroke = screen.pollInput();
                 // pls check null keystroke always
                 if (keystroke == null) {            
