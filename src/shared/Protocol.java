@@ -34,6 +34,5 @@ public class Protocol {
     public static final int PLAYER_HP_MAX = 3;
 
     public static final int BULLET_LIFETIME = 300;
-
     public static final int WAVE_INTERVAL = 300;
 }

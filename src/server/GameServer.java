@@ -93,7 +93,7 @@ public class GameServer {
 
                     // enemy stuff
                     if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                        gameState.spawnWave(5);
+                        gameState.spawnWave(3);
                     gameState.updateEnemies();
 
                     // == Encode result ==
@@ -103,42 +103,40 @@ public class GameServer {
                     // country where it came from
                     // broadcast PLAYER STATUS
                     JSONObject stateArrayJSON = new JSONObject();
-                    JSONArray stateArray = new JSONArray();
+                    JSONArray bulletArray = new JSONArray(), playerArray = new JSONArray(), enemyArray = new JSONArray();           
                     stateArrayJSON.put("type", "ENTITY_STATE");
                     
                     // TEMPORSRY!!!!!!!
                     // Bullet
-                    JSONArray bulletArray = new JSONArray();
-                    for (Bullet b : gameState.bullets) {
+                    for (Bullet bullet : gameState.bullets) {
                         bulletArray.put(new JSONObject()
-                            .put("direction", b.direction)
-                            .put("x", b.pos.getRenderX())
-                            .put("y", b.pos.getRenderY()));
+                        .put("direction", bullet.direction)
+                        .put("x", bullet.pos.getRenderX())
+                        .put("y", bullet.pos.getRenderY()));
                     }
-                    stateArrayJSON.put("bullets", bulletArray);
                     
                     // player info
                     for (Player player : gameState.players) {
-                        JSONObject playerState = new JSONObject();
-                        playerState.put("id", player.id);
-                        playerState.put("x", player.pos.getRenderX());
-                        playerState.put("y", player.pos.getRenderY());
-                        playerState.put("hp", player.hp.getHP());
-                        playerState.put("hp_max", player.hp._hpMax);
-                        playerState.put("direction", player.direction.toString());
-                        stateArray.put(playerState);
+                        playerArray.put(new JSONObject()
+                        .put("id", player.id)
+                        .put("x", player.pos.getRenderX())
+                        .put("y", player.pos.getRenderY())
+                        .put("hp", player.hp.getHP())
+                        .put("hp_max", player.hp._hpMax)
+                        .put("direction", player.direction));
                     }
-                    stateArrayJSON.put("players", stateArray);
-                    
+                                        
                     // enemy info
                     for (Enemy enemy : gameState.enemies) {
-                        JSONObject enemyState = new JSONObject();
-                        enemyState.put("id", enemy.id);
-                        enemyState.put("x", enemy.pos.getRenderX());
-                        enemyState.put("y", enemy.pos.getRenderY());
-                        stateArray.put(enemyState);
+                        enemyArray.put(new JSONObject()
+                        .put("id", enemy.id)
+                        .put("x", enemy.pos.getRenderX())
+                        .put("y", enemy.pos.getRenderY()));
                     }
-                    stateArrayJSON.put("enemies", stateArray);
+
+                    stateArrayJSON.put("bullets", bulletArray);
+                    stateArrayJSON.put("players", playerArray);              
+                    stateArrayJSON.put("enemies", enemyArray);
 
                     // broadcast entities
                     broadcastAll(stateArrayJSON);

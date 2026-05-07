@@ -142,7 +142,9 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
                 wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
                 wx = 0;
             } 
-            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, "COPS", 0);
+
+            float rSpeed = (r.nextInt(10 - 4) + 4) * 0.01f;
+            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, "COPS", 0, rSpeed);
             enemies.add(e);            
         }
         waveNumber++;
@@ -150,30 +152,32 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public synchronized void updateEnemies() {
         // O(enemies * players) not gud as Quadtree
         // but fuck Quadtree
-        int minDist = Protocol.ARENA_HEIGHT * Protocol.ARENA_WIDTH;
-        int stepX = 0, stepY = 0;
-        Player pMinDist;
         for (Enemy e : enemies) {
+            int minDist = Protocol.ARENA_HEIGHT * Protocol.ARENA_WIDTH;
+            int stepX = 0, stepY = 0;
+            Player pMinDist;
             // nearest player to follow
             for (Player p : players) {
                 Position pe = e.pos, pp = p.pos;
-                int distX = pe.getRenderX() - pp.getRenderX();
-                int distY = pe.getRenderY() - pp.getRenderY();
-                int distXT = (distX * (-1)) % Protocol.ARENA_WIDTH;
-                int distYT = (distY * (-1)) % Protocol.ARENA_HEIGHT;
-                int realDistX = (Math.abs(distX) < Math.abs(distXT)) ? distX : distXT;
-                int realDistY = (Math.abs(distY) < Math.abs(distYT)) ? distY : distYT;
-                int dist = (int)Math.round(Math.sqrt(Math.pow(realDistX, 2.0) + Math.pow(realDistY, 2)));
+                int dX = pe.getRenderX() - pp.getRenderX();
+                int dY = pe.getRenderY() - pp.getRenderY();
+                int d1X = Utility.mod(dX, Protocol.ARENA_WIDTH);
+                int d1Y = Utility.mod(dY, Protocol.ARENA_HEIGHT);
+                int d2X = Utility.mod(-dX, Protocol.ARENA_WIDTH);
+                int d2Y = Utility.mod(-dY, Protocol.ARENA_HEIGHT);
+                int distX = (Math.abs(d1X) < Math.abs(d2X)) ? dX : -dX;
+                int distY = (Math.abs(d1Y) < Math.abs(d2Y)) ? dY : -dY;
+                int dist = (int)Math.round(Math.sqrt(Math.pow(distX, 2.0) + Math.pow(distY, 2)));
                 if (minDist > dist) {
                     minDist = dist;
-                    stepX = (int)Math.signum(realDistX);
-                    stepY = (int)Math.signum(realDistY);
+                    stepX = (int)Math.signum(distX);
+                    stepY = (int)Math.signum(distY);
                     pMinDist = p;
                 }
             }
             // do follow the player
             e.pos.iHaveValidatedB4Setting();
-            e.pos.accum(stepY * 0.1f, stepX * 0.1f);
+            e.pos.accum(stepY * e.speed, stepX * e.speed);
         }
     }
     public GameState() {
