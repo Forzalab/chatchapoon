@@ -74,6 +74,7 @@ public class GameServer {
 
                     // GameState placeholder, do sth pls *poke stick* :[
                     for (Bullet bullet : gameState.bullets) {
+                        bullet.pos.iHaveValidatedB4Setting();
                         if (bullet.timeLeft > 0) {
                             bullet.pos.accum(bullet.vx, bullet.vy);
                             bullet.timeLeft--;

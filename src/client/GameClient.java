@@ -56,8 +56,8 @@ public class GameClient {
         try {
             screen.setCursorPosition(tp);
             screen.stopScreen();
-            writer.close();
-            reader.close();
+            try { writer.close(); } catch (Exception e) {}
+            try { reader.close(); } catch (Exception e) {}
             socket.close();
         } catch (Exception e) {
             e.printStackTrace();
