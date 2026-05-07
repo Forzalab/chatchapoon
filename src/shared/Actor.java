@@ -11,9 +11,6 @@ public class Actor extends Entity {
     public final String id;
     public final String type;
 */
-    public enum Direction {
-        N, NE, E, SE, S, SW, W, NW
-    };
 
     public class HP {
         private int _hp;
@@ -50,7 +47,7 @@ public class Actor extends Entity {
 
         // VERY BAD. have to track 2 fucntion together. 
         // mut add soem form of takeDamge() somehow.
-        private synchronized void triggerRespawn(Boolean will_respawn) {
+        public synchronized void triggerRespawn(Boolean will_respawn) {
             deathTimer = (!will_respawn) ? Protocol.DEATH_COOLDOWN_PERM : Protocol.DEATH_COOLDOWN;
         }
 
@@ -68,7 +65,6 @@ public class Actor extends Entity {
         }
     }
 
-    public Direction direction = Direction.N;
     public volatile HP hp;
     
     Actor(Position pos, float vx, float vy, String type, String id, int hpMax) {

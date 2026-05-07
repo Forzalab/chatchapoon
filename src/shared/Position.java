@@ -7,7 +7,7 @@ public class Position {
     private volatile float accumx, accumy;
     private volatile boolean validated = false;
 
-    public Position(int x, int y) {
+    public Position(int y, int x) {
         this.x = x;
         this.y = y;
         accumx = 0;
@@ -15,7 +15,7 @@ public class Position {
     }
     
     // note to future self: VALIDATE B4 SETTING COORDS!!!
-    public synchronized void accum(float dx, float dy) {
+    public synchronized void accum(float dy, float dx) {
         checker();
 
         // processs x-axis
@@ -38,7 +38,7 @@ public class Position {
 
     // override xy
     // 0ls only call at respawn
-    public synchronized void set(float x, float y) {
+    public synchronized void set(float y, float x) {
         this.x = (int)x;
         this.y = (int)y;
         accumx = 0;
@@ -49,12 +49,11 @@ public class Position {
 
     private void checker() {
         try {
-            if (validated == false)
-                throw new Exception("");
-            else validated = true;
+            if (validated == false) throw new Exception("");
         }
         catch (Exception e) {
             System.out.println("Exception caught at... u'know what? dumbass, u didnt validate sh*t b4 setting value, didnt u? run iHaveValidatedB4Setting() as a signature.");
+            System.exit(0);
         }
     }
     
@@ -63,11 +62,11 @@ public class Position {
     }
 
     // no wall collsion. ALL COLLISIKN R BASED ON WHATS ON SCREEN
-    public int getRenderX() {
+    public synchronized int getRenderX() {
         return x;
     }
 
-    public int getRenderY() {
+    public synchronized int getRenderY() {
         return y;
     }
 }

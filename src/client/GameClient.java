@@ -29,7 +29,8 @@ public class GameClient {
     private static Screen screen;
     private static volatile int shift = 0; // volatile force update value for N threads potentially reading it
     private static volatile JSONObject to_render;
-
+    private static TerminalPosition tp;
+    
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
     
@@ -45,11 +46,28 @@ public class GameClient {
         put(KeyStroke.fromString("a"), "LEFT");
         put(KeyStroke.fromString("s"), "DOWN");
         put(KeyStroke.fromString("d"), "RIGHT");
+        put(KeyStroke.fromString("<Up>"), "UP");
+        put(KeyStroke.fromString("<Left>"), "LEFT");
+        put(KeyStroke.fromString("<Down>"), "DOWN");
+        put(KeyStroke.fromString("<Right>"), "RIGHT");
         put(KeyStroke.fromString("q"), "ROTATE_CCW");
         put(KeyStroke.fromString("e"), "ROTATE_CW");
         put(KeyStroke.fromString("<Space>"), "SHOOT");
+        put(KeyStroke.fromString("<Esc>"), "PING");
     }};
 
+    private static void closeClient() {
+        try {
+            screen.setCursorPosition(tp);
+            screen.stopScreen();
+            try { writer.close(); } catch (Exception e) {}
+            try { reader.close(); } catch (Exception e) {}
+            socket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     private static void draw_unfit_screen() {
         try {
             TextGraphics tg = screen.newTextGraphics();
@@ -70,11 +88,13 @@ public class GameClient {
             }
 
             // cease
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.exit(0);
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
-            System.out.println("Exception caught GameClient unfit_screen: " + e);
+            closeClient();
+            System.out.println("Exception caught GameClient unfit_screen: " + e);          
+            e.printStackTrace();
+            System.exit(0);
         }
     }
 
@@ -91,6 +111,7 @@ public class GameClient {
             rows = sz.getRows();
 
             // cleanup screen features
+            tp = screen.getCursorPosition();
             screen.clear();
             screen.setCursorPosition(null); // hides cursor
 
@@ -98,12 +119,44 @@ public class GameClient {
                 draw_unfit_screen();
             }
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.out.println("Exception caught GameClient lanterna_init(): " + e);
+            e.printStackTrace();
+            System.exit(0);
         }
     }
 
-    private static synchronized void processServerBroadcast(BufferedReader reader, TextGraphics tg) {
+    // JSONArray -> tg rendering
+    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava) { try { 
+        for (int i = 0; i < ja.length(); i++) {
+            // early returns.
+            // if player not found in one msg?
+            // tough luck, ask the server what it sent lol
+            // as THIS player must be present in the server's `clients` list! invariant.
+            if (ja.getJSONObject(i) == null) continue;
+            JSONObject j = ja.getJSONObject(i);
+            if (j == null) continue;
+            int rx = j.optInt("x", -1);
+            int ry = j.optInt("y", -1);
+            String avatar = ava; // for now, will customize later
+            String direction = Utility.optString(j, "direction");
+            if (rx != -1 && ry != -1) {
+                tg.putString(rx, ry, avatar);
+                tg.putString(0, 0, "  ");                
+                tg.putString(0, 0, direction);
+// enforce rendering proioty later?!?!!??
+            }
+        }
+        
+        } catch (Exception e) {
+            closeClient();
+            System.out.println("Exception caught: processPlayersArrayRender " + e);
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+    
+    private static void processServerBroadcast(BufferedReader reader, TextGraphics tg) {
         String line = "";
         try {
             while ((line = reader.readLine()) != null) {
@@ -120,39 +173,32 @@ public class GameClient {
                         tg.putString(cols/5, rows/2+1, "Press [ESC] to quit client.");
                         screen.refresh();
                     } while (keystroke != null && keystroke.getKeyType() == KeyType.Escape);
-                    try { screen.stopScreen(); } catch (IOException ioe) {}
+                    closeClient();
+                }
+                else if ("JOIN_ACK".equals(_type)) {
+                    // recieve
+                    String key = KEYBIND_MAP.get(KeyStroke.fromString("<Esc>"));
+                    String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
+                    writer.println(sendMsg);
                 }
                 else if ("STATE".equals(_type)) {
-/*                    int _color = j.optInt("color", 60);
-                    to_render = "[SERVER] " + _type + " | " + _playerId + " | " + _color;
-                    shift++;*/
+/*                    if (!playerID.equals(Utility.optString(j, "id"))) continue;;
+                    int _color = j.optInt("color", 60);
+                    to_render = "[SERVER] " + _type + " | " + playerID + " | " + _color;
+                    shift++;
                     String _playerId = Utility.optString(j, "playerId");
-                    to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", _playerId);
+                    to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", playerID);*/
+//                    to_render = new JSONObject().put("message", Utility.optString(j, "message"));
                 }
                 else if ("PLAYER_INFO".equals(_type)) {
-                    JSONObject jao = new JSONObject(line);
-                    JSONArray ja = new JSONArray(jao.getJSONArray("players"));
-                    
-                    for (int i = 0; i < ja.length() + 1 ; i++) {
-                        // early returns.
-                        // if player not found in one msg?
-                        // tough luck, ask the server what it sent lol
-                        // as THIS player must be present in the server's `clients` list!
-                        if (i == ja.length()) return;
-                        else if (ja.getJSONObject(i) == null) continue;
-                        else if (playerID.equals(Utility.optString(ja.getJSONObject(i), "id"))) {
-                            j = ja.getJSONObject(i);
-                            break;
-                        }
-                    }
-                    
-                    String _playerId = Utility.optString(j, "playerId");
-                    to_render = new JSONObject().put("avatar", "@").put("x", j.optInt("x", 0)).put("y", j.optInt("y", 0)).put("direction", Utility.optString(j, "direction")).put("type", _type);
+                    to_render = new JSONObject(line); // shift handling onto render thread
                 }
 			}
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.out.println("Exception caught GameClient listener thread: " + e);
+            e.printStackTrace();
+            System.exit(0);
         }
     }
     
@@ -194,21 +240,28 @@ public class GameClient {
 //            while (!((!(to_render.equals("render") && !host.equals("localhost")) && !(!Utility.isJSONValid(join) && !player_name.equals("anon"))) && !(!(to_render.equals("render") || !Utility.isJSONValid(join)) || (host.equals("localhost") || player_name.equals("anon"))))) {
               while (true) { 
                 // skip null
-                if (to_render == null) continue;
-                
-                // Render sth first
-                //    tg.putString(cols/5, shift%rows, to_render);
-                if (Utility.optString(to_render, "type").equals("PLAYER_INFO")) {
-                    int rx = to_render.optInt("x", -1);
-                    int ry = to_render.optInt("y", -1);
-                    String avatar = Utility.optString(to_render, "avatar");
-                    String direction = Utility.optString(to_render, "direction");
-                    if (rx != -1 && ry != -1) {
-                        tg.putString(rx, ry, avatar);
-                        tg.putString(0, 0, direction);
-                    }
+                // pls check null keystroke always
+                if (to_render == null) {            
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
+                else if (to_render.isEmpty()) {            
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
                 }
                 
+                // Render sth first
+//                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
+                if ("PLAYER_INFO".equals(Utility.optString(to_render, "type"))) {
+                    JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
+                    JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));                           screen.clear();
+                    if (jap != null) processPlayersArrayRender(jap, tg, "@");
+                    if (jab != null) processPlayersArrayRender(jab, tg, "*");
+                    screen.refresh();
+                }
+
                 KeyStroke keystroke = screen.pollInput();
                 // pls check null keystroke always
                 if (keystroke == null) {            
@@ -222,12 +275,11 @@ public class GameClient {
                     String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
                     writer.println(discnt);
 //                    listener.interrupt();
-                    try { screen.stopScreen(); } catch (IOException ioe) {}
-                    socket.close();
                     break;
                 }
                 
                 // Register and send out key if not disconnect
+                // wont send anything if it isnt a valid mapped key
                 String key = KEYBIND_MAP.getOrDefault(keystroke, "");
                 
                 // Prevent accidental DDOS sending keys
@@ -239,10 +291,15 @@ public class GameClient {
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
             }
-            
+            // Closing action
+            closeClient();
+            System.exit(0);
+
         } catch (Exception e) {
-            try { screen.stopScreen(); } catch (IOException ioe) {}
+            closeClient();
             System.out.println("Exception caught GameClient main(): " + e);
+            e.printStackTrace();
+            System.exit(0);
         }
     }
 }

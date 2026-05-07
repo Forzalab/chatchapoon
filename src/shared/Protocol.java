@@ -30,5 +30,7 @@ public class Protocol {
     public static final float DRIFTER_SINE_FREQ = 0.15f;
     public static final int DEATH_COOLDOWN = 60; // instant gratification 3s
     public static final int DEATH_COOLDOWN_PERM = -4968; // aptx idk
-    public static final int PLAYER_MAX_HP = 300;
+    public static final int PLAYER_MAX_HP = 3;
+
+    public static final int BULLET_LIFETIME = 300;
 }

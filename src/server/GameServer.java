@@ -41,6 +41,7 @@ public class GameServer {
            // game loop here ig
            // indirection to GameState
            System.out.println("[" + authorID + "] sent key: " + cmd);
+           gameState.alterState(cmd, authorID);
     }
     
     // selective filter done at cli-level
@@ -72,12 +73,35 @@ public class GameServer {
                     processIncomingQueue();
 
                     // GameState placeholder, do sth pls *poke stick* :[
-
+                    for (Bullet bullet : gameState.bullets) {
+                        bullet.pos.iHaveValidatedB4Setting();
+                        if (bullet.timeLeft > 0) {
+                            bullet.pos.accum(bullet.vy, bullet.vx);
+                            bullet.timeLeft--;
+                        }
+                        else
+                            // hide corpses for now
+                            bullet.pos.set(-69, -420);
+                    }
+                    
                     // after state mutate, send it back to the
                     // country where it came from
                     // broadcast PLAYER STATUS
                     JSONObject playerStateArrayJSON = new JSONObject();
                     JSONArray playerStateArray = new JSONArray();
+
+                    // TEMPORSRY!!!!!!!
+                    JSONArray bulletArray = new JSONArray();
+                    for (Bullet b : gameState.bullets) {
+                        bulletArray.put(new JSONObject()
+                            .put("direction", b.direction)
+                            .put("x", b.pos.getRenderX())
+                            .put("y", b.pos.getRenderY()));
+                    }
+                    
+                    playerStateArrayJSON.put("bullets", bulletArray);
+                    
+                    // player info
                     for (Player player : gameState.players) {
                         JSONObject playerState = new JSONObject();
                         playerState.put("id", player.id);
@@ -103,6 +127,7 @@ public class GameServer {
                     Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);
+                e.printStackTrace();
             }}}).start();
 
             while (true) {
@@ -113,6 +138,7 @@ public class GameServer {
             }
         } catch (Exception e) {
             System.out.println("Exception caught GameServer socket main thread: " + e);
+            e.printStackTrace();
         }
     }
 }

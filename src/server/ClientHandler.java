@@ -28,19 +28,22 @@ public class ClientHandler implements Runnable {
 
     // "push" a msg line into writer
     public synchronized void send(String msg) {
+        if (writer == null) return;
         if (writer != null) writer.println(msg);
         if (writer.checkError()) writer.flush();
     }
 
     private synchronized void addPlayer() {
         // name is managed by CH, player is id-ed by id.
-        Player player = new Player(new Position(GameServer.r.nextInt(Protocol.ARENA_WIDTH), GameServer.r.nextInt( Protocol.ARENA_HEIGHT)), 0, 0, playerId, Protocol.PLAYER_MAX_HP);
+        Player player = new Player(new Position(GameServer.r.nextInt(Protocol.ARENA_HEIGHT), GameServer.r.nextInt( Protocol.ARENA_WIDTH)), 0, 0, playerId, Protocol.PLAYER_MAX_HP);
         GameServer.gameState.players.add(player);
         playerIndex = GameServer.gameState.players.indexOf(player);
+        GameServer.gameState.playerIdMap.put(playerId, player);
+        // colorTaken handling
     }
 
     private synchronized void removePlayer() {
-        GameServer.gameState.players.remove(playerIndex);
+        GameServer.gameState.players.removeIf(p -> p.id.equals(playerId));
     }
     
     public void run() {
@@ -86,6 +89,7 @@ public class ClientHandler implements Runnable {
         } finally {
             GameServer.clients.remove(this);
             removePlayer();
+            GameServer.gameState.playerIdMap.remove(playerId);
             try { socket.close(); } catch (IOException ignored) {}
         }
     }
