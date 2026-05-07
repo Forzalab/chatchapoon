@@ -41,6 +41,7 @@ public class GameServer {
            // game loop here ig
            // indirection to GameState
            System.out.println("[" + authorID + "] sent key: " + cmd);
+           gameState.alterState(cmd, authorID);
     }
     
     // selective filter done at cli-level

@@ -30,7 +30,7 @@ public class Entity {
     public final String id;
     public final String type;
     public volatile Avatar avatar;
-    
+        
     Entity(Position pos, float vx, float vy, String type, String id) {
        this.pos = pos;
        this.vx = vx;
@@ -38,4 +38,7 @@ public class Entity {
        this.type = type;
        this.id = id;
     }
+    
+    public static final Entity nullEntity = new Entity(new Position(-420, -69), 0.0f, 0.0f, "", "");
+
 }
