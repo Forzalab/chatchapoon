@@ -140,6 +140,7 @@ public class GameClient {
             if (rx != -1 && ry != -1) {
                 tg.putString(rx, ry, avatar);
                 tg.putString(0, 0, direction);
+// enforce rendering proioty later?!?!!??
             }
         }
         screen.refresh(); // !!!! would have problem if render anything else other than player

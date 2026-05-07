@@ -25,7 +25,17 @@ public class Entity {
     }
     
     public enum Direction {
-        N, NE, E, SE, S, SW, W, NW, NONE
+        N(0), NE(1), E(2), SE(3), S(4), SW(5), W(6), NW(7), NONE(-1);
+        private final int val;
+        private Direction(int v) { val = v; }
+        public int getVal() { return val; }
+        private static final Direction[] vals = values();
+        public Direction next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+        public Direction prev() {
+            return vals[(this.ordinal() - 1 + vals.length) % vals.length];
+        }
     };
         
     public volatile Position pos;
@@ -33,7 +43,7 @@ public class Entity {
     public volatile float vy;
     public final String id;
     public final String type;
-    public final Direction direction;
+    public Direction direction;
     public volatile Avatar avatar;
     
     Entity(Position pos, float vx, float vy, String type, String id) {
@@ -42,7 +52,7 @@ public class Entity {
        this.vy = vy;
        this.type = type;
        this.id = id;
-       this.direction = Direction.NONE; // set direction for urself
+       this.direction = Direction.N; // set direction for urself
     }
     
     public static final Entity nullEntity = new Entity(new Position(-420, -69), 0.0f, 0.0f, "", "");

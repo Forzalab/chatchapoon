@@ -80,11 +80,19 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         Entity.Direction d = e.direction;  // dont change direction ordering pls
         if (d == Entity.Direction.NONE) return;
         
-        float speed = (d.ordinal() % 2 == 0) ? Protocol.BULLET_CARDINAL : Protocol.BULLET_DIAGONAL;
-        float vx = VX[d.ordinal()] * speed;
-        float vy = VY[d.ordinal()] * speed;
+        float speed = (d.getVal() % 2 == 0) ? Protocol.BULLET_CARDINAL : Protocol.BULLET_DIAGONAL;
+        float vx = VX[d.getVal()] * speed;
+        float vy = VY[d.getVal()] * speed;
         
         Bullet b = new Bullet(e.pos, vx, vy, registerNewId("bullet"), r.nextInt(15) + 25, e.id, 2);
+    }
+
+    public synchronized void rotate(Entity e, String cmd) {
+        for (Entity.Direction dir : Entity.Direction.values()) { if (dir.equals(e.direction)) {
+            if ("ROTATE_CW".equals(cmd)) e.direction = dir.next();
+            else if ("ROTATE_CCW".equals(cmd)) e.direction = dir.prev();
+            break;
+        }}
     }
     
     public synchronized void alterState(String cmd, String authorID) {
@@ -102,8 +110,12 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
         if (entity == Entity.nullEntity) return;
 
-        if (moveCmds.contains(cmd)) shiftPos(cmd, entity);
-        else if ("SHOOT".equals(cmd)) shootFrom(entity);
+        if (moveCmds.contains(cmd))
+            shiftPos(cmd, entity);
+        else if ("SHOOT".equals(cmd))
+            shootFrom(entity);
+        else if ("ROTATE_CW".equals(cmd) || "ROTATE_CCW".equals(cmd))
+            rotate(entity, cmd);
    }
 
         
