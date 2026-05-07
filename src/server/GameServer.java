@@ -104,6 +104,7 @@ public class GameServer {
                     Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);
+                e.printStackTrace();
             }}}).start();
 
             while (true) {
@@ -114,6 +115,7 @@ public class GameServer {
             }
         } catch (Exception e) {
             System.out.println("Exception caught GameServer socket main thread: " + e);
+            e.printStackTrace();
         }
     }
 }

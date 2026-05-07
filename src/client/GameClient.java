@@ -59,7 +59,9 @@ public class GameClient {
             writer.close();
             reader.close();
             socket.close();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     private static void draw_unfit_screen() {
@@ -86,7 +88,9 @@ public class GameClient {
             System.exit(0);
         } catch (Exception e) {
             closeClient();
-            System.out.println("Exception caught GameClient unfit_screen: " + e);                       System.exit(0);
+            System.out.println("Exception caught GameClient unfit_screen: " + e);          
+            e.printStackTrace();
+            System.exit(0);
         }
     }
 
@@ -113,12 +117,13 @@ public class GameClient {
         } catch (Exception e) {
             closeClient();
             System.out.println("Exception caught GameClient lanterna_init(): " + e);
+            e.printStackTrace();
             System.exit(0);
         }
     }
 
     // JSONArray -> tg rendering
-    private static synchronized void processPlayersArrayRender(JSONArray ja, TextGraphics tg) {
+    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg) {
         for (int i = 0; i < ja.length(); i++) {
             // early returns.
             // if player not found in one msg?
@@ -126,9 +131,10 @@ public class GameClient {
             // as THIS player must be present in the server's `clients` list! invariant.
             if (ja.getJSONObject(i) == null) continue;
             JSONObject j = ja.getJSONObject(i);
+            if (j == null) continue;
             int rx = j.optInt("x", -1);
             int ry = j.optInt("y", -1);
-            String avatar = Utility.optString(j, "avatar");
+            String avatar = "@"; // for now, will customize later
             String direction = Utility.optString(j, "direction");
             if (rx != -1 && ry != -1) {
                 tg.putString(rx, ry, avatar);
@@ -137,7 +143,7 @@ public class GameClient {
         }
     }
     
-    private static synchronized void processServerBroadcast(BufferedReader reader, TextGraphics tg) {
+    private static void processServerBroadcast(BufferedReader reader, TextGraphics tg) {
         String line = "";
         try {
             while ((line = reader.readLine()) != null) {
@@ -178,6 +184,7 @@ public class GameClient {
         } catch (Exception e) {
             closeClient();
             System.out.println("Exception caught GameClient listener thread: " + e);
+            e.printStackTrace();
             System.exit(0);
         }
     }
@@ -236,7 +243,7 @@ public class GameClient {
 //                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
                 if ("PLAYER_INFO".equals(Utility.optString(to_render, "type"))) {
                     JSONArray ja = new JSONArray(to_render.getJSONArray("players"));
-                    processPlayersArrayRender(ja, tg);
+                    if (ja != null) processPlayersArrayRender(ja, tg);
                 }
 
                 KeyStroke keystroke = screen.pollInput();
@@ -275,6 +282,7 @@ public class GameClient {
         } catch (Exception e) {
             closeClient();
             System.out.println("Exception caught GameClient main(): " + e);
+            e.printStackTrace();
             System.exit(0);
         }
     }
