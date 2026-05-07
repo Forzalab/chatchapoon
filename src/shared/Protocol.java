@@ -3,8 +3,8 @@ package shared;
 public class Protocol {
     public static final int PORT = 4267;
     public static final int TICK_MS = 50;
-    public static int ARENA_WIDTH = 60; // can chsnge later if too small
-    public static int ARENA_HEIGHT = 21;
+    public static int ARENA_WIDTH = 96; // can chsnge later if too small
+    public static int ARENA_HEIGHT = 48;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
     public static final int MAX_PLAYERS = 20;
@@ -31,6 +31,8 @@ public class Protocol {
     public static final int DEATH_COOLDOWN = 60; // instant gratification 3s
     public static final int DEATH_COOLDOWN_PERM = -4968; // aptx idk
     public static final int PLAYER_MAX_HP = 3;
+    public static final int PLAYER_HP_MAX = 3;
 
     public static final int BULLET_LIFETIME = 300;
+    public static final int WAVE_INTERVAL = 300;
 }

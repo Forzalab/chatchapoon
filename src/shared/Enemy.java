@@ -71,10 +71,12 @@ public class Enemy extends Actor {
 */
     public String behaviourType;
     public int moveCooldownTimer;
-        
-    Enemy(Position pos, float vx, float vy, String type, String id, int hpMax, String behaviourType, int moveCooldownTimer) {
+    public final float speed;
+    
+    public Enemy(Position pos, float vx, float vy, String type, String id, int hpMax, String behaviourType, int moveCooldownTimer, float speed) {
         super(pos, vx, vy, type, id, hpMax);
         this.behaviourType = behaviourType;
         this.moveCooldownTimer = moveCooldownTimer;
+        this.speed = speed;
     }
 }

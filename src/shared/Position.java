@@ -23,14 +23,14 @@ public class Position {
         accumx += dx; // b4, is always < 1.0f
         int accumxInt = (int)accumx; // -2
         x += accumxInt; // plus naively
-        x = (((x % Protocol.ARENA_WIDTH) + Protocol.ARENA_WIDTH) % Protocol.ARENA_WIDTH); // now, wtf stackoverflow
+        x = Utility.mod(x, Protocol.ARENA_WIDTH);
         accumx -= (float)accumxInt; // -2.5 - (-2.0) = -0.5
 
         // process y-axis
         accumy += dy; // b4, is always < 1.0f
         int accumyInt = (int)accumy; // -2
         y += accumyInt; // plus naively
-        y = (((y % Protocol.ARENA_HEIGHT) + Protocol.ARENA_HEIGHT) %   Protocol.ARENA_HEIGHT); // now, wtf stackoverflow
+        y = Utility.mod(y, Protocol.ARENA_HEIGHT);
         accumy -= (float)accumyInt; // -2.5 - (-2.0) = -0.5
 
         validated = false;

@@ -26,4 +26,10 @@ public class Utility {
         }
         return true;
     }
+
+    // Source - https://stackoverflow.com/a/14997413
+    public static final int mod(int i, int n) {
+        return (i % n + n) % n;
+    }
+
 }

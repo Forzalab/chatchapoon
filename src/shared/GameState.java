@@ -21,6 +21,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
     public HashMap<String, Player> playerIdMap = new HashMap<String, Player>();
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
+
     public Player playerById(String id) {
         return playerIdMap.get(id);
     }
@@ -37,16 +38,16 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         return newId;
     }
     private int tickCounter = 0, levelTimer = Protocol.LEVEL_DURATION_TICKS, waveNumber = 0;
-    int getCurrentTick() {
+    public int getCurrentTick() {
         return tickCounter;
     }
-    int getLevelTimeLeft() {
+    public int getLevelTimeLeft() {
         return levelTimer;
     }
-    int getWaveLevel() {
+    public int getWaveLevel() {
         return waveNumber;
     }
-    void updateTick() {
+    public void updateTick() {
         tickCounter++;
         if (levelTimer > 0) levelTimer--;
         // blah tick incr stuff go here
@@ -120,12 +121,69 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             rotate(entity, cmd);
    }
 
+    public synchronized void spawnWave(int amt) {
+        // pick side -> rnd coords
+        int side = r.nextInt(3);
+        int wx = -156, wy = -751;
         
+        // 0 1 2 3 clockwise, 0 north.
+        // always subtract 1 for bounding shit
+        for (int i = 0; i < amt; i++) {
+            if (side == 0) {
+                wx = r.nextInt(Protocol.ARENA_WIDTH - 1);
+                wy = 0;
+            } else if (side == 1) {
+                wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
+                wx = Protocol.ARENA_WIDTH - 1;
+            } else if (side == 2) {
+                wx = r.nextInt(Protocol.ARENA_WIDTH - 1);
+                wy = Protocol.ARENA_HEIGHT - 1;
+            } else if (side == 3) {
+                wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
+                wx = 0;
+            } 
+
+            float rSpeed = (r.nextInt(10 - 4) + 4) * 0.01f;
+            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, "COPS", 0, rSpeed);
+            enemies.add(e);            
+        }
+        waveNumber++;
+    }        
+    public synchronized void updateEnemies() {
+        // O(enemies * players) not gud as Quadtree
+        // but fuck Quadtree
+        for (Enemy e : enemies) {
+            int minDist = Protocol.ARENA_HEIGHT * Protocol.ARENA_WIDTH;
+            int stepX = 0, stepY = 0;
+            Player pMinDist;
+            // nearest player to follow
+            for (Player p : players) {
+                Position pe = e.pos, pp = p.pos;
+                int dX = pe.getRenderX() - pp.getRenderX();
+                int dY = pe.getRenderY() - pp.getRenderY();
+                int d1X = Utility.mod(dX, Protocol.ARENA_WIDTH);
+                int d1Y = Utility.mod(dY, Protocol.ARENA_HEIGHT);
+                int d2X = Utility.mod(-dX, Protocol.ARENA_WIDTH);
+                int d2Y = Utility.mod(-dY, Protocol.ARENA_HEIGHT);
+                int distX = (Math.abs(d1X) < Math.abs(d2X)) ? dX : -dX;
+                int distY = (Math.abs(d1Y) < Math.abs(d2Y)) ? dY : -dY;
+                int dist = (int)Math.round(Math.sqrt(Math.pow(distX, 2.0) + Math.pow(distY, 2)));
+                if (minDist > dist) {
+                    minDist = dist;
+                    stepX = (int)Math.signum(distX);
+                    stepY = (int)Math.signum(distY);
+                    pMinDist = p;
+                }
+            }
+            // do follow the player
+            e.pos.iHaveValidatedB4Setting();
+            e.pos.accum(stepY * e.speed, stepX * e.speed);
+        }
+    }
     public GameState() {
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
             for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)
                 avatarMatrix[i][j] = new Entity.Avatar(' ', Entity.Avatar.Color.TRANSPARENT);
     }
-
 }
