@@ -70,6 +70,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     
     // Assuming enemies vx vy is fixed
     public synchronized void shiftPos(String cmd, Entity entity) {
+        if (entity.dead()) return;
         entity.pos.iHaveValidatedB4Setting();
         if (cmd.isEmpty()) return;
         else if ("UP".equals(cmd))
@@ -121,6 +122,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             if (authorID.equals(e.id)) entity = e;
 
         if (entity == Entity.nullEntity) return;
+        else if (entity.dead()) return;
 
         if (moveCmds.contains(cmd))
             shiftPos(cmd, entity);
@@ -193,11 +195,11 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     private void processBulletHit(Bullet bullet, Actor victim, int dmg) {
         if (!bullet.pos.equals(victim.pos)) return; // same pos?
         else if (bullet.ownerID.equals(victim.id)) return; // suicide?
-        else if (victim.hp.isDead()) return; // ded? dont hit a zombie
-        else if (bullet.timeLeft <= 0) return; // dont accidentally call a bullet that had hit
+        else if (victim.dead()) return; // ded? dont hit a zombie
+        else if (bullet.dead()) return; // dont accidentally call a bullet that had hit
         
         victim.hp.setHP(victim.hp.getHP() - bullet.damage); // e.hp -= bullet.damage;
-        bullet.timeLeft = 0;
+        bullet.timeLeft(0);
         
         // killer find and set pt
         if (!victim.hp.isDead()) return; // onyl cred pt when ded
@@ -232,7 +234,8 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         }
 
         // corpse clean-up
-//        enemies.removeIf(e -> e.hp.isDead());
+        enemies.removeIf(e -> e.dead());
+        bullets.removeIf(b -> b.dead());        
 //        players.removeIf(p -> p.hp.isDead());
 
         // -- 2. enemy hit player --

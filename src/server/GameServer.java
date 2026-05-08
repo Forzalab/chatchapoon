@@ -81,16 +81,16 @@ public class GameServer {
                 // bullet movement and death
                 for (Bullet bullet : gameState.bullets) {
                     bullet.pos.iHaveValidatedB4Setting();
-                    if (bullet.timeLeft > 0) {
+                    if (!bullet.dead()) {
                         bullet.pos.accum(bullet.vy, bullet.vx);
-                        bullet.timeLeft--;
+                        bullet.timeLeft(bullet.timeLeft() - 1);
                     }
                     else
                         // hide corpses for now
                         bullet.pos.set(-69, -420);
                 }
 
-                gameState.bullets.removeIf(b -> b.timeLeft <= 0);
+//                gameState.bullets.removeIf(b -> b.timeLeft <= 0);
                 
                 // enemy stuff
                 if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
@@ -119,7 +119,7 @@ public class GameServer {
                 // TEMPORSRY!!!!!!!
                 // Bullet
                 for (Bullet bullet : gameState.bullets) {
-                    if (bullet.timeLeft <= 0) continue;                
+                    if (bullet.dead()) continue;                
                     bulletArray.put(new JSONObject()
                     .put("direction", bullet.direction)
                     .put("type", bullet.type)        
@@ -129,7 +129,7 @@ public class GameServer {
                 
                 // player info
                 for (Player player : gameState.players) {
-                    if (player.hp.isDead()) continue;
+                    if (player.dead()) continue;
                     playerArray.put(new JSONObject()
                     .put("id", player.id)
                     .put("type", player.type)
@@ -143,7 +143,7 @@ public class GameServer {
                                     
                 // enemy info
                 for (Enemy enemy : gameState.enemies) {
-                    if (enemy.hp.isDead()) continue;                
+                    if (enemy.dead()) continue;                
                     enemyArray.put(new JSONObject()
                     .put("id", enemy.id)
                     .put("type", enemy.type)             
