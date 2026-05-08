@@ -207,12 +207,32 @@ public class GameClient {
                 else if ("ENTITY_STATE".equals(_type)) {
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
+                else if ("LEADERBOARD".equals(_type)) {
+                    to_render = new JSONObject(line);
+                }
 			}
         } catch (Exception e) {
             closeClient();
             System.out.println("Exception caught GameClient listener thread: " + e);
             e.printStackTrace();
             System.exit(0);
+        }
+    }
+
+    public static void renderLeaderboard(TextGraphics tg) {
+        screen.clear();
+        for (int i = 0; i < 15; i++) {
+            TextColor.RGB red = new TextColor.RGB(255,0,0);
+            TextColor.RGB white = new TextColor.RGB(255,255,255);          
+            TextColor.RGB frg = (i%2==0)?red:white;
+            TextColor.RGB bkg = (i%2!=0)?red:white;
+                          
+            TextCharacter space = new TextCharacter('.', bkg, bkg);
+            TextCharacter frame = new TextCharacter('!', frg, bkg);            
+            
+            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
+            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), frame);
+                            
         }
     }
     
@@ -282,7 +302,10 @@ public class GameClient {
                     if (jae != null) processPlayersArrayRender(jae, tg, "E");  
                     screen.refresh();
                 }
-
+                else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type"))) {
+                    renderLeaderboard(tg);
+                }            
+                
                 KeyStroke keystroke = screen.pollInput();
                 // pls check null keystroke always
                 if (keystroke == null) {            

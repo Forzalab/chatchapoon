@@ -4,6 +4,7 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.PriorityQueue;
 
 import org.json.*;
 import org.json.JSONObject;
@@ -16,6 +17,29 @@ public class GameServer {
     static List < ClientHandler > clients = new CopyOnWriteArrayList < ClientHandler > ();
     static GameState gameState = new GameState();    
     static Random r = new Random();
+
+    private static JSONObject getTopFive(List<Player> players) {
+        PriorityQueue<Player> prq = new PriorityQueue<>(Collections.reverseOrder());
+        // dead player also gets their trophy
+        for (Player p : players) prq.add(p);
+
+        JSONObject jao = new JSONObject()
+        .put("type", "leaderboard");
+        JSONArray ja = new JSONArray();
+
+        for (int i = 0; (i < 5 && (prq.peek() != null)); i++) {
+            Player player = prq.poll();
+            JSONObject j = new JSONObject()
+            .put("id", player.id)
+            .put("name", player.name)
+            .put("type", player.type)
+            .put("score", player.score);
+            ja.put(j);
+        }
+        
+        jao.put("players", ja);
+        return jao;
+    }
 
     static synchronized void processIncomingPlayerRequests() {
         for (ClientHandler _ch: clients) { String msg; while ((msg = _ch.incoming.poll()) != null) {
@@ -135,6 +159,7 @@ public class GameServer {
                     if (player.dead()) continue;
                     playerArray.put(new JSONObject()
                     .put("id", player.id)
+                    .put("name", player.name)
                     .put("type", player.type)
                     .put("x", player.pos.getRenderX())
                     .put("y", player.pos.getRenderY())
@@ -170,6 +195,12 @@ public class GameServer {
                 // sleep, or not if thread time exceeds 50ms
                 long end = System.currentTimeMillis();
                 Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
+
+                // if (gameState.getLevelTimeLeft() == 0) → broadcast GAME_OVER with winner (highest score) → write leaderboard.txt → (eventually) close sockets
+                // switch OVER state
+                if (gameState.getLevelTimeLeft() != 0) continue;
+                broadcastAll(getTopFive(gameState.players));
+                
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);
                 e.printStackTrace();
