@@ -200,6 +200,7 @@ public class GameServer {
                 // switch OVER state
                 if (gameState.getLevelTimeLeft() != 0) continue;
                 broadcastAll(getTopFive(gameState.players));
+                Thread.sleep(Protocol.TICK_MS * 10);
                 System.exit(0); // placeholder
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);

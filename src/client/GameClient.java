@@ -220,7 +220,7 @@ public class GameClient {
     }
 
     public static void renderLeaderboard(TextGraphics tg) {
-        screen.clear();
+//        screen.clear();
         for (int i = 0; i < 15; i++) { try {
             TextColor.RGB red = new TextColor.RGB(255,0,0);
             TextColor.RGB white = new TextColor.RGB(255,255,255);          
@@ -228,12 +228,12 @@ public class GameClient {
             TextColor.RGB bkg = (i%2!=0)?red:white;
                           
             TextCharacter space = new TextCharacter('.', bkg, bkg);
-            TextCharacter frame = new TextCharacter('!', frg, bkg);            
+            TextCharacter frame = new TextCharacter('!', frg, frg);            
             
             tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
             tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), frame);
             screen.refresh();
-            Thread.sleep(Protocol.TICK_MS);
+            Thread.sleep(Protocol.TICK_MS * 10);
         } catch (Exception e) {}}
         
         System.exit(0);
@@ -305,7 +305,7 @@ public class GameClient {
                     if (jae != null) processPlayersArrayRender(jae, tg, "E");  
                     screen.refresh();
                 }
-                else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type"))) {
+                else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
                     renderLeaderboard(tg);
                 }            
                 
