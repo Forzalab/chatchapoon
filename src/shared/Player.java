@@ -62,6 +62,6 @@ public class Player extends Actor {
 
     public Player(Position pos, float vx, float vy, String id, int hp_max) {
         super(pos, vx, vy, "player", id, hp_max);
-        this.spawnPos = pos;
+        this.spawnPos = new Position(pos.getRenderY(), pos.getRenderX());
     }
 }
