@@ -35,4 +35,5 @@ public class Protocol {
 
     public static final int BULLET_LIFETIME = 300;
     public static final int WAVE_INTERVAL = 300;
+    public static final int DESPAWN_TIMER = 2000;
 }

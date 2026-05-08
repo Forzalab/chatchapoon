@@ -154,7 +154,7 @@ public class GameClient {
 // enforce rendering proioty later?!?!!??
             }
 
-            if (j.optString("type") != "player") continue;
+            if (!"player".equals(j.optString("type"))) continue;
             String player = String.format("%-12s", Utility.optString(j, "id"));
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;

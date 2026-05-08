@@ -30,7 +30,7 @@ public class Actor extends Entity {
             }
         }
         
-        public synchronized void setHP(int hp) {
+        public synchronized HP setHP(int hp) {
             try {
                 if (_hp <= 0 && init) throw new Exception("Actor already ded, double stabbing!");
                 this._hp = (hp >= 0) ? hp : 0;
@@ -40,6 +40,7 @@ public class Actor extends Entity {
              } catch (Exception e) {
                 System.out.println("Exception caught in Actor.HP.setHP(): " + e);
              }
+             return this;             
         }
 
         public int getHP() {

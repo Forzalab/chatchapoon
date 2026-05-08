@@ -162,6 +162,9 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         // O(enemies * players) not gud as Quadtree
         // but fuck Quadtree
         for (Enemy e : enemies) {
+            if (e.despawnTimer-- <= 0)
+                e.hp.setHP(0).triggerRespawn(false);
+                
             int minDist = Protocol.ARENA_HEIGHT * Protocol.ARENA_WIDTH;
             int stepX = 0, stepY = 0;
             Player pWithMinDist;
