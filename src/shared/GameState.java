@@ -19,14 +19,22 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public List<Player> players = new CopyOnWriteArrayList<Player>();
     public List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
     public List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
-    public HashMap<String, Player> playerIdMap = new HashMap<String, Player>();
+    public ConcurrentHashMap<String, Player> playerIdMap = new ConcurrentHashMap<String, Player>();
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
+    public HashSet<String> idTaken = new HashSet<String>();
 
     public Player playerById(String id) {
         return playerIdMap.get(id);
     }
     public String registerNewId(String type) {
-        String newId = UUID.randomUUID().toString().substring(0,8);
+        String newId;
+
+        // prevent collison, like lottery level rare
+        do {
+            newId = UUID.randomUUID().toString().substring(0,8);
+        }
+        while (idTaken.contains(newId));
+        idTaken.add(newId);
         
         if ("player".equals(type)) 
             idCounter[0]++;
@@ -158,12 +166,13 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             Player pWithMinDist;
             // nearest player to follow
             for (Player p : players) {
+                if (p.hp.isDead()) continue;
                 Position pe = e.pos, pp = p.pos;
                 int distX = pp.getRenderX() - pe.getRenderX(), distY = pp.getRenderY() - pe.getRenderY();
                 if (distX >  Protocol.ARENA_WIDTH/2) distX -= Protocol.ARENA_WIDTH;
                 if (distX < -Protocol.ARENA_WIDTH/2) distX += Protocol.ARENA_WIDTH;
-                if (distY >  Protocol.ARENA_WIDTH/2) distY -= Protocol.ARENA_WIDTH;
-                if (distY < -Protocol.ARENA_WIDTH/2) distY += Protocol.ARENA_WIDTH;
+                if (distY >  Protocol.ARENA_HEIGHT/2) distY -= Protocol.ARENA_HEIGHT;
+                if (distY < -Protocol.ARENA_HEIGHT/2) distY += Protocol.ARENA_HEIGHT;
                 int dist = (int)Math.round(Math.sqrt(Math.pow(distX, 2.0) + Math.pow(distY, 2)));
                 if (minDist > dist) {
                     minDist = dist;
@@ -176,6 +185,56 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             e.pos.iHaveValidatedB4Setting();
             e.pos.accum(stepY * e.speed, stepX * e.speed);
         }
+    }
+    private void processBulletHit(Bullet bullet, Actor victim, int dmg) {
+        if (!bullet.pos.equals(victim.pos)) return; // same pos?
+        else if (bullet.ownerID.equals(victim.id)) return; // suicide?
+        else if (victim.hp.isDead()) return; // ded? dont hit a zombie
+        else if (bullet.timeLeft <= 0) return; // dont accidentally call a bullet that had hit
+        
+        victim.hp.setHP(victim.hp.getHP() - bullet.damage); // e.hp -= bullet.damage;
+        bullet.timeLeft = 0;
+        
+        // killer find and set pt
+        if (!victim.hp.isDead()) return; // onyl cred pt when ded
+
+        if (victim.type == "player")
+            victim.hp.triggerRespawn(true);
+        
+        Player bOwner = playerIdMap.get(bullet.ownerID);
+        if (bOwner == null) return;
+        bOwner.score += dmg;
+    }
+    
+    // lol wont do dispatch
+    private void processActorHit(Actor hitter, Actor victim) {
+        if (!hitter.pos.equals(victim.pos)) return; // same pos?
+        else if (hitter.id.equals(victim.id)) return; // suicide?
+        else if (victim.hp.isDead()) return; // ded? dont hit a zombie
+        
+        victim.hp.setHP(victim.hp.getHP() - 1); // e.hp -= hitter.damage;
+        
+        if (victim.hp.isDead() && victim.type == "player")
+            victim.hp.triggerRespawn(true);        
+    }
+    
+    public synchronized void processAllCollisions() {
+        // -- 1. bullet --
+        for (Bullet b : bullets) {
+            // bullet hit enemy
+            for (Enemy e : enemies) processBulletHit(b, e, 1);
+            // bullet hit player
+            for (Player p : players) processBulletHit(b, p, 10);
+        }
+
+        // corpse clean-up
+//        enemies.removeIf(e -> e.hp.isDead());
+//        players.removeIf(p -> p.hp.isDead());
+
+        // -- 2. enemy hit player --
+        for (Enemy e : enemies)
+            for (Player p : players)
+                processActorHit(e, p);
     }
     public GameState() {
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];

@@ -65,91 +65,104 @@ public class GameServer {
 
             // thread processQ THEN broadcast - SEPERATE from socket handlin'
             // wont be slow
-            new Thread(() -> {
-            while (true) { try {
-                    long start = System.currentTimeMillis();
+            new Thread(() -> { while (true) { try {
+                long start = System.currentTimeMillis();
 
-                    // == Mutate GameState ==
-                    // do sth pls *poke stick* :[
+                // == Mutate GameState ==
+                // do sth pls *poke stick* :[
 
-                    // keystroke and shit is in here
-                    // see what player needs b4 incr tick?
-                    processIncomingPlayerRequests();
+                // keystroke and shit is in here
+                // see what player needs b4 incr tick?
+                processIncomingPlayerRequests();
 
-                    // Tick increase
-                    gameState.updateTick();
-                    
-                    // bullet movement and death
-                    for (Bullet bullet : gameState.bullets) {
-                        bullet.pos.iHaveValidatedB4Setting();
-                        if (bullet.timeLeft > 0) {
-                            bullet.pos.accum(bullet.vy, bullet.vx);
-                            bullet.timeLeft--;
-                        }
-                        else
-                            // hide corpses for now
-                            bullet.pos.set(-69, -420);
+                // Tick increase
+                gameState.updateTick();
+                
+                // bullet movement and death
+                for (Bullet bullet : gameState.bullets) {
+                    bullet.pos.iHaveValidatedB4Setting();
+                    if (bullet.timeLeft > 0) {
+                        bullet.pos.accum(bullet.vy, bullet.vx);
+                        bullet.timeLeft--;
                     }
+                    else
+                        // hide corpses for now
+                        bullet.pos.set(-69, -420);
+                }
 
-                    // enemy stuff
-                    if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                        gameState.spawnWave(2);
-                    gameState.updateEnemies();
+                gameState.bullets.removeIf(b -> b.timeLeft <= 0);
+                
+                // enemy stuff
+                if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
+                    gameState.spawnWave(2);
+                gameState.updateEnemies();
 
-                    // == Encode result ==
-                    // -- NO MORE CHANGING GameState AFTER THIS --
-                    
-                    // after state mutate, send it back to the
-                    // country where it came from
-                    // broadcast PLAYER STATUS
-                    JSONObject stateArrayJSON = new JSONObject();
-                    JSONArray bulletArray = new JSONArray(), playerArray = new JSONArray(), enemyArray = new JSONArray();           
-                    stateArrayJSON.put("type", "ENTITY_STATE");
-                    
-                    // TEMPORSRY!!!!!!!
-                    // Bullet
-                    for (Bullet bullet : gameState.bullets) {
-                        bulletArray.put(new JSONObject()
-                        .put("direction", bullet.direction)
-                        .put("x", bullet.pos.getRenderX())
-                        .put("y", bullet.pos.getRenderY()));
-                    }
-                    
-                    // player info
-                    for (Player player : gameState.players) {
-                        playerArray.put(new JSONObject()
-                        .put("id", player.id)
-                        .put("x", player.pos.getRenderX())
-                        .put("y", player.pos.getRenderY())
-                        .put("hp", player.hp.getHP())
-                        .put("hp_max", player.hp._hpMax)
-                        .put("direction", player.direction));
-                    }
-                                        
-                    // enemy info
-                    for (Enemy enemy : gameState.enemies) {
-                        enemyArray.put(new JSONObject()
-                        .put("id", enemy.id)
-                        .put("x", enemy.pos.getRenderX())
-                        .put("y", enemy.pos.getRenderY()));
-                    }
+                // now, pos uodated, we do collision check and porcess
+                gameState.processAllCollisions();
 
-                    stateArrayJSON.put("bullets", bulletArray);
-                    stateArrayJSON.put("players", playerArray);              
-                    stateArrayJSON.put("enemies", enemyArray);
+                // revive
+                for (Player p : gameState.players)
+                    p.hp.resuscitate();
+                
+                // == Encode result ==
+                // -- NO MORE CHANGING GameState AFTER THIS --
+                
+                // after state mutate, send it back to the
+                // country where it came from
+                // broadcast PLAYER STATUS
+                JSONObject stateArrayJSON = new JSONObject();
+                JSONArray bulletArray = new JSONArray();
+                JSONArray playerArray = new JSONArray();
+                JSONArray enemyArray = new JSONArray();           
+                stateArrayJSON.put("type", "ENTITY_STATE");
+                
+                // TEMPORSRY!!!!!!!
+                // Bullet
+                for (Bullet bullet : gameState.bullets) {
+                    if (bullet.timeLeft <= 0) continue;                
+                    bulletArray.put(new JSONObject()
+                    .put("direction", bullet.direction)
+                    .put("x", bullet.pos.getRenderX())
+                    .put("y", bullet.pos.getRenderY()));
+                }
+                
+                // player info
+                for (Player player : gameState.players) {
+                    if (player.hp.isDead()) continue;
+                    playerArray.put(new JSONObject()
+                    .put("id", player.id)
+                    .put("x", player.pos.getRenderX())
+                    .put("y", player.pos.getRenderY())
+                    .put("hp", player.hp.getHP())
+                    .put("hp_max", player.hp._hpMax)
+                    .put("direction", player.direction));
+                }
+                                    
+                // enemy info
+                for (Enemy enemy : gameState.enemies) {
+                    if (enemy.hp.isDead()) continue;                
+                    enemyArray.put(new JSONObject()
+                    .put("id", enemy.id)
+                    .put("x", enemy.pos.getRenderX())
+                    .put("y", enemy.pos.getRenderY()));
+                }
 
-                    // broadcast entities
-                    broadcastAll(stateArrayJSON);
+                stateArrayJSON.put("bullets", bulletArray);
+                stateArrayJSON.put("players", playerArray);              
+                stateArrayJSON.put("enemies", enemyArray);
 
-                    // broadcast GENERAL STATUS
-                    long current = System.currentTimeMillis();
-                    String staleStatus = (current - start > 300000) ? "stale serv, pls restart" : "!!! L68 GameServer.java DUMBASS !!!";
-                    JSONObject staleStatusJSON = new JSONObject().put("type", "STATE").put("message", staleStatus);
-                    broadcastAll(staleStatusJSON);
+                // broadcast entities
+                broadcastAll(stateArrayJSON);
 
-                    // sleep, or not if thread time exceeds 50ms
-                    long end = System.currentTimeMillis();
-                    Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
+                // broadcast GENERAL STATUS
+                long current = System.currentTimeMillis();
+                String staleStatus = (current - start > 300000) ? "stale serv, pls restart" : "!!! L68 GameServer.java DUMBASS !!!";
+                JSONObject staleStatusJSON = new JSONObject().put("type", "STATE").put("message", staleStatus);
+                broadcastAll(staleStatusJSON);
+
+                // sleep, or not if thread time exceeds 50ms
+                long end = System.currentTimeMillis();
+                Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);
                 e.printStackTrace();

@@ -47,6 +47,11 @@ public class Position {
         validated = false;
     }
 
+    public boolean equals(Position other) {
+        return getRenderX() == other.getRenderX() && getRenderY() ==
+other.getRenderY();
+    }
+    
     private void checker() {
         try {
             if (validated == false) throw new Exception("");

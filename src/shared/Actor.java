@@ -52,7 +52,8 @@ public class Actor extends Entity {
         }
 
         public synchronized void resuscitate() {
-            if (deathTimer > 0) return;
+            if (!isDead()) return;
+            else if (deathTimer > 0) return;
             _hp = _hpMax;
         }
         
