@@ -221,7 +221,7 @@ public class GameClient {
 
     public static void renderLeaderboard(TextGraphics tg) {
         screen.clear();
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 15; i++) { try {
             TextColor.RGB red = new TextColor.RGB(255,0,0);
             TextColor.RGB white = new TextColor.RGB(255,255,255);          
             TextColor.RGB frg = (i%2==0)?red:white;
@@ -232,8 +232,11 @@ public class GameClient {
             
             tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
             tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), frame);
-                            
-        }
+            screen.refresh();
+            Thread.sleep(Protocol.TICK_MS);
+        } catch (Exception e) {}}
+        
+        System.exit(0);
     }
     
     // main({player_name, host})

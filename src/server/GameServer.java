@@ -24,7 +24,7 @@ public class GameServer {
         for (Player p : players) prq.add(p);
 
         JSONObject jao = new JSONObject()
-        .put("type", "leaderboard");
+        .put("type", "LEADERBOARD");
         JSONArray ja = new JSONArray();
 
         for (int i = 0; (i < 5 && (prq.peek() != null)); i++) {
@@ -200,7 +200,7 @@ public class GameServer {
                 // switch OVER state
                 if (gameState.getLevelTimeLeft() != 0) continue;
                 broadcastAll(getTopFive(gameState.players));
-                
+                System.exit(0); // placeholder
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);
                 e.printStackTrace();
