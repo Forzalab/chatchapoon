@@ -101,8 +101,10 @@ public class GameServer {
                 gameState.processAllCollisions();
 
                 // revive
-                for (Player p : gameState.players)
+                for (Player p : gameState.players) {
                     p.hp.resuscitate().deathTickUp();
+                    p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
+                }
                 
                 // == Encode result ==
                 // -- NO MORE CHANGING GameState AFTER THIS --

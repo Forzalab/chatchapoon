@@ -57,6 +57,9 @@ public class Actor extends Entity {
             if (!isDead() || isDeadPerm()) return this;
             else if (deathTimer > 0) return this;
             _hp = _hpMax; dead = false;
+  //          Actor.this.pos.iHaveValidatedB4Setting();
+            // respawn
+//            Actor.this.pos.set(Actor.this.spawnPos.getRenderY(), Actor.this.spawnPos.getRenderX());
             return this;
         }
 

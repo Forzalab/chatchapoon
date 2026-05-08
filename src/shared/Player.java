@@ -52,6 +52,7 @@ public class Player extends Actor {
     
     public volatile int score = 0;
     public volatile int currency;
+    public final Position spawnPos;
 
     // <item-name, Item> to which Item has amount
     public volatile Inventory inventory;
@@ -61,5 +62,6 @@ public class Player extends Actor {
 
     public Player(Position pos, float vx, float vy, String id, int hp_max) {
         super(pos, vx, vy, "player", id, hp_max);
+        this.spawnPos = pos;
     }
 }
