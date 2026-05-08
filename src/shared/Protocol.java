@@ -10,7 +10,7 @@ public class Protocol {
     public static final int MAX_PLAYERS = 20;
 
     // for GameState
-    public static final int LEVEL_DURATION_TICKS = 3600;
+    public static final int LEVEL_DURATION_TICKS = 1800;
     public static final int SIDEBAR_WIDTH = 18;
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
@@ -34,5 +34,6 @@ public class Protocol {
     public static final int PLAYER_HP_MAX = 3;
 
     public static final int BULLET_LIFETIME = 300;
-    public static final int WAVE_INTERVAL = 100;
+    public static final int WAVE_INTERVAL = 300;
+    public static final int DESPAWN_TIMER = 2000;
 }

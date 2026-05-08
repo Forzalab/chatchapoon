@@ -50,8 +50,10 @@ public class Player extends Actor {
         }
     }
     
-    public volatile int score;
+    public volatile int score = 0;
     public volatile int currency;
+    public final Position spawnPos;
+    public final String name;
 
     // <item-name, Item> to which Item has amount
     public volatile Inventory inventory;
@@ -59,7 +61,9 @@ public class Player extends Actor {
    // no color (in Avatar)
    // no isDead, maxHP, deathTimer (in Actor.HP.isDead())
 
-    public Player(Position pos, float vx, float vy, String id, int hp_max) {
+    public Player(Position pos, float vx, float vy, String id, int hp_max, String name) {
         super(pos, vx, vy, "player", id, hp_max);
+        this.spawnPos = new Position(pos.getRenderY(), pos.getRenderX());
+        this.name = name;
     }
 }

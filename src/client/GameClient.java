@@ -130,6 +130,7 @@ public class GameClient {
     // JSONArray -> tg rendering
     private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava) { try { 
       // direction RENDER can be oevrriden if sth gets in its way (0,0)
+        shift = 0;
         for (int i = 0; i < ja.length(); i++) {
             // early returns.
             // if player not found in one msg?
@@ -152,9 +153,16 @@ public class GameClient {
                 if (direction != null) tg.putString(0, 0, direction);
 // enforce rendering proioty later?!?!!??
             }
+
+            if (!"player".equals(j.optString("type"))) continue;
+            String player = String.format("%-12s", Utility.optString(j, "id"));
+            String score = String.format("%3d", j.optInt("score", -1));
+            String display = player + score;
+            tg.putString(Protocol.ARENA_WIDTH-18, Protocol.ARENA_HEIGHT-1- shift++, display);        
         }
-        
-        } catch (Exception e) {
+            shift = 0;        
+        }
+        catch (Exception e) {
             closeClient();
             System.out.println("Exception caught: processPlayersArrayRender " + e);
             e.printStackTrace();
@@ -199,6 +207,9 @@ public class GameClient {
                 else if ("ENTITY_STATE".equals(_type)) {
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
+                else if ("LEADERBOARD".equals(_type)) {
+                    to_render = new JSONObject(line);
+                }
 			}
         } catch (Exception e) {
             closeClient();
@@ -206,6 +217,26 @@ public class GameClient {
             e.printStackTrace();
             System.exit(0);
         }
+    }
+
+    public static void renderLeaderboard(TextGraphics tg) {
+//        screen.clear();
+        for (int i = 0; i < 15; i++) { try {
+            TextColor.RGB red = new TextColor.RGB(255,0,0);
+            TextColor.RGB white = new TextColor.RGB(255,255,255);          
+            TextColor.RGB frg = (i%2==0)?red:white;
+            TextColor.RGB bkg = (i%2!=0)?red:white;
+                          
+            TextCharacter space = new TextCharacter('.', bkg, bkg);
+            TextCharacter frame = new TextCharacter('!', frg, frg);            
+            
+            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
+            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), frame);
+            screen.refresh();
+            Thread.sleep(Protocol.TICK_MS * 10);
+        } catch (Exception e) {}}
+        
+        System.exit(0);
     }
     
     // main({player_name, host})
@@ -274,7 +305,10 @@ public class GameClient {
                     if (jae != null) processPlayersArrayRender(jae, tg, "E");  
                     screen.refresh();
                 }
-
+                else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
+                    renderLeaderboard(tg);
+                }            
+                
                 KeyStroke keystroke = screen.pollInput();
                 // pls check null keystroke always
                 if (keystroke == null) {            

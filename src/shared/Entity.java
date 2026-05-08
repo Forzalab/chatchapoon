@@ -47,6 +47,9 @@ public class Entity {
     public final String type;
     public Direction direction;
     public volatile Avatar avatar;
+    protected volatile boolean dead = false;
+
+    public final boolean dead() { return dead; }
     
     Entity(Position pos, float vx, float vy, String type, String id) {
        this.pos = pos;

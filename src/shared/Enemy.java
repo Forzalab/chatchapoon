@@ -71,6 +71,7 @@ public class Enemy extends Actor {
 */
     public String behaviourType;
     public int moveCooldownTimer;
+    public int despawnTimer = Protocol.DESPAWN_TIMER;
     public final float speed;
     
     public Enemy(Position pos, float vx, float vy, String type, String id, int hpMax, String behaviourType, int moveCooldownTimer, float speed) {

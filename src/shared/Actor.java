@@ -30,15 +30,17 @@ public class Actor extends Entity {
             }
         }
         
-        public synchronized void setHP(int hp) {
+        public synchronized HP setHP(int hp) {
             try {
                 if (_hp <= 0 && init) throw new Exception("Actor already ded, double stabbing!");
                 this._hp = (hp >= 0) ? hp : 0;
                 this._hp = (hp <= _hpMax) ? _hp : _hpMax;
                 this.init = true;
+                if (_hp <= 0) dead = true;
              } catch (Exception e) {
                 System.out.println("Exception caught in Actor.HP.setHP(): " + e);
              }
+             return this;             
         }
 
         public int getHP() {
@@ -51,9 +53,19 @@ public class Actor extends Entity {
             deathTimer = (!will_respawn) ? Protocol.DEATH_COOLDOWN_PERM : Protocol.DEATH_COOLDOWN;
         }
 
-        public synchronized void resuscitate() {
-            if (deathTimer > 0) return;
-            _hp = _hpMax;
+        public synchronized HP resuscitate() {
+            if (!isDead() || isDeadPerm()) return this;
+            else if (deathTimer > 0) return this;
+            _hp = _hpMax; dead = false;
+  //          Actor.this.pos.iHaveValidatedB4Setting();
+            // respawn
+//            Actor.this.pos.set(Actor.this.spawnPos.getRenderY(), Actor.this.spawnPos.getRenderX());
+            return this;
+        }
+
+        public synchronized void deathTickUp() {
+            if (isDeadPerm()) return;
+            deathTimer--;
         }
         
         public Boolean isDead() {

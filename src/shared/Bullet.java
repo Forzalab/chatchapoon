@@ -20,7 +20,14 @@ public class Bullet extends Entity {
     public int damage;
     public String ownerID;
     public int splitDepth;
-    public int timeLeft;
+    private int timeLeft;
+
+    public void timeLeft(int tl) {
+        if (tl <= 0) dead = true;
+        timeLeft = tl;
+    }
+
+    public int timeLeft() { return timeLeft; }
     
     public Bullet(Position pos, float vx, float vy, String id, int damage, String ownerID, int splitDepth) {
         super(pos, vx, vy, "bullet", id);
