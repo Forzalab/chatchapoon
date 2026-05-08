@@ -102,7 +102,7 @@ public class GameServer {
 
                 // revive
                 for (Player p : gameState.players)
-                    p.hp.resuscitate();
+                    p.hp.resuscitate().deathTickUp();
                 
                 // == Encode result ==
                 // -- NO MORE CHANGING GameState AFTER THIS --
@@ -122,6 +122,7 @@ public class GameServer {
                     if (bullet.timeLeft <= 0) continue;                
                     bulletArray.put(new JSONObject()
                     .put("direction", bullet.direction)
+                    .put("type", bullet.type)        
                     .put("x", bullet.pos.getRenderX())
                     .put("y", bullet.pos.getRenderY()));
                 }
@@ -131,10 +132,12 @@ public class GameServer {
                     if (player.hp.isDead()) continue;
                     playerArray.put(new JSONObject()
                     .put("id", player.id)
+                    .put("type", player.type)
                     .put("x", player.pos.getRenderX())
                     .put("y", player.pos.getRenderY())
                     .put("hp", player.hp.getHP())
                     .put("hp_max", player.hp._hpMax)
+                    .put("score", player.score)
                     .put("direction", player.direction));
                 }
                                     
@@ -143,6 +146,7 @@ public class GameServer {
                     if (enemy.hp.isDead()) continue;                
                     enemyArray.put(new JSONObject()
                     .put("id", enemy.id)
+                    .put("type", enemy.type)             
                     .put("x", enemy.pos.getRenderX())
                     .put("y", enemy.pos.getRenderY()));
                 }

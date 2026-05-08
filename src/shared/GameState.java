@@ -83,6 +83,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
    }
 
     public synchronized void shootFrom(Entity e) {
+        if (e.dead()) return;
         float[] VX = { 0, Protocol.INV_SQRT2,  1,  Protocol.INV_SQRT2, 0, -Protocol.INV_SQRT2, -1, -Protocol.INV_SQRT2 };
         float[] VY = {-1,-Protocol.INV_SQRT2,  0,  Protocol.INV_SQRT2, 1,  Protocol.INV_SQRT2,  0, -Protocol.INV_SQRT2 };
 
@@ -151,7 +152,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
                 wx = 0;
             } 
 
-            float rSpeed = (r.nextInt(20 - 7) + 7) * 0.01f;
+            float rSpeed = (r.nextInt(7 - 3) + 3) * 0.01f;
             Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, "COPS", 0, rSpeed);
             enemies.add(e);            
         }

@@ -50,7 +50,7 @@ public class Player extends Actor {
         }
     }
     
-    public volatile int score;
+    public volatile int score = 0;
     public volatile int currency;
 
     // <item-name, Item> to which Item has amount

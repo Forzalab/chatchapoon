@@ -130,6 +130,7 @@ public class GameClient {
     // JSONArray -> tg rendering
     private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava) { try { 
       // direction RENDER can be oevrriden if sth gets in its way (0,0)
+        shift = 0;
         for (int i = 0; i < ja.length(); i++) {
             // early returns.
             // if player not found in one msg?
@@ -152,9 +153,16 @@ public class GameClient {
                 if (direction != null) tg.putString(0, 0, direction);
 // enforce rendering proioty later?!?!!??
             }
+
+            if (j.optString("type") != "player") continue;
+            String player = String.format("%-12s", Utility.optString(j, "id"));
+            String score = String.format("%3d", j.optInt("score", -1));
+            String display = player + score;
+            tg.putString(Protocol.ARENA_WIDTH-18, Protocol.ARENA_HEIGHT-1- shift++, display);        
         }
-        
-        } catch (Exception e) {
+            shift = 0;        
+        }
+        catch (Exception e) {
             closeClient();
             System.out.println("Exception caught: processPlayersArrayRender " + e);
             e.printStackTrace();
