@@ -10,8 +10,8 @@ public class Protocol {
     public static final int MAX_PLAYERS = 20;
 
     // for GameState
-    public static final int LEVEL_DURATION_TICKS = 1800;
-    public static final int SIDEBAR_WIDTH = 18;
+    public static final int LEVEL_DURATION_TICKS = 250;
+    public static final int SIDEBAR_WIDTH = 36;
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
     public static final int FIRE_COOLDOWN_TICKS = 4;

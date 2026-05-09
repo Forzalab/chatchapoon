@@ -149,8 +149,8 @@ public class GameClient {
                 
             if (rx != -1 && ry != -1) {
                 tg.putString(rx, ry, avatar);
-                tg.putString(0, 0, "  ");                
-                if (direction != null) tg.putString(0, 0, direction);
+//                tg.putString(0, 0, "  ");                
+//                if (direction != null) tg.putString(0, 0, direction);
 // enforce rendering proioty later?!?!!??
             }
 
@@ -158,7 +158,7 @@ public class GameClient {
             String player = String.format("%-12s", Utility.optString(j, "id"));
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;
-            tg.putString(Protocol.ARENA_WIDTH-18, Protocol.ARENA_HEIGHT-1- shift++, display);        
+            tg.putString(Protocol.ARENA_WIDTH-15, Protocol.ARENA_HEIGHT-1- shift++, display);        
         }
             shift = 0;        
         }
@@ -230,8 +230,15 @@ public class GameClient {
             TextCharacter space = new TextCharacter('.', bkg, bkg);
             TextCharacter frame = new TextCharacter('!', frg, frg);            
             
-            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
-            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), frame);
+            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), space);
+            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), frame);
+            tg.setBackgroundColor(frg);
+            tg.setForegroundColor(bkg);            
+            tg.enableModifiers(SGR.BOLD);
+            for (int j = -3; j <= 3; j++) {
+                int length = "[[ GAME OVER ]]".length();
+                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + j, "[[ GAME OVER ]]");
+            }
             screen.refresh();
             Thread.sleep(Protocol.TICK_MS * 10);
         } catch (Exception e) {}}
@@ -266,7 +273,7 @@ public class GameClient {
             TextGraphics tg = screen.newTextGraphics();
             tg.setBackgroundColor(new TextColor.RGB(15,23,42));
             TextCharacter space = new TextCharacter('.', new TextColor.RGB(15,23,42), new TextColor.RGB(15,23,42));
-            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
+            tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
 
             // EVERYTHING ABOVE RUNS ONCE
             // EVERYTHING BELOW RUNS IN A LOOP
@@ -293,8 +300,8 @@ public class GameClient {
                 
                 // Render sth first
                 // all screen stuff, THEN indiv elem
-                tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT), space);
-
+                tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+                // HUD MISTBNE AT BOTTOM
 //                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
                 if ("ENTITY_STATE".equals(Utility.optString(to_render, "type"))) {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
