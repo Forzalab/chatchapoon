@@ -32,6 +32,7 @@ public class GameClient {
     private static TerminalPosition tp;
     private static String direction = "";
     private static int moneyTickCooldown = 0, scoreTickCooldown = 0;
+    private static String moneyPrior = "", scorePrior = "";    
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
@@ -182,7 +183,10 @@ public class GameClient {
             for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "♡");       
             tg.setForegroundColor(wht);
             tg.putString(4+hp_max, 0, "] • SCORE: " + score); // 11
+
             //score, 3
+            if (!"".equals(scorePrior) && !score.equals(scorePrior))
+                scoreTickCooldown = 2;
             if (scoreTickCooldown-- > 0) { 
                 tg.setBackgroundColor(wht);
                 tg.setForegroundColor(bkg);
@@ -190,6 +194,10 @@ public class GameClient {
                 tg.setForegroundColor(wht);
                 tg.setBackgroundColor(bkg);
             }
+            tg.putString(4+hp_max+11, 0, score); // 11
+            scorePrior = score;
+            tg.setForegroundColor(wht);
+            tg.setBackgroundColor(bkg);
             
             // empty space for notif
 //            tg.putString(4+hp_max+14+dynSize, 0, 
@@ -312,7 +320,7 @@ public class GameClient {
 
         int length = lines[9].length();
 
-        for (int tick = 0; tick <= 50; tick++) {
+        for (int tick = 0; tick <= 30; tick++) {
             if (tick%10==0) tg.setForegroundColor(vg);
             else if (tick%5==0) tg.setForegroundColor(white);        
             
