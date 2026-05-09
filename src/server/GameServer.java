@@ -137,12 +137,15 @@ public class GameServer {
                 // after state mutate, send it back to the
                 // country where it came from
                 // broadcast PLAYER STATUS
-                JSONObject stateArrayJSON = new JSONObject();
+                JSONObject stateArrayJSON = new JSONObject()
+                .put("type", "ENTITY_STATE")
+                .put("tickCounter", gameState.getCurrentTick())
+                .put("waveNumber", gameState.getWaveLevel())
+                .put("levelTimer", gameState.getLevelTimeLeft());
+
                 JSONArray bulletArray = new JSONArray();
                 JSONArray playerArray = new JSONArray();
-                JSONArray enemyArray = new JSONArray();           
-                stateArrayJSON.put("type", "ENTITY_STATE");
-                
+                JSONArray enemyArray = new JSONArray();                           
                 // TEMPORSRY!!!!!!!
                 // Bullet
                 for (Bullet bullet : gameState.bullets) {
