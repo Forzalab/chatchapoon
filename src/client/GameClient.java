@@ -31,6 +31,7 @@ public class GameClient {
     private static volatile JSONObject to_render;
     private static TerminalPosition tp;
     private static String direction = "";
+    private static int moneyTickCooldown = 0, scoreTickCooldown = 0;
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
@@ -180,8 +181,20 @@ public class GameClient {
             tg.setForegroundColor(red);
             for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "♡");       
             tg.setForegroundColor(wht);
-            tg.putString(4+hp_max, 0, "] • SCORE: " + score); // 11 + 3
-            //String score = String.format("%3d", j.optInt("score", -1));
+            tg.putString(4+hp_max, 0, "] • SCORE: " + score); // 11
+            //score, 3
+            if (scoreTickCooldown-- > 0) { 
+                tg.setBackgroundColor(wht);
+                tg.setForegroundColor(bkg);
+            } else {
+                tg.setForegroundColor(wht);
+                tg.setBackgroundColor(bkg);
+            }
+            
+            // empty space for notif
+//            tg.putString(4+hp_max+14+dynSize, 0, 
+
+            //money flash
         }
             shift = 0;        
         }
@@ -271,6 +284,7 @@ public class GameClient {
 
     public static void splash() { try {
         TextColor.RGB vg = new TextColor.RGB(1,13,1);
+        TextColor.RGB white = new TextColor.RGB(255,255,255);                  
         screen.clear();
         TextGraphics tg = screen.newTextGraphics();
         tg.setBackgroundColor(vg);
@@ -298,10 +312,16 @@ public class GameClient {
 
         int length = lines[9].length();
 
-        for (int i = 0; i < lines.length; i++) {
-            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + i - lines.length/2, lines[i]);
+        for (int tick = 0; tick <= 50; tick++) {
+            if (tick%10==0) tg.setForegroundColor(vg);
+            else if (tick%5==0) tg.setForegroundColor(white);        
+            
+            for (int i = 0; i < lines.length; i++) {
+                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + i - lines.length/2, lines[i]);
+            }
+            screen.refresh();
+            Thread.sleep(Protocol.TICK_MS * 2);
         }
-        screen.refresh();
     } catch (Exception e) {} }
         
     // main({player_name, host})
@@ -311,7 +331,6 @@ public class GameClient {
             lanterna_init();
 
             splash();
-            Thread.sleep(3000);
             
             String host = args.length > 1 ? args[1] : "localhost";
             socket = new Socket(host, Protocol.PORT);
