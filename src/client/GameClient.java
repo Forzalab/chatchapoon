@@ -134,7 +134,7 @@ public class GameClient {
     // JSONArray -> tg rendering
     private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava, JSONObject jao) { try { 
     // hahsmap for color assignment id-color
-        HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();
+//        HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();
     //            TextColor.RGB bkg_init = new TextColor.RGB(15,23,42);        
         TextColor.RGB bkg = new TextColor.RGB(15,23,42);
         TextColor.RGB wht = new TextColor.RGB(255,255,255);            
@@ -168,7 +168,7 @@ public class GameClient {
                 b = (((hashColor & 0x0000FF)) | 0x40) % 255;
                 TextColor color = new TextColor.RGB(r, g, b);
                 playerColor.put(playerId, color);
-            } while (r < 220 && r > 170 && g < 220 && g > 170 && b < 220 && b > 170); }
+            } while (r < 240 && r > 190 && g < 240 && g > 190 && b < 240 && b > 190); }
             
             // render non-players for now
             if (!"player".equals(Utility.optString(j, "type"))) {
