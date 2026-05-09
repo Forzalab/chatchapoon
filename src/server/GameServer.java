@@ -127,11 +127,14 @@ public class GameServer {
                 gameState.processAllCollisions();
 
                 // revive
+                // anything players really
                 for (Player p : gameState.players) {
                     p.uptickHitCooldown();
+                    if (p.fireCooldown > 0) p.fireCooldown--;
                     if (!p.dead()) continue;
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
+                    p.bullets = 10;
                 }
                 
                 // == Encode result ==
@@ -172,6 +175,7 @@ public class GameServer {
                     .put("hp", player.hp.getHP())
                     .put("hp_max", player.hp._hpMax)
                     .put("score", player.score)
+                    .put("bullets", player.bullets)                    
                     .put("currency", player.currency)                    
                     .put("direction", player.direction));
                 }

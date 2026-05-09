@@ -31,8 +31,8 @@ public class GameClient {
     private static volatile JSONObject to_render;
     private static TerminalPosition tp;
     private static String direction = "";
-    private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0;
-    private static String moneyPrior = "", scorePrior = "", wavePrior = "";    
+    private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown;
+    private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
@@ -176,14 +176,21 @@ public class GameClient {
             TextColor.RGB grn_dim = new TextColor.RGB(6,128,6);
             TextColor.RGB yel = new TextColor.RGB(255, 190, 0);
             TextColor.RGB cyn = new TextColor.RGB(0, 210, 210);
+
             String tick = jao.optInt("tickCounter", 0) + "";
             String wave = jao.optInt("waveNumber", 1) + "";
             String lvlTicks = jao.optInt("levelTimer", Protocol.LEVEL_DURATION_TICKS) + "";
 
-            String leftHUD = "HP [###]  ◆  SCORE: 420"; // 23
+            String leftHUD = "HP [###]  ◆  SCORE: 420 ◆ 100 ⁍"; // 33
             String rightHUD = "$350  ◆  REINF #30  ◆  HEIST ENDS IN 2:45"; //40      
             String money = String.format("%3d", j.optInt("currency", -1));
-            int dynSize = Protocol.ARENA_WIDTH - (23 + 40);
+
+            int scoreStrL = (j.optInt("score", -1)>0)?14:0;
+            int amtBullets = j.optInt("bullets", -1);
+            int bulletStrL = (amtBullets>0)?7:0;
+
+            
+            int dynSize = Protocol.ARENA_WIDTH - (31 + 40);
             int hp = j.optInt("hp", 3);
             int hp_max = j.optInt("hp_max", 3);            
             tg.putString(0, 0, "HP [");
@@ -192,48 +199,82 @@ public class GameClient {
             tg.setForegroundColor(red);
             for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "♡");       
             tg.setForegroundColor(wht);
-            tg.putString(4+hp_max, 0, "] " + score); // 11
-            tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-            tg.putString(4+hp_max+2, 0, "◆");
-            tg.setForegroundColor(wht);
-            tg.putString(4+hp_max+3, 0, " SCORE: " + score); // 11
+            tg.putString(4+hp_max, 0, "] "); // 11
 
-            //score, 3
-            if (!"".equals(scorePrior) && !score.equals(scorePrior))
-                scoreTickCooldown = 3;
-            tg.setBackgroundColor((scoreTickCooldown-- > 0)?wht:bkg);
-            tg.setForegroundColor((scoreTickCooldown > 0)?bkg:wht);
-            tg.putString(4+hp_max+11, 0, score); // 11
-            scorePrior = score;
+            if (j.optInt("score", -1) > 0) {
+                tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
+                tg.putString(4+hp_max+2, 0, "◆");
+                tg.setForegroundColor(wht);
+                tg.putString(4+hp_max+3, 0, " SCORE: " + score); // 11
+
+                //score, 3
+                if (!"".equals(scorePrior) && !score.equals(scorePrior))
+                    scoreTickCooldown = 3;
+                tg.setBackgroundColor((scoreTickCooldown-- > 0)?wht:bkg);
+                tg.setForegroundColor((scoreTickCooldown > 0)?bkg:wht);
+                tg.putString(4+hp_max+11, 0, score); // 11
+            } else {
+                tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
+                tg.drawRectangle(new TerminalPosition(4+hp_max+11, 0), new TerminalSize(14, 0), '.');
+            }
+            scorePrior = score;            
             tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
+                
+
+            amtBullets = (amtBullets > 99) ? 99 : amtBullets;
+            String bullets = String.format("%d", amtBullets);
+            if (amtBullets > 0) {
+                //bullet, 5
+                tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
+                tg.putString(4+hp_max+2+scoreStrL, 0, "◆ ");
+                tg.setForegroundColor(wht);            
+                tg.putString(4+hp_max+2+scoreStrL+3, 0, "⁍ " + bullets + ((amtBullets>99)?"+":" "));
+            } else {
+                tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
+                tg.drawRectangle(new TerminalPosition(4+hp_max+2+scoreStrL, 0), new TerminalSize(7, 0), '.');
+            }
+              bulletsPrior = bullets;
+              tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);              
+//            tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
+
             
             // empty space for notif
 
-            //money,4 
-            if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
-                moneyTickCooldown = 3;
-            tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
-            tg.putString(4+hp_max+11+dynSize, 0, "$"+money); // 11
+            //money,4
+            int moneyX = 4 + hp_max + 11 + dynSize + 4 + 2;            
+            if (j.optInt("currency", -1) > 0) {            
+                if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
+                    moneyTickCooldown = 3;
+                tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
+                tg.putString(4+hp_max+11+dynSize, 0, "＄"+money); // 11
+            
+                tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);            
+                tg.putString(moneyX, 0, "  ◆  ");                
+            } else {
+                tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
+                tg.drawRectangle(new TerminalPosition(4+hp_max+11+dynSize, 0), new TerminalSize(6, 0), '.');
+                tg.putString(moneyX, 0, "     ");                                
+            }
             moneyPrior = money;
-            tg.setForegroundColor(wht);
-            tg.setBackgroundColor(bkg);            
-
+            tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);            
+        
             //reinforcement
-            int moneyX = 4 + hp_max + 11 + dynSize + 4;
-            tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-            tg.putString(moneyX, 0, "  ◆  ");
-
-            if (!wavePrior.equals(wave)) waveTickCooldown = 2;
+            if (Integer.parseInt(wave) > 0) {
+                if (!wavePrior.equals(wave)) waveTickCooldown = 2;
+            
+                String reinfStr = "REINF #" + wave;
+                tg.setForegroundColor(waveTickCooldown-- > 0 ? cyn : wht);
+                tg.setBackgroundColor(bkg);
+                tg.putString(moneyX + 5, 0, reinfStr);
+            } else {
+                tg.putString(moneyX + 5, 0, " ".repeat(7+wave.length()));
+            }                
             wavePrior = wave;
-            String reinfStr = "REINF #" + wave;
-            tg.setForegroundColor(waveTickCooldown-- > 0 ? cyn : wht);
-            tg.setBackgroundColor(bkg);
-            tg.putString(moneyX + 5, 0, reinfStr);
-
+        
             // timer
-            int timerX = moneyX + 5 + reinfStr.length();
+            int timerX = moneyX + 5 + 7 + wave.length();
             tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-            tg.putString(timerX, 0, "  ◆  ");
+            tg.putString(timerX, 0, (Integer.parseInt(wave) > 0)?"  ◆  ":"     ");
             timerX += 5;
 
             int secs = Integer.parseInt(lvlTicks) / 20;
@@ -362,7 +403,7 @@ public class GameClient {
 
         int length = lines[9].length();
 
-        for (int tick = 0; tick <= 30; tick++) {
+        for (int tick = 0; tick <= 10; tick++) {
             if (tick%10==0) tg.setForegroundColor(vg);
             else if (tick%5==0) tg.setForegroundColor(white);        
             
@@ -437,7 +478,7 @@ public class GameClient {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
-                    if (jap != null) processPlayersArrayRender(jap, tg, "♠︎", to_render);
+                    if (jap != null) processPlayersArrayRender(jap, tg, "♤", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "*", to_render);
                     if (jae != null) processPlayersArrayRender(jae, tg, "P", to_render);  
                     screen.refresh();

@@ -85,6 +85,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
     public synchronized void shootFrom(Entity e) {
         if (e.dead()) return;
+        else if (e instanceof Player p && (p.fireCooldown > 0 || p.bullets <= 0)) return;
         float[] VX = { 0, Protocol.INV_SQRT2,  1,  Protocol.INV_SQRT2, 0, -Protocol.INV_SQRT2, -1, -Protocol.INV_SQRT2 };
         float[] VY = {-1,-Protocol.INV_SQRT2,  0,  Protocol.INV_SQRT2, 1,  Protocol.INV_SQRT2,  0, -Protocol.INV_SQRT2 };
 
@@ -98,6 +99,11 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         Bullet b = new Bullet(new Position(e.pos.getRenderY(), e.pos.getRenderX()), vx, vy, registerNewId("bullet"), 1, e.id, 0);
         b.direction = d; // sus
         bullets.add(b);
+
+        if (e instanceof Player p) {
+            p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS;
+            p.bullets--;
+        }
     }
 
     public synchronized void rotate(Entity e, String cmd) {
@@ -114,8 +120,9 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
         // assume ID wont collide, or else there will be
         // dupl assignment
-        for (Entity e : players)
+        for (Entity e : players) {
             if (authorID.equals(e.id)) entity = e;
+        }
         for (Entity e : enemies)
             if (authorID.equals(e.id)) entity = e;
         for (Entity e : bullets)
@@ -211,6 +218,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         Player bOwner = playerIdMap.get(bullet.ownerID);
         if (bOwner == null) return;
         bOwner.score += dmg;
+        bOwner.bullets += 10;
     }
     
     // lol wont do dispatch
