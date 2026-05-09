@@ -170,6 +170,7 @@ public class GameServer {
                     .put("hp", player.hp.getHP())
                     .put("hp_max", player.hp._hpMax)
                     .put("score", player.score)
+                    .put("currency", player.currency)                    
                     .put("direction", player.direction));
                 }
                                     

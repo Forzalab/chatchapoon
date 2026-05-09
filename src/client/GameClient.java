@@ -31,8 +31,8 @@ public class GameClient {
     private static volatile JSONObject to_render;
     private static TerminalPosition tp;
     private static String direction = "";
-    private static int moneyTickCooldown = 0, scoreTickCooldown = 0;
-    private static String moneyPrior = "", scorePrior = "";    
+    private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0;
+    private static String moneyPrior = "", scorePrior = "", wavePrior = "";    
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
@@ -151,7 +151,7 @@ public class GameClient {
                 direction = Utility.optString(j, "direction");
 
             tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
-            if (rx != -1 && ry != -1) {
+            if (rx != -1 && ry > 0) {
                 tg.putString(rx, ry, avatar);
 //                tg.putString(0, 0, "  ");                
 //                if (direction != null) tg.putString(0, 0, direction);
@@ -167,12 +167,22 @@ public class GameClient {
 
             // HUD bar
             if (!playerID.equals(Utility.optString(j, "id"))) continue;
+//            TextColor.RGB bkg_init = new TextColor.RGB(15,23,42);        
             TextColor.RGB bkg = new TextColor.RGB(15,23,42);
             TextColor.RGB wht = new TextColor.RGB(255,255,255);            
             TextColor.RGB red = new TextColor.RGB(255,0,0);              
-            TextColor.RGB dim = new TextColor.RGB(64,64,64);                        
+            TextColor.RGB dim = new TextColor.RGB(64,64,64);                 
+            TextColor.RGB grn = new TextColor.RGB(0,230,0);                  
+            TextColor.RGB grn_dim = new TextColor.RGB(6,128,6);
+            TextColor.RGB yel = new TextColor.RGB(255, 190, 0);
+            TextColor.RGB cyn = new TextColor.RGB(0, 210, 210);
+            String tick = j.optInt("tick", 0) + "";
+            String wave = j.optInt("waveNumber", 1) + "";
+            String lvlTicks = j.optInt("levelTimer", Protocol.LEVEL_DURATION_TICKS) + "";
+
             String leftHUD = "HP [###]  ◆  SCORE: 420"; // 23
             String rightHUD = "$350  ◆  REINF #30  ◆  HEIST ENDS IN 2:45"; //40      
+            String money = String.format("%3d", j.optInt("currency", -1));
             int dynSize = Protocol.ARENA_WIDTH - (23 + 40);
             int hp = j.optInt("hp", 3);
             int hp_max = j.optInt("hp_max", 3);            
@@ -182,26 +192,58 @@ public class GameClient {
             tg.setForegroundColor(red);
             for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "♡");       
             tg.setForegroundColor(wht);
-            tg.putString(4+hp_max, 0, "] • SCORE: " + score); // 11
+            tg.putString(4+hp_max, 0, "] " + score); // 11
+            tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
+            tg.putString(4+hp_max+2, 0, "◆");
+            tg.setForegroundColor(wht);
+            tg.putString(4+hp_max+3, 0, " SCORE: " + score); // 11
 
             //score, 3
             if (!"".equals(scorePrior) && !score.equals(scorePrior))
-                scoreTickCooldown = 2;
-            if (scoreTickCooldown-- > 0) { 
-                tg.setBackgroundColor(wht);
-                tg.setForegroundColor(bkg);
-            } else {
-                tg.setForegroundColor(wht);
-                tg.setBackgroundColor(bkg);
-            }
+                scoreTickCooldown = 3;
+            tg.setBackgroundColor((scoreTickCooldown-- > 0)?wht:bkg);
+            tg.setForegroundColor((scoreTickCooldown > 0)?bkg:wht);
             tg.putString(4+hp_max+11, 0, score); // 11
             scorePrior = score;
-            tg.setForegroundColor(wht);
-            tg.setBackgroundColor(bkg);
+            tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
             
             // empty space for notif
-//            tg.putString(4+hp_max+14+dynSize, 0, 
 
+            //money,4 
+            if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
+                moneyTickCooldown = 3;
+            tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
+            tg.putString(4+hp_max+11+dynSize, 0, "$"+money); // 11
+            moneyPrior = money;
+            tg.setForegroundColor(wht);
+            tg.setBackgroundColor(bkg);            
+
+            //reinforcement
+            int moneyX = 4 + hp_max + 11 + dynSize + 4;
+            tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
+            tg.putString(moneyX, 0, "  ◆  ");
+
+            if (!wavePrior.equals(wave)) waveTickCooldown = 2;
+            wavePrior = wave;
+            String reinfStr = "REINF #" + wave;
+            tg.setForegroundColor(waveTickCooldown-- > 0 ? cyn : wht);
+            tg.setBackgroundColor(bkg);
+            tg.putString(moneyX + 5, 0, reinfStr);
+
+            // timer
+            int timerX = moneyX + 5 + reinfStr.length();
+            tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
+            tg.putString(timerX, 0, "  ◆  ");
+            timerX += 5;
+
+            int secs = Integer.parseInt(lvlTicks) / 20;
+            String timerStr = String.format("%d:%02d", secs / 60, secs % 60);
+            boolean blink = secs < 10 && (Integer.parseInt(tick) % 2 == 1);
+            TextColor.RGB timerClr = blink ? bkg : secs < 30 ? red : secs < 60 ? yel : wht;
+            tg.setForegroundColor(timerClr);
+            tg.setBackgroundColor(bkg);
+            tg.putString(timerX, 0, "HEIST ENDS IN " + timerStr);
+            tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);
             //money flash
         }
             shift = 0;        
