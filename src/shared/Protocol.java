@@ -10,12 +10,13 @@ public class Protocol {
     public static final int MAX_PLAYERS = 20;
 
     // for GameState
-    public static final int LEVEL_DURATION_TICKS = 1800;
-    public static final int SIDEBAR_WIDTH = 18;
+    public static final int LEVEL_DURATION_TICKS = 4800;
+    public static final int SIDEBAR_WIDTH = 36;
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
-    public static final int FIRE_COOLDOWN_TICKS = 4;
-    public static final int WAVE_INTERVAL_TICKS = 600;
+    public static final int FIRE_COOLDOWN_TICKS = 10;
+    public static final int HIT_COOLDOWN_TICKS = 60;
+//    public static final int WAVE_INTERVAL_TICKS = 600;
     public static final int MAX_BULLETS = 200;
     public static final float PLAYER_SPEED = 0.5f;
     public static final float PLAYER_SPEED_FAST = 1.0f;
@@ -30,10 +31,10 @@ public class Protocol {
     public static final float DRIFTER_SINE_FREQ = 0.15f;
     public static final int DEATH_COOLDOWN = 60; // instant gratification 3s
     public static final int DEATH_COOLDOWN_PERM = -4968; // aptx idk
-    public static final int PLAYER_MAX_HP = 3;
-    public static final int PLAYER_HP_MAX = 3;
+    public static final int PLAYER_MAX_HP = 5;
+    public static final int PLAYER_HP_MAX = 5;
 
     public static final int BULLET_LIFETIME = 300;
     public static final int WAVE_INTERVAL = 300;
-    public static final int DESPAWN_TIMER = 2000;
+    public static final int DESPAWN_TIMER = 3600;
 }

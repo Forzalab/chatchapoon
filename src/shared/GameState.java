@@ -85,6 +85,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
     public synchronized void shootFrom(Entity e) {
         if (e.dead()) return;
+        else if (e instanceof Player p && (p.fireCooldown > 0 || p.bullets <= 0)) return;
         float[] VX = { 0, Protocol.INV_SQRT2,  1,  Protocol.INV_SQRT2, 0, -Protocol.INV_SQRT2, -1, -Protocol.INV_SQRT2 };
         float[] VY = {-1,-Protocol.INV_SQRT2,  0,  Protocol.INV_SQRT2, 1,  Protocol.INV_SQRT2,  0, -Protocol.INV_SQRT2 };
 
@@ -98,6 +99,11 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         Bullet b = new Bullet(new Position(e.pos.getRenderY(), e.pos.getRenderX()), vx, vy, registerNewId("bullet"), 1, e.id, 0);
         b.direction = d; // sus
         bullets.add(b);
+
+        if (e instanceof Player p) {
+            p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS;
+            p.bullets--;
+        }
     }
 
     public synchronized void rotate(Entity e, String cmd) {
@@ -114,8 +120,9 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
         // assume ID wont collide, or else there will be
         // dupl assignment
-        for (Entity e : players)
+        for (Entity e : players) {
             if (authorID.equals(e.id)) entity = e;
+        }
         for (Entity e : enemies)
             if (authorID.equals(e.id)) entity = e;
         for (Entity e : bullets)
@@ -134,7 +141,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
     public synchronized void spawnWave(int amt) {
         // pick side -> rnd coords
-        int side = r.nextInt(3);
+        int side = r.nextInt(4);
         int wx = -156, wy = -751;
         
         // 0 1 2 3 clockwise, 0 north.
@@ -164,6 +171,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         // O(enemies * players) not gud as Quadtree
         // but fuck Quadtree
         for (Enemy e : enemies) {
+            e.uptickHitCooldown();
             if (e.despawnTimer-- <= 0)
                 e.hp.setHP(0).triggerRespawn(false);
                 
@@ -204,12 +212,13 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         // killer find and set pt
         if (!victim.hp.isDead()) return; // onyl cred pt when ded
 
-        if (victim.type == "player")
+        if ("player".equals(victim.type))
             victim.hp.triggerRespawn(true);
         
         Player bOwner = playerIdMap.get(bullet.ownerID);
         if (bOwner == null) return;
         bOwner.score += dmg;
+        bOwner.bullets += 10;
     }
     
     // lol wont do dispatch
@@ -217,10 +226,12 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         if (!hitter.pos.equals(victim.pos)) return; // same pos?
         else if (hitter.id.equals(victim.id)) return; // suicide?
         else if (victim.hp.isDead()) return; // ded? dont hit a zombie
-        
+        else if (hitter.hitCooldown() > 0) return; // cooldown
+
+        hitter.startHitCooldown();
         victim.hp.setHP(victim.hp.getHP() - 1); // e.hp -= hitter.damage;
         
-        if (victim.hp.isDead() && victim.type == "player")
+        if (victim.hp.isDead() && "player".equals(victim.type))
             victim.hp.triggerRespawn(true);        
     }
     

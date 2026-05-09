@@ -89,7 +89,9 @@ public class GameServer {
 
             // thread processQ THEN broadcast - SEPERATE from socket handlin'
             // wont be slow
-            new Thread(() -> { while (true) { try {
+            new Thread(() -> { 
+            try { Thread.sleep(Protocol.TICK_MS * 100); } catch (Exception e) {}
+            while (true) { try {
                 long start = System.currentTimeMillis();
 
                 // == Mutate GameState ==
@@ -118,17 +120,21 @@ public class GameServer {
                 
                 // enemy stuff
                 if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                    gameState.spawnWave(2);
+                    gameState.spawnWave(4);
                 gameState.updateEnemies();
 
                 // now, pos uodated, we do collision check and porcess
                 gameState.processAllCollisions();
 
                 // revive
+                // anything players really
                 for (Player p : gameState.players) {
+                    p.uptickHitCooldown();
+                    if (p.fireCooldown > 0) p.fireCooldown--;
                     if (!p.dead()) continue;
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
+                    p.bullets = 10;
                 }
                 
                 // == Encode result ==
@@ -137,18 +143,22 @@ public class GameServer {
                 // after state mutate, send it back to the
                 // country where it came from
                 // broadcast PLAYER STATUS
-                JSONObject stateArrayJSON = new JSONObject();
+                JSONObject stateArrayJSON = new JSONObject()
+                .put("type", "ENTITY_STATE")
+                .put("tickCounter", gameState.getCurrentTick())
+                .put("waveNumber", gameState.getWaveLevel())
+                .put("levelTimer", gameState.getLevelTimeLeft());
+
                 JSONArray bulletArray = new JSONArray();
                 JSONArray playerArray = new JSONArray();
-                JSONArray enemyArray = new JSONArray();           
-                stateArrayJSON.put("type", "ENTITY_STATE");
-                
+                JSONArray enemyArray = new JSONArray();                           
                 // TEMPORSRY!!!!!!!
                 // Bullet
                 for (Bullet bullet : gameState.bullets) {
                     if (bullet.dead()) continue;                
                     bulletArray.put(new JSONObject()
                     .put("direction", bullet.direction)
+                    .put("ownerID", bullet.ownerID)
                     .put("type", bullet.type)        
                     .put("x", bullet.pos.getRenderX())
                     .put("y", bullet.pos.getRenderY()));
@@ -166,6 +176,8 @@ public class GameServer {
                     .put("hp", player.hp.getHP())
                     .put("hp_max", player.hp._hpMax)
                     .put("score", player.score)
+                    .put("bullets", player.bullets)                    
+                    .put("currency", player.currency)                    
                     .put("direction", player.direction));
                 }
                                     
@@ -201,7 +213,7 @@ public class GameServer {
                 if (gameState.getLevelTimeLeft() != 0) continue;
                 broadcastAll(getTopFive(gameState.players));
                 Thread.sleep(Protocol.TICK_MS * 10);
-                System.exit(0); // placeholder
+//                System.exit(0); // placeholder
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);
                 e.printStackTrace();
