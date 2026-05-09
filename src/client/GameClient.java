@@ -157,42 +157,52 @@ public class GameClient {
             JSONObject j = ja.getJSONObject(i);
             if (j == null) continue;
 
-            // render non-players for now
-            if (!"player".equals(Utility.optString(j, "type"))) {
-                    int rx = j.optInt("x", -1);
-                    int ry = j.optInt("y", -1);
-                    String avatar = ava; // for now, will customize later
-
-                // check id to parse direction
-                if (playerID.equals(Utility.optString(j, "id")))
-                    direction = Utility.optString(j, "direction");
-
-                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
-                if (rx != -1 && ry > 0) {
-                    tg.putString(rx, ry, avatar);
-    //                tg.putString(0, 0, "  ");                
-    //                if (direction != null) tg.putString(0, 0, direction);
-    // enforce rendering proioty later?!?!!??
-                }
-            }
-            
-            if (!"player".equals(j.optString("type"))) continue;
-            /// belownhere is players obly rendering logic
-            String playerId = Utility.optString(j,"id");
-            if (playerId == null) continue;
-
-            int r, g, b;
-            if (!playerColor.containsKey(playerId)) { do {
+            // determine color for bullet B4 render
+            String type = j.optString("type");
+            String playerId = j.optString("id");
+            int r = 255, g = 255, b = 255;
+            if ("player".equals(type) && !playerColor.containsKey(playerId)) { do {
                 int hashColor = playerId.hashCode();
                 r = ((((hashColor & 0xFF0000) >> 16) << 16) | 0x40) % 255;
                 g = ((((hashColor & 0x00FF00) >> 8) << 8) | 0x40) % 255;
                 b = (((hashColor & 0x0000FF)) | 0x40) % 255;
                 TextColor color = new TextColor.RGB(r, g, b);
                 playerColor.put(playerId, color);
-            } while (r < 220 && r > 180 && g < 220 && g > 180 && b < 220 && b > 180); }
+            } while (r < 220 && r > 170 && g < 220 && g > 170 && b < 220 && b > 170); }
+            
+            // render non-players for now
+            if (!"player".equals(Utility.optString(j, "type"))) {
+                if ("bullet".equals(j.optString("type"))) {            
+                    String id = j.optString("ownerID");
+                    TextColor color = playerColor.get(id);            
+                    tg.setForegroundColor(color);
+                } else tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                
+                int rx = j.optInt("x", -1);
+                int ry = j.optInt("y", -1);
+                String avatar = ava; // for now, will customize later
+
+                // check id to parse direction
+                if (playerID.equals(Utility.optString(j, "id")))
+                    direction = Utility.optString(j, "direction");
+
+                if (rx != -1 && ry > 0) {
+                    tg.putString(rx, ry, avatar);
+    //                tg.putString(0, 0, "  ");                
+    //                if (direction != null) tg.putString(0, 0, direction);
+    // enforce rendering proioty later?!?!!??
+                }
+
+                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+            }
+            
+            if (!"player".equals(j.optString("type"))) continue;
+            /// belownhere is players obly rendering logic
+            playerId = Utility.optString(j,"id");
+            if (playerId == null) continue;
 
             TextColor color = playerColor.get(playerId);
-
+            
             int rx = j.optInt("x", -1);
             int ry = j.optInt("y", -1);
             String avatar = ava; // for now, will customize later
@@ -201,7 +211,7 @@ public class GameClient {
             if (playerID.equals(Utility.optString(j, "id")))
                 direction = Utility.optString(j, "direction");
 
-            if (rx != -1 && ry > 0) {
+            if (rx != -1 && ry > 0 && "player".equals(j.optString("type"))) {
                 if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
                 tg.putString(rx, ry, avatar);
                 tg.setForegroundColor(wht);                
@@ -213,9 +223,9 @@ public class GameClient {
             String display = player + score;
             if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
             tg.putString(Protocol.ARENA_WIDTH-15, Protocol.ARENA_HEIGHT-1- shift, player);        
-            int wRed = color.getRed() + (int)((255 - color.getRed()) * 0.75);
-            int wGreen = color.getGreen() + (int)((255 - color.getGreen()) * 0.75);
-            int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.75);                       
+            int wRed = color.getRed() + (int)((255 - color.getRed()) * 0.3);
+            int wGreen = color.getGreen() + (int)((255 - color.getGreen()) * 0.3);
+            int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.3);                       
             TextColor whitened = new TextColor.RGB(wRed, wGreen, wBlue);
             tg.setForegroundColor(whitened);                            
             tg.putString(Protocol.ARENA_WIDTH-15 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                       tg.setForegroundColor(wht);                  

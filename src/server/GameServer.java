@@ -158,6 +158,7 @@ public class GameServer {
                     if (bullet.dead()) continue;                
                     bulletArray.put(new JSONObject()
                     .put("direction", bullet.direction)
+                    .put("ownerID", bullet.ownerID)
                     .put("type", bullet.type)        
                     .put("x", bullet.pos.getRenderX())
                     .put("y", bullet.pos.getRenderY()));
