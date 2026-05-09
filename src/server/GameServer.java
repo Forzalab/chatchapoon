@@ -89,7 +89,9 @@ public class GameServer {
 
             // thread processQ THEN broadcast - SEPERATE from socket handlin'
             // wont be slow
-            new Thread(() -> { while (true) { try {
+            new Thread(() -> { 
+            try { Thread.sleep(Protocol.TICK_MS * 100); } catch (Exception e) {}
+            while (true) { try {
                 long start = System.currentTimeMillis();
 
                 // == Mutate GameState ==
@@ -118,7 +120,7 @@ public class GameServer {
                 
                 // enemy stuff
                 if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                    gameState.spawnWave(2);
+                    gameState.spawnWave(4);
                 gameState.updateEnemies();
 
                 // now, pos uodated, we do collision check and porcess

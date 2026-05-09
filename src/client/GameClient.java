@@ -131,7 +131,7 @@ public class GameClient {
     }
 
     // JSONArray -> tg rendering
-    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava) { try { 
+    private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava, JSONObject jao) { try { 
       // direction RENDER can be oevrriden if sth gets in its way (0,0)
         shift = 0;
         for (int i = 0; i < ja.length(); i++) {
@@ -176,9 +176,9 @@ public class GameClient {
             TextColor.RGB grn_dim = new TextColor.RGB(6,128,6);
             TextColor.RGB yel = new TextColor.RGB(255, 190, 0);
             TextColor.RGB cyn = new TextColor.RGB(0, 210, 210);
-            String tick = j.optInt("tick", 0) + "";
-            String wave = j.optInt("waveNumber", 1) + "";
-            String lvlTicks = j.optInt("levelTimer", Protocol.LEVEL_DURATION_TICKS) + "";
+            String tick = jao.optInt("tickCounter", 0) + "";
+            String wave = jao.optInt("waveNumber", 1) + "";
+            String lvlTicks = jao.optInt("levelTimer", Protocol.LEVEL_DURATION_TICKS) + "";
 
             String leftHUD = "HP [###]  ◆  SCORE: 420"; // 23
             String rightHUD = "$350  ◆  REINF #30  ◆  HEIST ENDS IN 2:45"; //40      
@@ -437,9 +437,9 @@ public class GameClient {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
-                    if (jap != null) processPlayersArrayRender(jap, tg, "♠︎");
-                    if (jab != null) processPlayersArrayRender(jab, tg, "*");
-                    if (jae != null) processPlayersArrayRender(jae, tg, "P");  
+                    if (jap != null) processPlayersArrayRender(jap, tg, "♠︎", to_render);
+                    if (jab != null) processPlayersArrayRender(jab, tg, "*", to_render);
+                    if (jae != null) processPlayersArrayRender(jae, tg, "P", to_render);  
                     screen.refresh();
                 }
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
