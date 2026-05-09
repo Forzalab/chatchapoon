@@ -162,6 +162,10 @@ public class GameClient {
             String playerId = j.optString("id");
             int r = 255, g = 255, b = 255;
             if ("player".equals(type) && !playerColor.containsKey(playerId)) { do {
+                if (playerID.equals(Utility.optString(j, "id"))) {
+                    playerColor.put(playerId, new TextColor.RGB(255, 255, 255));
+                    break;
+                }
                 int hashColor = playerId.hashCode();
                 r = ((((hashColor & 0xFF0000) >> 16) << 16) | 0x40) % 255;
                 g = ((((hashColor & 0x00FF00) >> 8) << 8) | 0x40) % 255;
@@ -169,11 +173,14 @@ public class GameClient {
                 TextColor color = new TextColor.RGB(r, g, b);
                 playerColor.put(playerId, color);
             } while (r < 240 && r > 190 && g < 240 && g > 190 && b < 240 && b > 190); }
-            
+
+//            System.err.println(playerColor.keySet());
+                        
             // render non-players for now
             if (!"player".equals(Utility.optString(j, "type"))) {
                 if ("bullet".equals(j.optString("type"))) {            
                     String id = j.optString("ownerID");
+  //          System.err.println("bull"+id);                    
                     TextColor color = playerColor.get(id);            
                     tg.setForegroundColor(color);
                 } else tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
@@ -530,7 +537,8 @@ public class GameClient {
                 tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
                 // HUD MISTBNE AT BOTTOM
 //                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
-                if ("ENTITY_STATE".equals(Utility.optString(to_render, "type"))) {
+///!!!!! if making lobby state, change the tickCounter check to sth else!!!!!!!!!
+                if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
