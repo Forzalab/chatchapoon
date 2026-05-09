@@ -154,11 +154,32 @@ public class GameClient {
 // enforce rendering proioty later?!?!!??
             }
 
+            // scoreboard
             if (!"player".equals(j.optString("type"))) continue;
             String player = String.format("%-12s", Utility.optString(j, "id"));
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;
             tg.putString(Protocol.ARENA_WIDTH-15, Protocol.ARENA_HEIGHT-1- shift++, display);        
+
+            // HUD bar
+            if (!playerID.equals(Utility.optString(j, "id"))) continue;
+            TextColor.RGB bkg = new TextColor.RGB(15,23,42);
+            TextColor.RGB wht = new TextColor.RGB(255,255,255);            
+            TextColor.RGB red = new TextColor.RGB(255,0,0);              
+            TextColor.RGB dim = new TextColor.RGB(64,64,64);                        
+            String leftHUD = "HP [###]  ◆  SCORE: 420"; // 23
+            String rightHUD = "$350  ◆  REINF #30  ◆  HEIST ENDS IN 2:45"; //40      
+            int dynSize = Protocol.ARENA_WIDTH - (23 + 40);
+            int hp = j.optInt("hp", 3);
+            int hp_max = j.optInt("hp_max", 3);            
+            tg.putString(0, 0, "HP [");
+            tg.setForegroundColor(red);
+            for (int k = 0; k < hp; k++) tg.putString(4+k, 0, "#");
+            tg.setForegroundColor(dim);
+            for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "#");       
+            tg.setForegroundColor(wht);
+            tg.putString(4+hp_max, 0, "]  ◆  SCORE: " + score); // 13 + 3
+            //String score = String.format("%3d", j.optInt("score", -1));
         }
             shift = 0;        
         }
