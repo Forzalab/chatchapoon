@@ -141,7 +141,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
     public synchronized void spawnWave(int amt) {
         // pick side -> rnd coords
-        int side = r.nextInt(3);
+        int side = r.nextInt(4);
         int wx = -156, wy = -751;
         
         // 0 1 2 3 clockwise, 0 north.
@@ -212,7 +212,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         // killer find and set pt
         if (!victim.hp.isDead()) return; // onyl cred pt when ded
 
-        if (victim.type == "player")
+        if ("player".equals(victim.type))
             victim.hp.triggerRespawn(true);
         
         Player bOwner = playerIdMap.get(bullet.ownerID);
@@ -231,7 +231,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         hitter.startHitCooldown();
         victim.hp.setHP(victim.hp.getHP() - 1); // e.hp -= hitter.damage;
         
-        if (victim.hp.isDead() && victim.type == "player")
+        if (victim.hp.isDead() && "player".equals(victim.type))
             victim.hp.triggerRespawn(true);        
     }
     

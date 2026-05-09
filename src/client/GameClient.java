@@ -36,6 +36,7 @@ public class GameClient {
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
+    static HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();    
     
     // Sockets
     private static Socket socket;
@@ -132,6 +133,19 @@ public class GameClient {
 
     // JSONArray -> tg rendering
     private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava, JSONObject jao) { try { 
+    // hahsmap for color assignment id-color
+        HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();
+    //            TextColor.RGB bkg_init = new TextColor.RGB(15,23,42);        
+        TextColor.RGB bkg = new TextColor.RGB(15,23,42);
+        TextColor.RGB wht = new TextColor.RGB(255,255,255);            
+        TextColor.RGB red = new TextColor.RGB(255,0,0);              
+        TextColor.RGB dim = new TextColor.RGB(64,64,64);                 
+        TextColor.RGB grn = new TextColor.RGB(0,230,0);                  
+        TextColor.RGB grn_dim = new TextColor.RGB(6,128,6);
+        TextColor.RGB yel = new TextColor.RGB(255, 190, 0);
+        TextColor.RGB cyn = new TextColor.RGB(0, 210, 210);
+
+
       // direction RENDER can be oevrriden if sth gets in its way (0,0)
         shift = 0;
         for (int i = 0; i < ja.length(); i++) {
@@ -142,6 +156,43 @@ public class GameClient {
             if (ja.getJSONObject(i) == null) continue;
             JSONObject j = ja.getJSONObject(i);
             if (j == null) continue;
+
+            // render non-players for now
+            if (!"player".equals(Utility.optString(j, "type"))) {
+                    int rx = j.optInt("x", -1);
+                    int ry = j.optInt("y", -1);
+                    String avatar = ava; // for now, will customize later
+
+                // check id to parse direction
+                if (playerID.equals(Utility.optString(j, "id")))
+                    direction = Utility.optString(j, "direction");
+
+                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                if (rx != -1 && ry > 0) {
+                    tg.putString(rx, ry, avatar);
+    //                tg.putString(0, 0, "  ");                
+    //                if (direction != null) tg.putString(0, 0, direction);
+    // enforce rendering proioty later?!?!!??
+                }
+            }
+            
+            if (!"player".equals(j.optString("type"))) continue;
+            /// belownhere is players obly rendering logic
+            String playerId = Utility.optString(j,"id");
+            if (playerId == null) continue;
+
+            int r, g, b;
+            if (!playerColor.containsKey(playerId)) { do {
+                int hashColor = playerId.hashCode();
+                r = ((((hashColor & 0xFF0000) >> 16) << 16) | 0x40) % 255;
+                g = ((((hashColor & 0x00FF00) >> 8) << 8) | 0x40) % 255;
+                b = (((hashColor & 0x0000FF)) | 0x40) % 255;
+                TextColor color = new TextColor.RGB(r, g, b);
+                playerColor.put(playerId, color);
+            } while (r < 220 && r > 180 && g < 220 && g > 180 && b < 220 && b > 180); }
+
+            TextColor color = playerColor.get(playerId);
+
             int rx = j.optInt("x", -1);
             int ry = j.optInt("y", -1);
             String avatar = ava; // for now, will customize later
@@ -150,32 +201,27 @@ public class GameClient {
             if (playerID.equals(Utility.optString(j, "id")))
                 direction = Utility.optString(j, "direction");
 
-            tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
             if (rx != -1 && ry > 0) {
+                if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
                 tg.putString(rx, ry, avatar);
-//                tg.putString(0, 0, "  ");                
-//                if (direction != null) tg.putString(0, 0, direction);
-// enforce rendering proioty later?!?!!??
-            }
-
+                tg.setForegroundColor(wht);                
+            }            
+         
             // scoreboard
-            if (!"player".equals(j.optString("type"))) continue;
             String player = String.format("%-12s", Utility.optString(j, "id"));
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;
-            tg.putString(Protocol.ARENA_WIDTH-15, Protocol.ARENA_HEIGHT-1- shift++, display);        
+            if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
+            tg.putString(Protocol.ARENA_WIDTH-15, Protocol.ARENA_HEIGHT-1- shift, player);        
+            int wRed = color.getRed() + (int)((255 - color.getRed()) * 0.75);
+            int wGreen = color.getGreen() + (int)((255 - color.getGreen()) * 0.75);
+            int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.75);                       
+            TextColor whitened = new TextColor.RGB(wRed, wGreen, wBlue);
+            tg.setForegroundColor(whitened);                            
+            tg.putString(Protocol.ARENA_WIDTH-15 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                       tg.setForegroundColor(wht);                  
 
             // HUD bar
             if (!playerID.equals(Utility.optString(j, "id"))) continue;
-//            TextColor.RGB bkg_init = new TextColor.RGB(15,23,42);        
-            TextColor.RGB bkg = new TextColor.RGB(15,23,42);
-            TextColor.RGB wht = new TextColor.RGB(255,255,255);            
-            TextColor.RGB red = new TextColor.RGB(255,0,0);              
-            TextColor.RGB dim = new TextColor.RGB(64,64,64);                 
-            TextColor.RGB grn = new TextColor.RGB(0,230,0);                  
-            TextColor.RGB grn_dim = new TextColor.RGB(6,128,6);
-            TextColor.RGB yel = new TextColor.RGB(255, 190, 0);
-            TextColor.RGB cyn = new TextColor.RGB(0, 210, 210);
 
             String tick = jao.optInt("tickCounter", 0) + "";
             String wave = jao.optInt("waveNumber", 1) + "";
