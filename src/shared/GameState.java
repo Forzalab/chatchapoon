@@ -164,6 +164,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         // O(enemies * players) not gud as Quadtree
         // but fuck Quadtree
         for (Enemy e : enemies) {
+            e.uptickHitCooldown();
             if (e.despawnTimer-- <= 0)
                 e.hp.setHP(0).triggerRespawn(false);
                 
@@ -217,7 +218,9 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         if (!hitter.pos.equals(victim.pos)) return; // same pos?
         else if (hitter.id.equals(victim.id)) return; // suicide?
         else if (victim.hp.isDead()) return; // ded? dont hit a zombie
-        
+        else if (hitter.hitCooldown() > 0) return; // cooldown
+
+        hitter.startHitCooldown();
         victim.hp.setHP(victim.hp.getHP() - 1); // e.hp -= hitter.damage;
         
         if (victim.hp.isDead() && victim.type == "player")

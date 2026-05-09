@@ -82,6 +82,12 @@ public class GameClient {
                 tg.putString(cols / 3, rows / 2 - 1, "uwu putty scween too smol :3");
                 tg.putString(cols / 3, rows / 2, "need at least " + Protocol.MIN_COLS + "x" + Protocol.MIN_ROWS + ", rn is " + cols + "x" + rows);
                 tg.putString(cols / 3, rows / 2 + 1, "[ PRESS ANY KEY TO EXIT ]");
+
+//                tg.putString(5, 5, "♠");   // spade
+//tg.putString(5, 6, "♥");   // heart  
+//tg.putString(5, 7, "─");   // box drawing
+//tg.putString(5, 8, "↑");   // arrow
+
                 // keystroke
                 screen.refresh();
                 if (screen.readInput().getKeyType() != null) break;
@@ -142,11 +148,15 @@ public class GameClient {
             int rx = j.optInt("x", -1);
             int ry = j.optInt("y", -1);
             String avatar = ava; // for now, will customize later
+    //        ava = (avatar == "@") ? "♥" : ava;
+  //          ava = (avatar == "-") ? "👮" : ava;
 
             // check id to parse direction
             if (playerID.equals(Utility.optString(j, "id")))
                 direction = Utility.optString(j, "direction");
-                
+
+//            tg.putString(5, 6, "♥");
+            tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
             if (rx != -1 && ry != -1) {
                 tg.putString(rx, ry, avatar);
 //                tg.putString(0, 0, "  ");                
@@ -174,9 +184,9 @@ public class GameClient {
             int hp_max = j.optInt("hp_max", 3);            
             tg.putString(0, 0, "HP [");
             tg.setForegroundColor(red);
-            for (int k = 0; k < hp; k++) tg.putString(4+k, 0, "#");
-            tg.setForegroundColor(dim);
-            for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "#");       
+            for (int k = 0; k < hp; k++) tg.putString(4+k, 0, "♥");
+            tg.setForegroundColor(red);
+            for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "♡");       
             tg.setForegroundColor(wht);
             tg.putString(4+hp_max, 0, "]  ◆  SCORE: " + score); // 13 + 3
             //String score = String.format("%3d", j.optInt("score", -1));
@@ -328,9 +338,9 @@ public class GameClient {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
-                    if (jap != null) processPlayersArrayRender(jap, tg, "@");
+                    if (jap != null) processPlayersArrayRender(jap, tg, "♤");
                     if (jab != null) processPlayersArrayRender(jab, tg, "*");
-                    if (jae != null) processPlayersArrayRender(jae, tg, "E");  
+                    if (jae != null) processPlayersArrayRender(jae, tg, "P");  
                     screen.refresh();
                 }
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {

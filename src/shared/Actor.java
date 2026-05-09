@@ -11,7 +11,11 @@ public class Actor extends Entity {
     public final String id;
     public final String type;
 */
-
+    private int hitCooldown = 0;
+    public void uptickHitCooldown() { if (hitCooldown <= 0) return; hitCooldown--; }
+    public void startHitCooldown() { if (hitCooldown >= Protocol.HIT_COOLDOWN_TICKS) return; hitCooldown = Protocol.HIT_COOLDOWN_TICKS; }   
+    public int hitCooldown() { return hitCooldown; }
+    
     public class HP {
         private int _hp;
         public final int _hpMax; // 'int' will bite me in the ass after

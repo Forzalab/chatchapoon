@@ -126,6 +126,7 @@ public class GameServer {
 
                 // revive
                 for (Player p : gameState.players) {
+                    p.uptickHitCooldown();
                     if (!p.dead()) continue;
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
