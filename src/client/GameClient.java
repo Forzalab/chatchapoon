@@ -464,8 +464,7 @@ public class GameClient {
                 }
                 else if ("ENTITY_STATE".equals(_type)) {
                     if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) continue;
-                    if ("LOBBY".equals(Utility.optString(to_render, "type"))) screen.clear();
-                    switchState(State.GAME);
+                    if ("LOBBY".equals(Utility.optString(to_render, "type"))) { screen.clear(); switchState(State.GAME); }
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
                 else if ("LEADERBOARD".equals(_type)) {
