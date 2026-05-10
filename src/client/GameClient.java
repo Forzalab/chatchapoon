@@ -33,6 +33,33 @@ public class GameClient {
     private static String direction = "";
     private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown;
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
+
+    // keyboard mode    
+    private State state = State.BLOCK;
+    public static enum State {                                                                                BLOCK(0), // alow join
+        GAME(1), // bl6ocm all join
+        CHAT(2); // block all join
+        private final int val;
+        private State(int v) { val = v; }
+        private int getVal() { return val; }
+        private static final State[] vals = values();
+        private static State statePrev;
+        private State mutate(State s) {
+          statePrev = this;
+          return s;
+        }
+    }
+    private synchronized State get() {
+        return state;
+    }
+    private synchronized State getPrev() {
+        return State.statePrev;
+    }
+    private synchronized void switchState(State s) {
+        state = state.mutate(s);
+    }
+        
+    // render mode is obtained thru server
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
@@ -98,6 +125,38 @@ public class GameClient {
         } catch (Exception e) {
             closeClient();
             System.out.println("Exception caught GameClient unfit_screen: " + e);          
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+    
+    private static void draw_reject_screen() {
+        try {
+            TextGraphics tg = screen.newTextGraphics();
+            screen.clear();
+            while (true) {
+                // render
+                tg.setBackgroundColor(new TextColor.RGB(255, 255, 255));
+                tg.setForegroundColor(new TextColor.RGB(0, 0, 0));
+                tg.drawRectangle(new TerminalPosition(2, 2), new TerminalSize(cols - 2 - 2, rows - 2 - 2), '+');
+                tg.setBackgroundColor(new TextColor.RGB(160, 0, 0));
+                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                tg.putString(cols / 3, rows / 2 - 1, "u came too late :(( game is ongoin'");
+                tg.putString(cols / 3, rows / 2, "rejoin when lobby is opened");
+                tg.putString(cols / 3, rows / 2 + 1, "[ PRESS ANY KEY TO EXIT ]");
+
+                // keystroke
+                screen.refresh();
+                if (screen.readInput().getKeyType() != null) break;
+                Thread.sleep(Protocol.TICK_MS);
+            }
+
+            // cease
+            closeClient();
+            System.exit(0);
+        } catch (Exception e) {
+            closeClient();
+            System.out.println("Exception caught GameClient reject_screen: " + e);          
             e.printStackTrace();
             System.exit(0);
         }
@@ -371,13 +430,7 @@ public class GameClient {
                 if (_type == null) continue;
                 // JOIN_ACK test
                 else if ("JOIN_REJECT".equals(_type)) {
-                    KeyStroke keystroke = screen.pollInput();
-                    do {
-                        tg.putString(cols/5, rows/2, "Rejected because game is ongoing!");
-                        tg.putString(cols/5, rows/2+1, "Press [ESC] to quit client.");
-                        screen.refresh();
-                    } while (keystroke != null && keystroke.getKeyType() == KeyType.Escape);
-                    closeClient();
+                    draw_reject_screen();
                 }
                 else if ("JOIN_ACK".equals(_type)) {
                     // recieve
@@ -398,6 +451,9 @@ public class GameClient {
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
                 else if ("LEADERBOARD".equals(_type)) {
+                    to_render = new JSONObject(line);
+                }
+                else if ("LOBBY".equals(_type)) {
                     to_render = new JSONObject(line);
                 }
 			}
@@ -438,7 +494,8 @@ public class GameClient {
 
     public static void splash() { try {
         TextColor.RGB vg = new TextColor.RGB(1,13,1);
-        TextColor.RGB white = new TextColor.RGB(255,255,255);                  
+        TextColor.RGB white = new TextColor.RGB(245,255,245);                      
+        TextColor.RGB white_dim = new TextColor.RGB(80,110,80);                  
         screen.clear();
         TextGraphics tg = screen.newTextGraphics();
         tg.setBackgroundColor(vg);
@@ -467,7 +524,7 @@ public class GameClient {
         int length = lines[9].length();
 
         for (int tick = 0; tick <= 10; tick++) {
-            if (tick%10==0) tg.setForegroundColor(vg);
+            if (tick%10==0) tg.setForegroundColor(white_dim);
             else if (tick%5==0) tg.setForegroundColor(white);        
             
             for (int i = 0; i < lines.length; i++) {
@@ -476,6 +533,49 @@ public class GameClient {
             screen.refresh();
             Thread.sleep(Protocol.TICK_MS * 2);
         }
+    } catch (Exception e) {} }
+
+
+    public static void renderLobby() { try {
+        TextColor.RGB vg = new TextColor.RGB(1,13,1);
+        TextColor.RGB white = new TextColor.RGB(225,245,225);                      
+        TextColor.RGB white_dim = new TextColor.RGB(80,110,80);                  
+        
+        TextGraphics tg = screen.newTextGraphics();
+        tg.setBackgroundColor(vg);
+        TextCharacter space = new TextCharacter('.', vg, vg);
+      tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+        String[] lines = {
+            "                  ███████████|     ██|     ██|      █████████|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██████████|      █████████|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      █████████|",
+            "",
+            "  ███|    ███|     ██████████|      ████████|       █████████|     ███████████|",
+            "  ███|    ███|     ███|                ██|         ███|                ███|",
+            "  ███|    ███|     ███|                ██|         ███|                ███|",
+            "  ███████████|     █████████|          ██|          ██████|            ███|",
+            "  ███|    ███|     ███|                ██|              █████|         ███|",
+            "  ███|    ███|     ███|                ██|                 ██|         ███|",
+            "  ███|    ███|     ███|                ██|                 ██|         ███|",
+            "  ███|    ███|     ██████████|      ████████|      █████████|          ███|"
+        };
+
+        int length = lines[9].length();
+
+//        for (int tick = 0; tick <= 10; tick++) {
+            tg.setForegroundColor(white);        
+            
+            for (int i = 0; i < lines.length; i++) {
+                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + i - lines.length/2, lines[i]);
+            }
+            screen.refresh();
+            Thread.sleep(Protocol.TICK_MS * 2);
+  //         }
     } catch (Exception e) {} }
         
     // main({player_name, host})
@@ -507,7 +607,7 @@ public class GameClient {
             TextGraphics tg = screen.newTextGraphics();
             tg.setBackgroundColor(new TextColor.RGB(15,23,42));
             TextCharacter space = new TextCharacter('.', new TextColor.RGB(15,23,42), new TextColor.RGB(15,23,42));
-            tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+//            tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
 
             // EVERYTHING ABOVE RUNS ONCE
             // EVERYTHING BELOW RUNS IN A LOOP
@@ -517,8 +617,13 @@ public class GameClient {
                 processServerBroadcast(reader, tg);
             }); listener.start();
 
+            // pre-Thread 2: reject screen
+            
+
             // --- Thread 2: Render-keystroke loop ---
             while (!((!( "render".equals(to_render) && !"localhost".equals(host)) && !(!Utility.isJSONValid(join) && !"anon".equals(player_name))) && !(!("render".equals(to_render) || !Utility.isJSONValid(join)) || ("localhost".equals(host) || "anon".equals(player_name))))) {         
+
+                // ==== RENDER ====
                 // skip null
                 // pls check null keystroke always
                 if (to_render == null) {            
@@ -532,13 +637,15 @@ public class GameClient {
                     continue;
                 }
                 
+                if ("LOBBY".equals(Utility.optString(to_render, "type"))) {
+                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+                    renderLobby();
+                    continue;
+                }
                 // Render sth first
                 // all screen stuff, THEN indiv elem
-                tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
-                // HUD MISTBNE AT BOTTOM
-//                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
-///!!!!! if making lobby state, change the tickCounter check to sth else!!!!!!!!!
-                if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
+                else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
+                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
@@ -550,7 +657,8 @@ public class GameClient {
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
                     renderLeaderboard(tg);
                 }            
-                
+
+                // ==== keyboard ====                        
                 KeyStroke keystroke = screen.pollInput();
                 // pls check null keystroke always
                 if (keystroke == null) {            
@@ -566,6 +674,14 @@ public class GameClient {
 //                    listener.interrupt();
                     break;
                 }
+
+                // DO NOT REGISTER KEY IF NOT ON BATTLE MODE
+                // only esc
+                if (!"ENTITY_STATE".equals(Utility.optString(to_render, "type"))) {
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
                 
                 // Register and send out key if not disconnect
                 // wont send anything if it isnt a valid mapped key
@@ -576,7 +692,9 @@ public class GameClient {
                     String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
                     writer.println(sendMsg);
                 }
-        
+
+                // ==== now render ====
+
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
             }
