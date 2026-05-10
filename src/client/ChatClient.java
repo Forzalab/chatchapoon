@@ -18,7 +18,7 @@ import com.googlecode.lanterna.*;
 import shared.*;
 
 public class ChatClient {
-    static volatile String msgBuffer;
+    static volatile String msgBuffer = "";
     static volatile int scrollOffset = 0, renderOffset = 0; // from bottom up
     static CopyOnWriteArrayList<String> msgBlock = new CopyOnWriteArrayList<String>();
     static CopyOnWriteArrayList<JSONObject> msgQ = new CopyOnWriteArrayList<JSONObject>();    
@@ -78,9 +78,11 @@ public class ChatClient {
         if (string.isEmpty()) return offset;
         tokenize(string);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-        for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT-3-offset >= Protocol.BORDER + 1 + 10); i--, offset++) {
+//        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+3,0), new TerminalSize(Protocol.SIDEBAR_WIDTH - 4, Protocol.ARENA_HEIGHT-3-Protocol.BORDER),' ');
+        for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT-3-offset >= Protocol.BORDER); i--, offset++) {
             tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT-3-offset, msgBlock.get(i));
         }
+        msgBlock.clear();
         return offset;
     }
     static synchronized void render() {
@@ -88,8 +90,8 @@ public class ChatClient {
         // input box
         // chats: prize and nonPrize
         int offset = 0;
-        for (int i = 0; i < msgQ.size(); i++) {
-            String s = formatNormal(msgQ.get(msgQ.size()-1));
+        for (int i = msgQ.size() - 1; i >= 0; i--) {
+            String s = formatNormal(msgQ.get(i));
             offset = displayLine(s, offset);
         }
     }

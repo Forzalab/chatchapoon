@@ -771,9 +771,9 @@ public class GameClient {
                 if (state == State.CHAT) {
                     if (keystroke.getCharacter() == null) continue;
                     else if (keystroke.getKeyType() == KeyType.Enter) {
+                        ChatClient.msgBuffer = ChatClient.msgBuffer.replace("\n", "");
                         ChatClient.send(ChatClient.msgBuffer, playerID, player_name);
-                    }
-                    ChatClient.msgBuffer += keystroke.getCharacter();
+                    } else ChatClient.msgBuffer += keystroke.getCharacter();
                     continue;
                 }                
                 
