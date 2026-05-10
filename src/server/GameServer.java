@@ -55,10 +55,13 @@ public class GameServer {
                 String authorID = json.getString("playerId");
                 alterState(cmd, authorID);
             }
-            else if (type.equals("LEAVE")) {
+            else if (type.equals("CHAT")) {
                 broadcastAll(msg); // relay old msg
+            } 
+            else if (type.equals("LEAVE")) {
                 System.out.println("Client disconnected!");
-            }
+                broadcastAll(msg); // relay old msg
+            } 
         }
      }}
 

@@ -66,10 +66,11 @@ public class GameClient {
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
     static HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();    
+    public static String playerName = "";
     
     // Sockets
     private static Socket socket;
-    private static PrintWriter writer;
+    static PrintWriter writer;
     private static BufferedReader reader;
 
     // Magic lookup table
@@ -125,6 +126,9 @@ public class GameClient {
             closeClient();
             System.exit(0);
         } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient unfit_screen: " + e);          
             e.printStackTrace();
@@ -157,6 +161,9 @@ public class GameClient {
             closeClient();
             System.exit(0);
         } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient reject_screen: " + e);          
             e.printStackTrace();
@@ -185,6 +192,9 @@ public class GameClient {
                 draw_unfit_screen();
             }
         } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient lanterna_init(): " + e);
             e.printStackTrace();
@@ -276,8 +286,9 @@ public class GameClient {
             String avatar = ava; // for now, will customize later
 
             // check id to parse direction
-            if (playerID.equals(Utility.optString(j, "id")))
+            if (playerID.equals(Utility.optString(j, "id"))) {
                 direction = Utility.optString(j, "direction");
+            }
 
             if (rx != -1 && ry > 0 && "player".equals(j.optString("type"))) {
                 if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
@@ -414,6 +425,9 @@ public class GameClient {
             shift = 0;        
         }
         catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught: processPlayersArrayRender " + e);
             e.printStackTrace();
@@ -440,21 +454,13 @@ public class GameClient {
                     String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
                     writer.println(sendMsg);
                 }
-                else if ("STATE".equals(_type)) {
-/*                    if (!playerID.equals(Utility.optString(j, "id"))) continue;;
-                    int _color = j.optInt("color", 60);
-                    to_render = "[SERVER] " + _type + " | " + playerID + " | " + _color;
-                    shift++;
-                    String _playerId = Utility.optString(j, "playerId");
-                    to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", playerID);*/
-//                    to_render = new JSONObject().put("message", Utility.optString(j, "message"));
-                }
                 else if ("ENTITY_STATE".equals(_type)) {
                     if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) continue;
                     switchState(State.GAME);
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
                 else if ("LEADERBOARD".equals(_type)) {
+                    if ("LOBBY".equals(Utility.optString(to_render, "type"))) continue;
                     switchState(State.BLOCK);
                     to_render = new JSONObject(line);
                 }
@@ -462,8 +468,16 @@ public class GameClient {
                     switchState(State.BLOCK);
                     to_render = new JSONObject(line);
                 }
+                
+                else if ("CHAT".equals(_type)) {
+                    String msg = j.optString("msg");
+                    System.err.println(msg);
+                }
 			}
         } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient listener thread: " + e);
             e.printStackTrace();
@@ -729,12 +743,35 @@ public class GameClient {
                     continue;
                 }
                 
-                // Handle disconnect key
+                // Handle disconnect + chat key
                 if (keystroke.getKeyType() == KeyType.Escape) {
+                    if (state == State.CHAT) {
+                        state = state.mutate(State.GAME);
+                        screen.refresh();
+                        Thread.sleep(Protocol.TICK_MS);
+                        continue;
+                    }
                     String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
                     writer.println(discnt);
 //                    listener.interrupt();
                     break;
+                }
+
+                if (state == State.CHAT) {
+                    if (keystroke.getCharacter() == null) continue;
+                    else if (keystroke.getKeyType() == KeyType.Enter) {
+                        ChatClient.send(ChatClient.msgBuffer, playerID, player_name);
+                    }
+                    ChatClient.msgBuffer += keystroke.getCharacter();
+                    continue;
+                }                
+                
+                // Handle chat switch
+                if (keystroke.getKeyType() == KeyType.Character && 'c' == keystroke.getCharacter()) {
+                    if (state == State.GAME) state = state.mutate(State.CHAT);
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
                 }
 
                 // DO NOT REGISTER KEY IF NOT ON BATTLE MODE
@@ -765,6 +802,8 @@ public class GameClient {
             System.exit(0);
 
         } catch (Exception e) {
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient main(): " + e);
             e.printStackTrace();
