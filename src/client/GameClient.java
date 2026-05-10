@@ -284,7 +284,7 @@ public class GameClient {
             }            
          
             // scoreboard
-            String player = String.format("%-12s", Utility.optString(j, "id"));
+            String player = String.format("%-12s", Utility.optString(j, "name"));
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;
             if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
@@ -571,7 +571,7 @@ public class GameClient {
             tg.setForegroundColor(white);        
             
             for (int i = 0; i < lines.length; i++) {
-                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + i - lines.length/2, lines[i]);
+                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/3 - Protocol.BORDER + i - lines.length/2, lines[i]);
             }
             screen.refresh();
             Thread.sleep(Protocol.TICK_MS * 2);
@@ -640,7 +640,7 @@ public class GameClient {
                 if ("LOBBY".equals(Utility.optString(to_render, "type"))) {
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
                     renderLobby();
-                    continue;
+//                    continue;
                 }
                 // Render sth first
                 // all screen stuff, THEN indiv elem
