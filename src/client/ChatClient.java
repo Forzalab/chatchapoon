@@ -20,8 +20,8 @@ import shared.*;
 public class ChatClient {
     static volatile String msgBuffer;
     static volatile int scrollOffset = 0, renderOffset = 0; // from bottom up
-    static ConcurrentLinkedQueue<String> msgBlock = new ConcurrentLinkedQueue<String>();
-    static ConcurrentLinkedQueue<JSONObject> msgQ = new ConcurrentLinkedQueue<JSONObject>();    
+    static CopyOnWriteArrayList<String> msgBlock = new CopyOnWriteArrayList<String>();
+    static CopyOnWriteArrayList<JSONObject> msgQ = new CopyOnWriteArrayList<JSONObject>();    
     static TextGraphics tg = GameClient.screen.newTextGraphics();
     static synchronized void send(String msg, String id, String name) {
         JSONObject msgJSON = new JSONObject()
@@ -74,12 +74,12 @@ public class ChatClient {
             s = stillHaveString ? s.substring(Protocol.MAX_CHAR_PER_LINE) : "";
         }
     }
-    static void displayLine(String string, int offset) {
+    static int displayLine(String string, int offset) {
         if (string.isEmpty()) return offset;
         tokenize(string);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-        while (msgBlock.peek() != null) {
-            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT-3-offset++, msgBlock.poll());
+        for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT-3-offset >= Protocol.BORDER + 1 + 10); i--, offset++) {
+            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT-3-offset, msgBlock.get(i));
         }
         return offset;
     }
@@ -87,7 +87,10 @@ public class ChatClient {
         // box
         // input box
         // chats: prize and nonPrize
-        String s = formatNormal(msgQ.peek());
-        displayLine(s, renderOffset);
+        int offset = 0;
+        for (int i = 0; i < msgQ.size(); i++) {
+            String s = formatNormal(msgQ.get(msgQ.size()-1));
+            offset = displayLine(s, offset);
+        }
     }
 }

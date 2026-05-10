@@ -479,7 +479,7 @@ public class GameClient {
                 }                
                 else if ("CHAT".equals(_type)) {
 //                     String msg = j.optString("msg");
-                    ChatClient.msgQ.offer(j);
+                    ChatClient.msgQ.add(j);
 //                    System.err.println(msg);
                 }
 			}
