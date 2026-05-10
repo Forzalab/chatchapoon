@@ -647,7 +647,7 @@ public class GameClient {
         tg.setForegroundColor(white);        
         
         for (int i = 0; i < lines.length; i++) {
-            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/3 - Protocol.BORDER + i - lines.length/2, lines[i]);
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/5*2 - Protocol.BORDER + i - lines.length/2, lines[i]);
         }
 
         JSONArray players = to_render.getJSONArray("players");
@@ -657,7 +657,7 @@ public class GameClient {
                 tg.setForegroundColor(white);
             else tg.setForegroundColor(white_txtdim); 
             String playerName = players.getJSONObject(i).optString("name");
-            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/3 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/5*2 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
             
         }
         
@@ -730,6 +730,7 @@ public class GameClient {
                 // Render sth first
                 // all screen stuff, THEN indiv elem
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
+//                    switchState(State.GAME);
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
@@ -776,8 +777,8 @@ public class GameClient {
                 }                
                 
                 // Handle chat switch
-                if (keystroke.getKeyType() == KeyType.Character && 'c' == keystroke.getCharacter()) {
-                    if (state == State.GAME) state = state.mutate(State.CHAT);
+                if (state == State.GAME && keystroke.getKeyType() == KeyType.Character && 'c' == keystroke.getCharacter()) {
+                    switchState(State.CHAT);
                     screen.refresh();
                     Thread.sleep(Protocol.TICK_MS);
                     continue;
