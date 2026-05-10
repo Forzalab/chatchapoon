@@ -35,7 +35,7 @@ public class GameClient {
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
 
     // keyboard mode    
-    private State state = State.BLOCK;
+    private static State state = State.BLOCK;
     
     public static enum State {
         BLOCK(0), // alow join
@@ -51,13 +51,13 @@ public class GameClient {
           return s;
         }
     }
-    private synchronized State get() {
+    private static synchronized State get() {
         return state;
     }
-    private synchronized State getPrev() {
+    private static synchronized State getPrev() {
         return State.statePrev;
     }
-    private synchronized void switchState(State s) {
+    private static synchronized void switchState(State s) {
         state = state.mutate(s);
     }
         
@@ -451,12 +451,15 @@ public class GameClient {
                 }
                 else if ("ENTITY_STATE".equals(_type)) {
                     if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) continue;
+                    switchState(State.GAME);
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
                 else if ("LEADERBOARD".equals(_type)) {
+                    switchState(State.BLOCK);
                     to_render = new JSONObject(line);
                 }
                 else if ("LOBBY".equals(_type)) {
+                    switchState(State.BLOCK);
                     to_render = new JSONObject(line);
                 }
 			}
@@ -677,10 +680,7 @@ public class GameClient {
             // --- Thread 1: JSON bureaucracy loop ---
             Thread listener = new Thread(() -> {
                 processServerBroadcast(reader, tg);
-            }); listener.start();
-
-            // pre-Thread 2: reject screen
-            
+            }); listener.start();            
 
             // --- Thread 2: Render-keystroke loop ---
             while (!((!( "render".equals(to_render) && !"localhost".equals(host)) && !(!Utility.isJSONValid(join) && !"anon".equals(player_name))) && !(!("render".equals(to_render) || !Utility.isJSONValid(join)) || ("localhost".equals(host) || "anon".equals(player_name))))) {         
@@ -739,7 +739,7 @@ public class GameClient {
 
                 // DO NOT REGISTER KEY IF NOT ON BATTLE MODE
                 // only esc
-                if (!"ENTITY_STATE".equals(Utility.optString(to_render, "type"))) {
+                if (state == State.BLOCK) {
                     screen.refresh();
                     Thread.sleep(Protocol.TICK_MS);
                     continue;
