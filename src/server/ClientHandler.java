@@ -24,7 +24,7 @@ public class ClientHandler implements Runnable {
     }
 
     // server msg mailbox queue for each socket
-    ConcurrentLinkedQueue < String > incoming = new ConcurrentLinkedQueue < > ();
+    ConcurrentLinkedQueue < String > incoming = new ConcurrentLinkedQueue <String> ();
 
     // "push" a msg line into writer
     public synchronized void send(String msg) {
@@ -36,14 +36,14 @@ public class ClientHandler implements Runnable {
     private synchronized void addPlayer() {
         // name is managed by CH, player is id-ed by id.
         Player player = new Player(new Position(GameServer.r.nextInt(Protocol.ARENA_HEIGHT - 1 - 5) + 5, GameServer.r.nextInt(Protocol.ARENA_WIDTH - 1 - 5) + 5), 0, 0, playerId, Protocol.PLAYER_MAX_HP, playerName);
-        GameServer.gameState.players.add(player);
-        playerIndex = GameServer.gameState.players.indexOf(player);
-        GameServer.gameState.playerIdMap.put(playerId, player);
+        GameServer.currentGameState.players.add(player);
+        playerIndex = GameServer.currentGameState.players.indexOf(player);
+        GameServer.currentGameState.playerIdMap.put(playerId, player);
         // colorTaken handling
     }
 
     private synchronized void removePlayer() {
-        GameServer.gameState.players.removeIf(p -> p.id.equals(playerId));
+        GameServer.currentGameState.players.removeIf(p -> p.id.equals(playerId));
     }
     
     public void run() {
@@ -66,7 +66,7 @@ public class ClientHandler implements Runnable {
             this.playerName = j.optString("name", "anon");
 
             // force disconnect late player
-            if (GameServer.gameState.get() != GameState.State.LOBBY) {
+            if (GameServer.currentGameState.get() != GameState.State.LOBBY) {
                 String rjtState = new JSONObject().put("type", "JOIN_REJECT").put("playerId", playerId).toString();
                 send(rjtState);
                 try { socket.close(); } catch (IOException ignored) {}
@@ -78,6 +78,10 @@ public class ClientHandler implements Runnable {
 
             GameServer.clients.add(this); // GameServer::clients lol, CH
             addPlayer(); // add into GameState list
+
+            // check player count and if at 10, switch state
+//            if (GameServer.currentGameState.players.length() > 9)
+ //               GameServer.currentGameState.switchNextState();
             
             // now await cli forevarrr
             while ((line = reader.readLine()) != null) {
@@ -89,7 +93,7 @@ public class ClientHandler implements Runnable {
         } finally {
             GameServer.clients.remove(this);
             removePlayer();
-            GameServer.gameState.playerIdMap.remove(playerId);
+            GameServer.currentGameState.playerIdMap.remove(playerId);
             try { socket.close(); } catch (IOException ignored) {}
         }
     }

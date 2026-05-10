@@ -7,7 +7,7 @@ public class Protocol {
     public static int ARENA_HEIGHT = 48;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
-    public static final int MAX_PLAYERS = 20;
+    public static final int MAX_PLAYERS = 4;
 
     // for GameState
     public static final int LEVEL_DURATION_TICKS = 260;
@@ -16,6 +16,9 @@ public class Protocol {
     public static final int BORDER = 1;
     public static final int FIRE_COOLDOWN_TICKS = 10;
     public static final int HIT_COOLDOWN_TICKS = 60;
+    public static final int LOBBY_CLOSE_IN = 20 * TICK_MS;
+
+    
 //    public static final int WAVE_INTERVAL_TICKS = 600;
     public static final int MAX_BULLETS = 200;
     public static final float PLAYER_SPEED = 0.5f;

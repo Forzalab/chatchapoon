@@ -12,6 +12,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     private int[] idCounter = {0, 0, 0}; // hardcoded P E B
     private Random r = new Random();
     private State state = State.LOBBY;
+    private static long inception;
     public List<Player> players = new CopyOnWriteArrayList<Player>();
     public List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
     public List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
@@ -22,20 +23,25 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     // game state 3 ones
     public static enum State {
         LOBBY(0), // alow join    
-        BATTLE(1), // blocm all join
+        BATTLE(1), // bl6ocm all join
         POST_BATTLE(2); // block all join        
         private final int val;
         private State(int v) { val = v; }
         private int getVal() { return val; }
         private static final State[] vals = values();
+        private static State statePrev;
         private State next() {
           int index = Utility.mod(this.ordinal() + 1, vals.length);
+          statePrev = this;
           return vals[index];
         }
     }
 //    private State state = State.LOBBY;
     public synchronized State get() {
         return state;
+    }
+    public synchronized State getPrev() {
+        return State.statePrev;
     }
     public synchronized void switchNextState() {
         state = state.next();
@@ -273,7 +279,8 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             for (Player p : players)
                 processActorHit(e, p);
     }
-    public GameState() {
+    public GameState(long inception) {
+        this.inception = inception;
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
             for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)
