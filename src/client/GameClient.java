@@ -450,6 +450,7 @@ public class GameClient {
 //                    to_render = new JSONObject().put("message", Utility.optString(j, "message"));
                 }
                 else if ("ENTITY_STATE".equals(_type)) {
+                    if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) continue;
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
                 else if ("LEADERBOARD".equals(_type)) {
@@ -575,6 +576,26 @@ public class GameClient {
       tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
       tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER - 1), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
   */               
+
+      tg.setForegroundColor(white);
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
+      tg.drawLine(
+            new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            '─'
+        );
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
+  //    tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
+    tg.drawLine(
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0),
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+        '│'
+    );
+      tg.putString(0,0,"┌");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,0,"┐");
+      tg.putString(0,Protocol.ARENA_HEIGHT + Protocol.BORDER,"└");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + Protocol.BORDER,"┘");
+      
       String[] lines = {
             "                  ███████████|     ██|     ██|      █████████|",
             "                      ███|         ██|     ██|      ██|",
@@ -686,7 +707,7 @@ public class GameClient {
                 // Render sth first
                 // all screen stuff, THEN indiv elem
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
-                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
