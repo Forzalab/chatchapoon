@@ -204,14 +204,14 @@ public class GameClient {
 
     private static void drawDirection(int rx, int ry, String d, TextGraphics tg) {
         if (d == null) return;
-        else if ("N".equals(d)) tg.putString(rx, ry-1, "▲");
-        else if ("S".equals(d)) tg.putString(rx, ry+1, "▼");
-        else if ("E".equals(d)) tg.putString(rx+1, ry, "▶");
-        else if ("W".equals(d)) tg.putString(rx-1, ry, "◀");
-        else if ("NE".equals(d)) tg.putString(rx+1, ry-1, "◥");
-        else if ("NW".equals(d)) tg.putString(rx-1, ry-1, "◤");
-        else if ("SE".equals(d)) tg.putString(rx+1, ry+1, "◢");
-        else if ("SW".equals(d)) tg.putString(rx-1, ry+1, "◣");
+        else if ("N".equals(d)) tg.putString(rx, ry-1, "↑");
+        else if ("S".equals(d)) tg.putString(rx, ry+1, "↓");
+        else if ("E".equals(d)) tg.putString(rx+1, ry, "→");
+        else if ("W".equals(d)) tg.putString(rx-1, ry, "←");
+        else if ("NE".equals(d)) tg.putString(rx+1, ry-1, "↗");
+        else if ("NW".equals(d)) tg.putString(rx-1, ry-1, "↖");
+        else if ("SE".equals(d)) tg.putString(rx+1, ry+1, "↘");
+        else if ("SW".equals(d)) tg.putString(rx-1, ry+1, "↙");
     }
     
     // JSONArray -> tg rendering
