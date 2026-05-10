@@ -11,11 +11,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 */
     private int[] idCounter = {0, 0, 0}; // hardcoded P E B
     private Random r = new Random();
-    public static enum State {
-        BATTLE,
-        LOBBY
-    }
-    public State state = State.LOBBY;
+    private State state = State.LOBBY;
     public List<Player> players = new CopyOnWriteArrayList<Player>();
     public List<Enemy> enemies = new CopyOnWriteArrayList<Enemy>();
     public List<Bullet> bullets = new CopyOnWriteArrayList<Bullet>();
@@ -23,6 +19,29 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
     public HashSet<String> idTaken = new HashSet<String>();
 
+    // game state 3 ones
+    public static enum State {
+        LOBBY(0), // alow join    
+        BATTLE(1), // blocm all join
+        POST_BATTLE(2); // block all join        
+        private final int val;
+        private State(int v) { val = v; }
+        private int getVal() { return val; }
+        private static final State[] vals = values();
+        private State next() {
+          int index = Utility.mod(this.ordinal() + 1, vals.length);
+          return vals[index];
+        }
+    }
+//    private State state = State.LOBBY;
+    public synchronized State get() {
+        return state;
+    }
+    public synchronized void switchNextState() {
+        state = state.next();
+    }
+    
+//    public ServerState 
     public Player playerById(String id) {
         return playerIdMap.get(id);
     }
