@@ -506,9 +506,22 @@ public class GameClient {
 
       tg.setForegroundColor(white);
       tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
-      tg.drawRectangle(new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), 'f');
-//      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
+      tg.drawLine(
+            new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            '─'
+        );
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
   //    tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
+    tg.drawLine(
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0),
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+        '│'
+    );
+      tg.putString(0,0,"┌");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,0,"┐");
+      tg.putString(0,Protocol.ARENA_HEIGHT + Protocol.BORDER,"└");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + Protocol.BORDER,"┘");
       
         String[] lines = {
             "                  ███████████|     ██|     ██|      █████████|",
