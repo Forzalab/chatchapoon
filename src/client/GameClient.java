@@ -36,7 +36,9 @@ public class GameClient {
 
     // keyboard mode    
     private State state = State.BLOCK;
-    public static enum State {                                                                                BLOCK(0), // alow join
+    
+    public static enum State {
+        BLOCK(0), // alow join
         GAME(1), // bl6ocm all join
         CHAT(2); // block all join
         private final int val;
@@ -501,6 +503,13 @@ public class GameClient {
         tg.setBackgroundColor(vg);
         TextCharacter space = new TextCharacter('.', vg, vg);
       tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+
+      tg.setForegroundColor(white);
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
+      tg.drawRectangle(new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), 'f');
+//      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
+  //    tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
+      
         String[] lines = {
             "                  ███████████|     ██|     ██|      █████████|",
             "                      ███|         ██|     ██|      ██|",
@@ -536,16 +545,24 @@ public class GameClient {
     } catch (Exception e) {} }
 
 
-    public static void renderLobby() { try {
+    public static void renderLobby(JSONObject to_render) { try {
         TextColor.RGB vg = new TextColor.RGB(1,13,1);
         TextColor.RGB white = new TextColor.RGB(225,245,225);                      
         TextColor.RGB white_dim = new TextColor.RGB(80,110,80);                  
+        TextColor.RGB white_txtdim = new TextColor.RGB(195,215,195);                          
         
         TextGraphics tg = screen.newTextGraphics();
         tg.setBackgroundColor(vg);
         TextCharacter space = new TextCharacter('.', vg, vg);
       tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
-        String[] lines = {
+/*
+      tg.setForegroundColor(white);
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
+      tg.drawRectangle(new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER - 1), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
+      tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER - 1), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
+  */               
+      String[] lines = {
             "                  ███████████|     ██|     ██|      █████████|",
             "                      ███|         ██|     ██|      ██|",
             "                      ███|         ██|     ██|      ██|",
@@ -564,18 +581,29 @@ public class GameClient {
             "  ███|    ███|     ███|                ██|                 ██|         ███|",
             "  ███|    ███|     ██████████|      ████████|      █████████|          ███|"
         };
-
+        
         int length = lines[9].length();
 
-//        for (int tick = 0; tick <= 10; tick++) {
-            tg.setForegroundColor(white);        
+        tg.setForegroundColor(white);        
+        
+        for (int i = 0; i < lines.length; i++) {
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/3 - Protocol.BORDER + i - lines.length/2, lines[i]);
+        }
+
+        JSONArray players = to_render.getJSONArray("players");
+        
+        for (int i = 0; i < players.length(); i++) {
+            if (playerID.equals(Utility.optString(players.getJSONObject(i), "id")))
+                tg.setForegroundColor(white);
+            else tg.setForegroundColor(white_txtdim); 
+            String playerName = players.getJSONObject(i).optString("name");
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/3 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
             
-            for (int i = 0; i < lines.length; i++) {
-                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/3 - Protocol.BORDER + i - lines.length/2, lines[i]);
-            }
-            screen.refresh();
-            Thread.sleep(Protocol.TICK_MS * 2);
-  //         }
+        }
+        
+        screen.refresh();
+        Thread.sleep(Protocol.TICK_MS * 2);
+
     } catch (Exception e) {} }
         
     // main({player_name, host})
@@ -639,7 +667,7 @@ public class GameClient {
                 
                 if ("LOBBY".equals(Utility.optString(to_render, "type"))) {
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
-                    renderLobby();
+                    renderLobby(to_render);
 //                    continue;
                 }
                 // Render sth first

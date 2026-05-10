@@ -44,6 +44,7 @@ public class ClientHandler implements Runnable {
 
     private synchronized void removePlayer() {
         GameServer.currentGameState.players.removeIf(p -> p.id.equals(playerId));
+        GameServer.currentGameState.playerIdMap.remove(playerId);        
     }
     
     public void run() {
@@ -93,7 +94,6 @@ public class ClientHandler implements Runnable {
         } finally {
             GameServer.clients.remove(this);
             removePlayer();
-            GameServer.currentGameState.playerIdMap.remove(playerId);
             try { socket.close(); } catch (IOException ignored) {}
         }
     }
