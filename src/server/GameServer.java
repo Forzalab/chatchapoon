@@ -20,7 +20,7 @@ public class GameServer {
     static Random r = new Random();
     
     private static JSONObject getTopFive(List<Player> players) {
-        PriorityQueue<Player> prq = new PriorityQueue<>(Collections.reverseOrder());
+        PriorityQueue<Player> prq = new PriorityQueue<>((a, b) -> a.score - b.score);
         // dead player also gets their trophy
         for (Player p : players) prq.add(p);
 
@@ -129,7 +129,11 @@ public class GameServer {
             try { Thread.sleep(Protocol.TICK_MS * 100); } catch (Exception e) {}
             while (true) { try {
                 long start = System.currentTimeMillis();
-
+                if (currentGameState.get() == GameState.State.POST_BATTLE) {
+                    broadcastAll(getTopFive(currentGameState.players));
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
                 // == Mutate GameState ==
                 // do sth pls *poke stick* :[
 
@@ -144,7 +148,7 @@ public class GameServer {
                 if (currentGameState.get() == GameState.State.LOBBY) {
                     lobby();
                     long end = System.currentTimeMillis();
-                    Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));                    
+                    Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
                     continue;
                 }
                 
@@ -254,9 +258,11 @@ public class GameServer {
 
                 // if (currentGameState.getLevelTimeLeft() == 0) → broadcast GAME_OVER with winner (highest score) → write leaderboard.txt → (eventually) close sockets
                 // switch OVER state
+                
                 if (currentGameState.getLevelTimeLeft() != 0) continue;
+                currentGameState.switchNextState();
                 broadcastAll(getTopFive(currentGameState.players));
-                Thread.sleep(Protocol.TICK_MS * 10);
+                Thread.sleep(Protocol.TICK_MS);
 //                System.exit(0); // placeholder
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);
