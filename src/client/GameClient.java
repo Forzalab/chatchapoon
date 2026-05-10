@@ -202,6 +202,18 @@ public class GameClient {
         }
     }
 
+    private static void drawDirection(int rx, int ry, String d, TextGraphics tg) {
+        if (d == null) return;
+        else if ("N".equals(d)) tg.putString(rx, ry-0, "▲");
+        else if ("S".equals(d)) tg.putString(rx, ry+0, "▼");
+        else if ("E".equals(d)) tg.putString(rx+0, ry, "▶");
+        else if ("W".equals(d)) tg.putString(rx-0, ry, "◀");
+        else if ("NE".equals(d)) tg.putString(rx+0, ry-0, "◥");
+        else if ("NW".equals(d)) tg.putString(rx-0, ry-0, "◤");
+        else if ("SE".equals(d)) tg.putString(rx+0, ry+0, "◢");
+        else if ("SW".equals(d)) tg.putString(rx-0, ry+0, "◣");
+    }
+    
     // JSONArray -> tg rendering
     private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava, JSONObject jao) { try { 
     // hahsmap for color assignment id-color
@@ -260,10 +272,6 @@ public class GameClient {
                 int ry = j.optInt("y", -1);
                 String avatar = ava; // for now, will customize later
 
-                // check id to parse direction
-                if (playerID.equals(Utility.optString(j, "id")))
-                    direction = Utility.optString(j, "direction");
-
                 if (rx != -1 && ry > 0) {
                     tg.putString(rx, ry, avatar);
     //                tg.putString(0, 0, "  ");                
@@ -286,13 +294,13 @@ public class GameClient {
             String avatar = ava; // for now, will customize later
 
             // check id to parse direction
-            if (playerID.equals(Utility.optString(j, "id"))) {
+            if (playerID.equals(Utility.optString(j, "id")))
                 direction = Utility.optString(j, "direction");
-            }
 
             if (rx != -1 && ry > 0 && "player".equals(j.optString("type"))) {
                 if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
                 tg.putString(rx, ry, avatar);
+                drawDirection(rx, ry, direction, tg);
                 tg.setForegroundColor(wht);                
             }            
          
@@ -725,8 +733,8 @@ public class GameClient {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
-                    if (jap != null) processPlayersArrayRender(jap, tg, "♤", to_render);
-                    if (jab != null) processPlayersArrayRender(jab, tg, "*", to_render);
+                    if (jap != null) processPlayersArrayRender(jap, tg, "㆟", to_render);
+                    if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
                     if (jae != null) processPlayersArrayRender(jae, tg, "P", to_render);  
                     screen.refresh();
                 }
