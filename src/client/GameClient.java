@@ -26,7 +26,7 @@ import shared.*;
 public class GameClient {
     // Render
     private static int cols = 0, rows = 0;
-    private static Screen screen;
+    static Screen screen;
     private static volatile int shift = 0; // volatile force update value for N threads potentially reading it
     private static volatile JSONObject to_render;
     private static TerminalPosition tp;
@@ -478,8 +478,9 @@ public class GameClient {
                     to_render = new JSONObject(line);
                 }                
                 else if ("CHAT".equals(_type)) {
-                    String msg = j.optString("msg");
-                    System.err.println(msg);
+//                     String msg = j.optString("msg");
+                    ChatClient.msgQ.offer(j);
+//                    System.err.println(msg);
                 }
 			}
         } catch (Exception e) {
@@ -731,6 +732,7 @@ public class GameClient {
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
 //                    switchState(State.GAME);
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
+                    ChatClient.render();
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
