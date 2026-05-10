@@ -78,17 +78,57 @@ public class ChatClient {
         if (string.isEmpty()) return offset;
         tokenize(string);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-//        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+3,0), new TerminalSize(Protocol.SIDEBAR_WIDTH - 4, Protocol.ARENA_HEIGHT-3-Protocol.BORDER),' ');
         for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT-3-offset >= Protocol.BORDER); i--, offset++) {
-            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT-3-offset, msgBlock.get(i));
+            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT-4-offset, msgBlock.get(i));
         }
         msgBlock.clear();
         return offset;
     }
-    static synchronized void render() {
+    static synchronized void render(boolean toEmphasize) {
         // box
+        tg.setBackgroundColor(new TextColor.RGB(15,23,42));
+        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
+        else tg.setForegroundColor(new TextColor.RGB(160,170,205));        
+        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+1,0), new TerminalSize(Protocol.SIDEBAR_WIDTH - 4, Protocol.ARENA_HEIGHT),' ');
         // input box
         // chats: prize and nonPrize
+          tg.drawLine(
+                new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 0),
+                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 0),
+                '─'
+            );
+          tg.drawLine(
+                new TerminalPosition(Protocol.ARENA_WIDTH+1, 0),
+                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, 0),
+                '─'
+            );            
+            
+        tg.drawLine(
+            new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, 0),
+            new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 0),
+            '│'
+        );
+        tg.drawLine(
+            new TerminalPosition(Protocol.ARENA_WIDTH+1, 0),
+            new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 0),
+            '│'
+        );
+          tg.putString(Protocol.ARENA_WIDTH+1,0,"┌");
+          tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,0,"┐");
+          tg.putString(Protocol.ARENA_WIDTH+1,Protocol.ARENA_HEIGHT + 0,"└");
+          tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + 0,"┘");
+
+          if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(136, 152, 189));        
+          else tg.setForegroundColor(new TextColor.RGB(70,95,110));        
+        
+          tg.drawLine(
+                new TerminalPosition(Protocol.ARENA_WIDTH+2, Protocol.ARENA_HEIGHT - 3),
+                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2, Protocol.ARENA_HEIGHT - 3),
+                '─'
+            );           
+
+        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255)); 
+        else tg.setForegroundColor(new TextColor.RGB(170,170,170));             
         int offset = 0;
         for (int i = msgQ.size() - 1; i >= 0; i--) {
             String s = formatNormal(msgQ.get(i));

@@ -595,14 +595,6 @@ public class GameClient {
         tg.setBackgroundColor(vg);
         TextCharacter space = new TextCharacter('.', vg, vg);
       tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
-/*
-      tg.setForegroundColor(white);
-      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
-      tg.drawRectangle(new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER - 1), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
-      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
-      tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER - 1), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
-  */               
-
       tg.setForegroundColor(white);
       tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
       tg.drawLine(
@@ -732,7 +724,8 @@ public class GameClient {
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
 //                    switchState(State.GAME);
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
-                    ChatClient.render();
+                    boolean toEmphasize = (state == State.CHAT);
+                    ChatClient.render(toEmphasize);
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
