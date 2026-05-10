@@ -639,7 +639,7 @@ public class GameClient {
         tg.setForegroundColor(white);        
         
         for (int i = 0; i < lines.length; i++) {
-            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/5*2 - Protocol.BORDER + i - lines.length/2, lines[i]);
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/20*9 - Protocol.BORDER + i - lines.length/2, lines[i]);
         }
 
         JSONArray players = to_render.getJSONArray("players");
@@ -649,7 +649,7 @@ public class GameClient {
                 tg.setForegroundColor(white);
             else tg.setForegroundColor(white_txtdim); 
             String playerName = players.getJSONObject(i).optString("name");
-            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/5*2 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/20*9 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
             
         }
         

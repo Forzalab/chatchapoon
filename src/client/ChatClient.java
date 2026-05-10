@@ -78,7 +78,14 @@ public class ChatClient {
         if (string.isEmpty()) return offset;
         tokenize(string);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-        for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT-3-offset >= Protocol.BORDER); i--, offset++) {
+        for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT-3-offset >= Protocol.BORDER + 1); i--, offset++) {
+            int textY = (Protocol.ARENA_HEIGHT-3-offset-Protocol.BORDER-1);
+            if (textY == 0) tg.setForegroundColor(new TextColor.RGB(55, 62, 80));
+            else if (textY == 1) tg.setForegroundColor(new TextColor.RGB(95, 100, 115));
+            else if (textY == 2) tg.setForegroundColor(new TextColor.RGB(135, 139, 150));
+            else if (textY == 3) tg.setForegroundColor(new TextColor.RGB(175, 178, 185));
+            else if (textY == 4) tg.setForegroundColor(new TextColor.RGB(215, 216, 220));
+            else if (textY == 5) tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
             tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT-4-offset, msgBlock.get(i));
         }
         msgBlock.clear();
