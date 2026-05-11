@@ -1,4 +1,4 @@
-package client;
+        package client;
 
 import java.net.*;
 import java.util.*;
@@ -315,7 +315,7 @@ public class GameClient {
             int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.3);                       
             TextColor whitened = new TextColor.RGB(wRed, wGreen, wBlue);
             tg.setForegroundColor(whitened);                            
-            tg.putString(Protocol.ARENA_WIDTH-15 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                       tg.setForegroundColor(wht);                  
+            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-2- shift++, score);                       tg.setForegroundColor(wht);                  
 
             // HUD bar
             if (!playerID.equals(Utility.optString(j, "id"))) continue;
@@ -344,6 +344,8 @@ public class GameClient {
             tg.setForegroundColor(dim);
             tg.putString(4+hp_max, 0, "] "); // 11
 
+            
+            
             if (j.optInt("score", -1) > 0) {
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
                 tg.putString(4+hp_max+2, 0, "◆");
@@ -380,11 +382,12 @@ public class GameClient {
               tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);              
 //            tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
 
-            
+            int rightHUDWidth = 4 + 5 + 7 + wave.length() + 5 + 18;
             // empty space for notif
 
             //money,4
-            int moneyX = 4 + hp_max + 11 + dynSize + 4 + 2;            
+//            int moneyX = 4 + hp_max + 11 + dynSize + 4 + 2;            
+            int moneyX = Protocol.ARENA_WIDTH - rightHUDWidth;
             if (j.optInt("currency", -1) > 0) {            
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
                     moneyTickCooldown = 3;
@@ -505,14 +508,14 @@ public class GameClient {
             TextCharacter space = new TextCharacter('.', bkg, bkg);
             TextCharacter frame = new TextCharacter('!', frg, frg);            
             
-            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), space);
-            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), frame);
+            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), space);
+            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), frame);
             tg.setBackgroundColor(frg);
             tg.setForegroundColor(bkg);            
             tg.enableModifiers(SGR.BOLD);
             for (int j = -3; j <= 3; j++) {
                 int length = "[[ GAME OVER ]]".length();
-                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + j, "[[ GAME OVER ]]");
+                tg.putString(Protocol.ARENA_WIDTH/2 + (int)(0.5+Protocol.SIDEBAR_WIDTH)/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + j, "[[ GAME OVER ]]");
             }
             screen.refresh();
             Thread.sleep(Protocol.TICK_MS * 10);
@@ -728,7 +731,7 @@ public class GameClient {
                     ChatClient.render(toEmphasizeChat);
                     if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(255,255,255));
                     else tg.setForegroundColor(new
-    TextColor.RGB(120,130,165));
+    TextColor.RGB(80,90,125));
                   //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');
                   tg.drawLine(
                         new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
@@ -759,14 +762,10 @@ public class GameClient {
                 }            
 
                 // ==== keyboard ====                        
-                KeyStroke keystroke = screen.pollInput();
-                // pls check null keystroke always
-                if (keystroke == null) {            
-                    screen.refresh();
-                    Thread.sleep(Protocol.TICK_MS);
-                    continue;
-                }
-                
+                KeyStroke keystroke;
+                while ((keystroke = screen.pollInput()) != null) {
+//                KeyStroke keystroke = screen.pollInput();
+
                 // Handle disconnect + chat key
                 if (keystroke.getKeyType() == KeyType.Escape) {
                     if (state == State.CHAT) {
@@ -786,7 +785,18 @@ public class GameClient {
                     else if (keystroke.getKeyType() == KeyType.Enter) {
                         ChatClient.msgBuffer = ChatClient.msgBuffer.replace("\n", "");
                         ChatClient.send(ChatClient.msgBuffer, playerID, player_name);
-                    } else ChatClient.msgBuffer += keystroke.getCharacter();
+                    }
+                    else if (keystroke.getKeyType() == KeyType.Backspace) {
+                        if (ChatClient.msgBuffer.isEmpty())
+                            ChatClient.msgBuffer = "";
+                        else 
+                            ChatClient.msgBuffer = ChatClient.msgBuffer.substring(0, ChatClient.msgBuffer.length() - 1);
+                                ChatClient.moveCursor(-1);
+                    }
+                    else {
+                        ChatClient.msgBuffer += keystroke.getCharacter();
+                        ChatClient.moveCursor(1);
+                    }
                     continue;
                 }                
                 
@@ -816,6 +826,7 @@ public class GameClient {
                     writer.println(sendMsg);
                 }
 
+                } // end of keystroke loop
                 // ==== now render ====
 
                 screen.refresh();

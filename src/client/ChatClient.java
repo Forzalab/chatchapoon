@@ -23,6 +23,13 @@ public class ChatClient {
     static CopyOnWriteArrayList<String> msgBlock = new CopyOnWriteArrayList<String>();
     static CopyOnWriteArrayList<JSONObject> msgQ = new CopyOnWriteArrayList<JSONObject>();    
     static TextGraphics tg = GameClient.screen.newTextGraphics();
+    private static int cursor = 0;
+    static int maxTxtWidth = Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2 - (Protocol.ARENA_WIDTH+5);
+    static synchronized void moveCursor(int dx) {
+        if (cursor + dx < 0) cursor = 0;
+        else if (cursor + dx > maxTxtWidth + 1) cursor = maxTxtWidth + 1;
+        else cursor += dx;
+    }
     static synchronized void send(String msg, String id, String name) {
         JSONObject msgJSON = new JSONObject()
         .put("type", "CHAT")
@@ -65,8 +72,8 @@ public class ChatClient {
         String text = datetime.format(formatter);
         return text;
     }
-    static void tokenize(String string) {
-        String s = new String(string);
+    static void tokenize(String String) {
+        String s = new String(String);
         while (s.length() > 0) {
             String sub = s.substring(0, Math.min(s.length(),Protocol.MAX_CHAR_PER_LINE));
             msgBlock.add(sub);
@@ -74,9 +81,9 @@ public class ChatClient {
             s = stillHaveString ? s.substring(Protocol.MAX_CHAR_PER_LINE) : "";
         }
     }
-    static int displayLine(String string, int offset) {
-        if (string.isEmpty()) return offset;
-        tokenize(string);
+    static int displayLine(String String, int offset) {
+        if (String.isEmpty()) return offset;
+        tokenize(String);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT + 1-3-offset >= Protocol.BORDER + 1); i--, offset++) {
             int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
@@ -94,10 +101,36 @@ public class ChatClient {
     static synchronized void render(boolean toEmphasize) {
         // box
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
-        else tg.setForegroundColor(new TextColor.RGB(120,130,165));        
-        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+1,0), new TerminalSize(Protocol.SIDEBAR_WIDTH - 4, Protocol.ARENA_HEIGHT + 1),' ');
+        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(235,235,235));        
+        else tg.setForegroundColor(new TextColor.RGB(80,90,125));        
+        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+1,0), new TerminalSize(Protocol.SIDEBAR_WIDTH + 2 - 4, Protocol.ARENA_HEIGHT + 1),' ');
+
         // input box
+        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
+        else tg.setForegroundColor(new TextColor.RGB(45, 53, 72));              
+        tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT, "> ");
+
+        // msg here
+        tg.setForegroundColor(new TextColor.RGB(255,255,255));
+        int txtWidth = msgBuffer.length();
+        int txtOffset = (txtWidth > maxTxtWidth) ? (txtWidth-maxTxtWidth) : 0;
+        
+        String display = msgBuffer.substring(0, Math.min(maxTxtWidth, txtWidth));
+        tg.putString(Protocol.ARENA_WIDTH+5+txtOffset, Protocol.ARENA_HEIGHT, display);
+        
+        if (toEmphasize == true) { 
+            tg.setBackgroundColor(new TextColor.RGB(255,255,255));
+            tg.setForegroundColor(new TextColor.RGB(15,23,42));        
+        }
+        else {
+            tg.setBackgroundColor(new TextColor.RGB(15,23,42));
+            tg.setForegroundColor(new TextColor.RGB(45,53,72));              
+        }
+        String cursorChar = ((cursor+txtOffset) < txtWidth) ? (display.charAt(cursor+txtOffset) + "") : (" ");
+        tg.putString(Protocol.ARENA_WIDTH+5+cursor, Protocol.ARENA_HEIGHT, cursorChar);
+
+        tg.setBackgroundColor(new TextColor.RGB(15,23,42));
+        
         // chats: prize and nonPrize
           tg.drawLine(
                 new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 1 + 0),
@@ -125,12 +158,12 @@ public class ChatClient {
           tg.putString(Protocol.ARENA_WIDTH+1,Protocol.ARENA_HEIGHT + 1 + 0,"└");
           tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + 1 + 0,"┘");
 
-          if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(136, 152, 189));        
-          else tg.setForegroundColor(new TextColor.RGB(70,95,110));        
+          if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(100, 110, 209));        
+          else tg.setForegroundColor(new TextColor.RGB(45, 53, 72));        
         
           tg.drawLine(
-                new TerminalPosition(Protocol.ARENA_WIDTH+2, Protocol.ARENA_HEIGHT + 1 - 3),
-                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2, Protocol.ARENA_HEIGHT + 1 - 3),
+                new TerminalPosition(Protocol.ARENA_WIDTH+2, Protocol.ARENA_HEIGHT + 1 - 2),
+                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2, Protocol.ARENA_HEIGHT + 1 - 2),
                 '─'
             );           
 
