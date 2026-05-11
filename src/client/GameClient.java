@@ -244,18 +244,13 @@ public class GameClient {
             String type = j.optString("type");
             String playerId = j.optString("id");
             int r = 255, g = 255, b = 255;
-            if ("player".equals(type) && !playerColor.containsKey(playerId)) { do {
+            if ("player".equals(type) && !playerColor.containsKey(playerId)) {
                 if (playerID.equals(Utility.optString(j, "id"))) {
                     playerColor.put(playerId, new TextColor.RGB(255, 255, 255));
-                    break;
-                }
-                int hashColor = playerId.hashCode();
-                r = ((((hashColor & 0xFF0000) >> 16) << 16) | 0x40) % 255;
-                g = ((((hashColor & 0x00FF00) >> 8) << 8) | 0x40) % 255;
-                b = (((hashColor & 0x0000FF)) | 0x40) % 255;
-                TextColor color = new TextColor.RGB(r, g, b);
+                } else {
+                TextColor color = ChatClient.getColor(playerId);
                 playerColor.put(playerId, color);
-            } while (r < 240 && r > 190 && g < 240 && g > 190 && b < 240 && b > 190); }
+            }}
 
 //            System.err.println(playerColor.keySet());
                         
@@ -592,7 +587,7 @@ public class GameClient {
         TextColor.RGB vg = new TextColor.RGB(1,13,1);
         TextColor.RGB white = new TextColor.RGB(225,245,225);                      
         TextColor.RGB white_dim = new TextColor.RGB(80,110,80);                  
-        TextColor.RGB white_txtdim = new TextColor.RGB(195,215,195);                          
+        TextColor.RGB white_txtdim = new TextColor.RGB(145,155,145);                          
         
         TextGraphics tg = screen.newTextGraphics();
         tg.setBackgroundColor(vg);
@@ -781,8 +776,7 @@ public class GameClient {
                 }
 
                 if (state == State.CHAT) {
-                    if (keystroke.getCharacter() == null) continue;
-                    else if (keystroke.getKeyType() == KeyType.Enter) {
+                    if (keystroke.getKeyType() == KeyType.Enter) {
                         ChatClient.msgBuffer = ChatClient.msgBuffer.replace("\n", "");
                         ChatClient.send(ChatClient.msgBuffer, playerID, player_name);
                         ChatClient.resetCursor();
@@ -800,9 +794,9 @@ public class GameClient {
                     else if (keystroke.getKeyType() == KeyType.ArrowRight) {
                         ChatClient.moveCursor(1);
                     }                    
+                    else if (keystroke.getCharacter() == null) continue;                    
                     else {
-                        ChatClient.msgBuffer += keystroke.getCharacter();
-                        ChatClient.moveCursor(1);
+                        ChatClient.insertChar(keystroke.getCharacter());
                     }
                     continue;
                 }                

@@ -42,5 +42,5 @@ public class Protocol {
     public static final int DESPAWN_TIMER = 3600;
 
     // chat
-    public static final int MAX_CHAR_PER_LINE = 30;
+    public static final int MAX_CHAR_PER_LINE = 38;
 }
