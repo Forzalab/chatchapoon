@@ -48,7 +48,8 @@ public class GameServer {
         .put("type", "CHAT")
         .put("msg", msg)
         .put("id", id)
-        .put("name", name);
+        .put("name", name)
+        .put("eventType", eventType);
         String msgJSONString = msgJSON.toString();
         broadcastAll(msgJSONString);
     }
@@ -71,7 +72,7 @@ public class GameServer {
                     if (p == null) continue;
                     String rarity = currentGameState.pull(p);
                     if (rarity.isEmpty()) continue;
-                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, rarity);
+                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, "G_" +  rarity);
                 }
             }
             else if (type.equals("CHAT")) {

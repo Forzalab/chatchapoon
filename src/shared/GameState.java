@@ -108,6 +108,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             entity.pos.accum(0, -1);
         else if ("RIGHT".equals(cmd))
             entity.pos.accum(0, 1);
+        if (entity instanceof Player p) processCollectableCoin(p);
    }
 
     public synchronized void shootFrom(Entity e) {
@@ -261,7 +262,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             Position pos = new Position(e.pos.getRenderY(), e.pos.getRenderX());
             Integer coinAtAmt = coinsLoc.get(pos);
             if (coinAtAmt != null) coins += coinAtAmt;
-            coinsLoc.put(pos, coins);
+            if (coins > 0) coinsLoc.put(pos, coins);
 
 //            bOwner.currency += coins;
             bOwner.bullets += 1;

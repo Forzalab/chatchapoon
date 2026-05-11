@@ -344,31 +344,31 @@ public class GameClient {
             int bulletStrL = (amtBullets>0)?7:0;
 
             
-            int dynSize = Protocol.ARENA_WIDTH - (31 + 40);
+            int dynSize = Protocol.ARENA_WIDTH+3 - (31 + 40);
             int hp = j.optInt("hp", 3);
             int hp_max = j.optInt("hp_max", 3);            
-            tg.putString(0, 0, "HP [");
+            tg.putString(3, 0, "HP [");
             tg.setForegroundColor(red);
-            for (int k = 0; k < hp; k++) tg.putString(4+k, 0, "♥");
+            for (int k = 0; k < hp; k++) tg.putString(4+k+3, 0, "♥");
             tg.setForegroundColor(red);
-            for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "♡");       
+            for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k+3, 0, "♡");       
+            tg.setForegroundColor(wht);
+            tg.putString(4+hp_max+3, 0, "] "); // 11
             tg.setForegroundColor(dim);
-            tg.putString(4+hp_max, 0, "] "); // 11
-
             
             
             if (j.optInt("score", -1) > 0) {
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-                tg.putString(4+hp_max+2, 0, "◆");
+                tg.putString(4+hp_max+2+3, 0, "◆");
                 tg.setForegroundColor(wht);
-                tg.putString(4+hp_max+3, 0, " SCORE: " + score); // 11
+                tg.putString(4+hp_max+3+3, 0, " SCORE: " + score); // 11
 
                 //score, 3
                 if (!"".equals(scorePrior) && !score.equals(scorePrior))
                     scoreTickCooldown = 3;
                 tg.setBackgroundColor((scoreTickCooldown-- > 0)?wht:bkg);
                 tg.setForegroundColor((scoreTickCooldown > 0)?bkg:wht);
-                tg.putString(4+hp_max+11, 0, score); // 11
+                tg.putString(4+hp_max+11+3, 0, score); // 11
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
                 tg.drawRectangle(new TerminalPosition(4+hp_max+11, 0), new TerminalSize(14, 0), '.');
@@ -382,12 +382,12 @@ public class GameClient {
             if (amtBullets > 0) {
                 //bullet, 5
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-                tg.putString(4+hp_max+2+scoreStrL, 0, "◆ ");
+                tg.putString(4+hp_max+3+2+scoreStrL, 0, "◆ ");
                 tg.setForegroundColor(wht);            
-                tg.putString(4+hp_max+2+scoreStrL+3, 0, "⁍ " + bullets + ((amtBullets>99)?"+":" "));
+                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "⁍ " + bullets + ((amtBullets>99)?"+":" "));
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
-                tg.drawRectangle(new TerminalPosition(4+hp_max+2+scoreStrL, 0), new TerminalSize(7, 0), '.');
+                tg.drawRectangle(new TerminalPosition(4+hp_max+3+2+scoreStrL, 0), new TerminalSize(7, 0), '.');
             }
               bulletsPrior = bullets;
               tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);              
@@ -397,19 +397,19 @@ public class GameClient {
             // empty space for notif
 
             //money,4
-            int moneyX = 4 + hp_max + 11 + dynSize + 4 + 2;            
-//            int moneyX = Protocol.ARENA_WIDTH - rightHUDWidth;
+            int moneyX = 4 + hp_max + 3 + 11 + dynSize + 4 + 2;            
+//            int moneyX = Protocol.ARENA_WIDTH+3 - rightHUDWidth;
             if (j.optInt("currency", -1) > 0) {            
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
                     moneyTickCooldown = 3;
                 tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
-                tg.putString(4+hp_max+11+dynSize, 0, "＄"+money); // 11
+                tg.putString(4+hp_max+3+11+dynSize, 0, "＄"+money); // 11
             
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);            
                 tg.putString(moneyX, 0, "  ◆  ");                
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
-                tg.drawRectangle(new TerminalPosition(4+hp_max+11+dynSize, 0), new TerminalSize(6, 0), '.');
+                tg.drawRectangle(new TerminalPosition(4+hp_max+3+11+dynSize, 0), new TerminalSize(6, 0), '.');
                 tg.putString(moneyX, 0, "     ");                                
             }
             moneyPrior = money;
@@ -797,7 +797,7 @@ public class GameClient {
                 if (state == State.CHAT) {
                     if (keystroke.getKeyType() == KeyType.Enter) {
                         ChatClient.msgBuffer = ChatClient.msgBuffer.replace("\n", "");
-                        ChatClient.send(ChatClient.msgBuffer, playerID, player_name);
+                        ChatClient.send(ChatClient.msgBuffer, playerID, player_name, "");
                         ChatClient.resetCursor();
                     }
                     else if (keystroke.getKeyType() == KeyType.Backspace) {
