@@ -1,4 +1,4 @@
-        package client;
+package client;
 
 import java.net.*;
 import java.util.*;
@@ -351,7 +351,7 @@ public class GameClient {
             tg.setForegroundColor(red);
             for (int k = 0; k < hp; k++) tg.putString(4+k+3, 0, "♥");
             tg.setForegroundColor(red);
-            for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k+3, 0, "♡");       
+            for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k+3, 0, " ");       
             tg.setForegroundColor(wht);
             tg.putString(4+hp_max+3, 0, "] "); // 11
             tg.setForegroundColor(dim);
@@ -378,13 +378,13 @@ public class GameClient {
                 
 
             amtBullets = (amtBullets > 99) ? 99 : amtBullets;
-            String bullets = String.format("%d", amtBullets);
+            String bullets = String.format("%d", amtBullets%10);
             if (amtBullets > 0) {
                 //bullet, 5
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
                 tg.putString(4+hp_max+3+2+scoreStrL, 0, "◆ ");
                 tg.setForegroundColor(wht);            
-                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "⁍ " + bullets + ((amtBullets>99)?"+":" "));
+                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "B " + bullets + ((amtBullets%10>99)?"+":" "));
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
                 tg.drawRectangle(new TerminalPosition(4+hp_max+3+2+scoreStrL, 0), new TerminalSize(7, 0), '.');
@@ -548,7 +548,7 @@ public class GameClient {
       tg.setForegroundColor(white);
       tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
       tg.drawLine(
-            new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER), 
             new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
             '─'
         );

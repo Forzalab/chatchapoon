@@ -16,6 +16,7 @@ import shared.*;
 public class GameServer {
     static List < ClientHandler > clients = new CopyOnWriteArrayList < ClientHandler > ();
     public static long startTimeLobby = System.currentTimeMillis();    
+    public static long tempStartTimeLobby = System.currentTimeMillis();        
     static volatile GameState currentGameState = new GameState(startTimeLobby);    
     static Random r = new Random();
     static boolean changed = false;
@@ -115,13 +116,16 @@ public class GameServer {
             // state swotch
             long currentTime = System.currentTimeMillis();
             if (currentGameState.players.size() == Protocol.MAX_PLAYERS && !changed) {
-                startTimeLobby = currentTime - Protocol.LOBBY_CLOSE_IN;
+                tempStartTimeLobby = currentTime - Protocol.LOBBY_CLOSE_IN;
                 changed = true;
+            } else if (currentGameState.players.size() < Protocol.MAX_PLAYERS) {
+                tempStartTimeLobby = startTimeLobby;
+                changed = false;
             }
 
             // 40 > 20 + 30 false 40 = 20 + 20
             // 65 > 60 + 25 false 65 = 60 + 5 
-            boolean lobbyWaitEnds = (currentTime > Protocol.LOBBY_CLOSE_IN + startTimeLobby);
+            boolean lobbyWaitEnds = (currentTime > Protocol.LOBBY_CLOSE_IN + tempStartTimeLobby);
             boolean enoughPlayersJoined = currentGameState.players.size() > Protocol.MAX_PLAYERS;
 
             if (lobbyWaitEnds || enoughPlayersJoined) {
