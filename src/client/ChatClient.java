@@ -78,15 +78,15 @@ public class ChatClient {
         if (string.isEmpty()) return offset;
         tokenize(string);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-        for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT-3-offset >= Protocol.BORDER + 1); i--, offset++) {
-            int textY = (Protocol.ARENA_HEIGHT-3-offset-Protocol.BORDER-1);
+        for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT + 1-3-offset >= Protocol.BORDER + 1); i--, offset++) {
+            int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
             if (textY == 0) tg.setForegroundColor(new TextColor.RGB(55, 62, 80));
             else if (textY == 1) tg.setForegroundColor(new TextColor.RGB(95, 100, 115));
             else if (textY == 2) tg.setForegroundColor(new TextColor.RGB(135, 139, 150));
             else if (textY == 3) tg.setForegroundColor(new TextColor.RGB(175, 178, 185));
             else if (textY == 4) tg.setForegroundColor(new TextColor.RGB(215, 216, 220));
             else if (textY == 5) tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
-            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT-4-offset, msgBlock.get(i));
+            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-4-offset, msgBlock.get(i));
         }
         msgBlock.clear();
         return offset;
@@ -95,13 +95,13 @@ public class ChatClient {
         // box
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
-        else tg.setForegroundColor(new TextColor.RGB(160,170,205));        
-        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+1,0), new TerminalSize(Protocol.SIDEBAR_WIDTH - 4, Protocol.ARENA_HEIGHT),' ');
+        else tg.setForegroundColor(new TextColor.RGB(120,130,165));        
+        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+1,0), new TerminalSize(Protocol.SIDEBAR_WIDTH - 4, Protocol.ARENA_HEIGHT + 1),' ');
         // input box
         // chats: prize and nonPrize
           tg.drawLine(
-                new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 0),
-                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 0),
+                new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 1 + 0),
+                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 1 + 0),
                 '─'
             );
           tg.drawLine(
@@ -112,25 +112,25 @@ public class ChatClient {
             
         tg.drawLine(
             new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, 0),
-            new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 0),
+            new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 1 + 0),
             '│'
         );
         tg.drawLine(
             new TerminalPosition(Protocol.ARENA_WIDTH+1, 0),
-            new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 0),
+            new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 1 + 0),
             '│'
         );
           tg.putString(Protocol.ARENA_WIDTH+1,0,"┌");
           tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,0,"┐");
-          tg.putString(Protocol.ARENA_WIDTH+1,Protocol.ARENA_HEIGHT + 0,"└");
-          tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + 0,"┘");
+          tg.putString(Protocol.ARENA_WIDTH+1,Protocol.ARENA_HEIGHT + 1 + 0,"└");
+          tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + 1 + 0,"┘");
 
           if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(136, 152, 189));        
           else tg.setForegroundColor(new TextColor.RGB(70,95,110));        
         
           tg.drawLine(
-                new TerminalPosition(Protocol.ARENA_WIDTH+2, Protocol.ARENA_HEIGHT - 3),
-                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2, Protocol.ARENA_HEIGHT - 3),
+                new TerminalPosition(Protocol.ARENA_WIDTH+2, Protocol.ARENA_HEIGHT + 1 - 3),
+                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2, Protocol.ARENA_HEIGHT + 1 - 3),
                 '─'
             );           
 
