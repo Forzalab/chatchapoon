@@ -145,9 +145,8 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
 
         // assume ID wont collide, or else there will be
         // dupl assignment
-        for (Entity e : players) {
+        for (Entity e : players)
             if (authorID.equals(e.id)) entity = e;
-        }
         for (Entity e : enemies)
             if (authorID.equals(e.id)) entity = e;
         for (Entity e : bullets)

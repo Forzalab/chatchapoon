@@ -182,7 +182,7 @@ public class GameServer {
                     if (!p.dead()) continue;
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
-                    p.bullets = 10;
+                    p.bullets = 100;
                 }
                 
                 // == Encode result ==
