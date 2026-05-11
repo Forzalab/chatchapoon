@@ -182,7 +182,7 @@ public class GameServer {
                 
                 // enemy stuff
                 if (currentGameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                    currentGameState.spawnWave(4);
+                    currentGameState.spawnWave(6);
                 currentGameState.updateEnemies();
 
                 // now, pos uodated, we do collision check and porcess
