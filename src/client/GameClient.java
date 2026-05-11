@@ -28,7 +28,7 @@ public class GameClient {
     private static int cols = 0, rows = 0;
     static Screen screen;
     private static volatile int shift = 0; // volatile force update value for N threads potentially reading it
-    private static volatile JSONObject to_render = new JSONObject();
+    private static volatile JSONObject to_render;
     private static TerminalPosition tp;
     private static String direction = "";
     private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown;

@@ -18,7 +18,8 @@ public class GameServer {
     public static long startTimeLobby = System.currentTimeMillis();    
     static volatile GameState currentGameState = new GameState(startTimeLobby);    
     static Random r = new Random();
-    
+    static boolean changed = false;
+//    static volatile long currentTime = System.currentTimeMillis();    
     private static JSONObject getTopFive(List<Player> players) {
         PriorityQueue<Player> prq = new PriorityQueue<>((a, b) -> a.score - b.score);
         // dead player also gets their trophy
@@ -85,11 +86,19 @@ public class GameServer {
         broadcastAll(j.toString());
     }
 
-    public static void lobby() {
+    public static synchronized void lobby() {
             // state swotch
             long currentTime = System.currentTimeMillis();
-            boolean lobbyWaitEnds = (currentTime - startTimeLobby > Protocol.LOBBY_CLOSE_IN);
-            boolean enoughPlayersJoined = currentGameState.players.size() >= Protocol.MAX_PLAYERS;
+            if (currentGameState.players.size() == Protocol.MAX_PLAYERS && !changed) {
+                startTimeLobby = currentTime - Protocol.LOBBY_CLOSE_IN;
+                changed = true;
+            }
+
+            // 40 > 20 + 30 false 40 = 20 + 20
+            // 65 > 60 + 25 false 65 = 60 + 5 
+            boolean lobbyWaitEnds = (currentTime > Protocol.LOBBY_CLOSE_IN + startTimeLobby);
+            boolean enoughPlayersJoined = currentGameState.players.size() > Protocol.MAX_PLAYERS;
+
             if (lobbyWaitEnds || enoughPlayersJoined) {
                 currentGameState.switchNextState();
             }

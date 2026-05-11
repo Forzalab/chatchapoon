@@ -16,7 +16,7 @@ public class Protocol {
     public static final int BORDER = 1;
     public static final int FIRE_COOLDOWN_TICKS = 5;
     public static final int HIT_COOLDOWN_TICKS = 60;
-    public static final int LOBBY_CLOSE_IN = 10000 * TICK_MS;
+    public static final int LOBBY_CLOSE_IN = 600 * TICK_MS;
 
     
 //    public static final int WAVE_INTERVAL_TICKS = 600;
