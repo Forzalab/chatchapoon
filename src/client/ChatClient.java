@@ -30,6 +30,15 @@ public class ChatClient {
         else if (cursor + dx > maxTxtWidth + 1) cursor = maxTxtWidth + 1;
         else cursor += dx;
     }
+    static synchronized void resetCursor() {
+        cursor = 0;
+    }
+    static synchronized void removeAt() {
+        int txtLength = msgBuffer.length();
+        int i = cursor - 1; // rmeove BEFORE cursor
+        msgBuffer = msgBuffer.substring(0, i) + msgBuffer.substring(i+1);
+        moveCursor(-1);
+    }
     static synchronized void send(String msg, String id, String name) {
         JSONObject msgJSON = new JSONObject()
         .put("type", "CHAT")

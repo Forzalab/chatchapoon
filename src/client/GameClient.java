@@ -309,13 +309,13 @@ public class GameClient {
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;
             if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
-            tg.putString(Protocol.ARENA_WIDTH-15, Protocol.ARENA_HEIGHT-1- shift, player);        
+            tg.putString(Protocol.ARENA_WIDTH-17, Protocol.ARENA_HEIGHT-1- shift, player);        
             int wRed = color.getRed() + (int)((255 - color.getRed()) * 0.3);
             int wGreen = color.getGreen() + (int)((255 - color.getGreen()) * 0.3);
             int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.3);                       
             TextColor whitened = new TextColor.RGB(wRed, wGreen, wBlue);
             tg.setForegroundColor(whitened);                            
-            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-2- shift++, score);                       tg.setForegroundColor(wht);                  
+            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                       tg.setForegroundColor(wht);                  
 
             // HUD bar
             if (!playerID.equals(Utility.optString(j, "id"))) continue;
@@ -642,7 +642,7 @@ public class GameClient {
         tg.setForegroundColor(white);        
         
         for (int i = 0; i < lines.length; i++) {
-            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/20*9 - Protocol.BORDER + i - lines.length/2, lines[i]);
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + i - lines.length/2, lines[i]);
         }
 
         JSONArray players = to_render.getJSONArray("players");
@@ -652,7 +652,7 @@ public class GameClient {
                 tg.setForegroundColor(white);
             else tg.setForegroundColor(white_txtdim); 
             String playerName = players.getJSONObject(i).optString("name");
-            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/20*9 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
             
         }
         
@@ -785,14 +785,21 @@ public class GameClient {
                     else if (keystroke.getKeyType() == KeyType.Enter) {
                         ChatClient.msgBuffer = ChatClient.msgBuffer.replace("\n", "");
                         ChatClient.send(ChatClient.msgBuffer, playerID, player_name);
+                        ChatClient.resetCursor();
                     }
                     else if (keystroke.getKeyType() == KeyType.Backspace) {
                         if (ChatClient.msgBuffer.isEmpty())
                             ChatClient.msgBuffer = "";
-                        else 
-                            ChatClient.msgBuffer = ChatClient.msgBuffer.substring(0, ChatClient.msgBuffer.length() - 1);
-                                ChatClient.moveCursor(-1);
+                        else {
+                            ChatClient.removeAt();
+                       }
                     }
+                    else if (keystroke.getKeyType() == KeyType.ArrowLeft) {
+                        ChatClient.moveCursor(-1);
+                    }
+                    else if (keystroke.getKeyType() == KeyType.ArrowRight) {
+                        ChatClient.moveCursor(1);
+                    }                    
                     else {
                         ChatClient.msgBuffer += keystroke.getCharacter();
                         ChatClient.moveCursor(1);
