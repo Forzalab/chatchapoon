@@ -70,7 +70,7 @@ public class ChatClient {
         String playerID = obj.optString("id");        
         String timestamp = getTimestamp();
         String msg = obj.optString("msg");
-        String msgFormatted = "[" + timestamp + "] " + playerName + ((playerName.length()>=10)?"...":"") + ": " + msg;           
+        String msgFormatted = "[" + timestamp + "] " + playerName + ": " + msg;           
         return msgFormatted;
     }
 /*    static synchronized String formatPrize(JSONObject obj) {
