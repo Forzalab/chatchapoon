@@ -15,11 +15,12 @@ import shared.*;
 // called ONCE, no multiple isntances!!!!!
 public class GameServer {
     static List < ClientHandler > clients = new CopyOnWriteArrayList < ClientHandler > ();
-    static GameState gameState = new GameState();    
+    public static long startTimeLobby = System.currentTimeMillis();    
+    static volatile GameState currentGameState = new GameState(startTimeLobby);    
     static Random r = new Random();
-
+    
     private static JSONObject getTopFive(List<Player> players) {
-        PriorityQueue<Player> prq = new PriorityQueue<>(Collections.reverseOrder());
+        PriorityQueue<Player> prq = new PriorityQueue<>((a, b) -> a.score - b.score);
         // dead player also gets their trophy
         for (Player p : players) prq.add(p);
 
@@ -54,10 +55,13 @@ public class GameServer {
                 String authorID = json.getString("playerId");
                 alterState(cmd, authorID);
             }
-            else if (type.equals("LEAVE")) {
+            else if (type.equals("CHAT")) {
                 broadcastAll(msg); // relay old msg
+            } 
+            else if (type.equals("LEAVE")) {
                 System.out.println("Client disconnected!");
-            }
+                broadcastAll(msg); // relay old msg
+            } 
         }
      }}
 
@@ -65,7 +69,7 @@ public class GameServer {
            // game loop here ig
            // indirection to GameState
            System.out.println("[" + authorID + "] sent key: " + cmd);
-           gameState.alterState(cmd, authorID);
+           currentGameState.alterState(cmd, authorID);
     }
     
     // selective filter done at cli-level
@@ -80,6 +84,38 @@ public class GameServer {
     static synchronized void broadcastAll(JSONObject j) {
         broadcastAll(j.toString());
     }
+
+    public static void lobby() {
+            // state swotch
+            long currentTime = System.currentTimeMillis();
+            boolean lobbyWaitEnds = (currentTime - startTimeLobby > Protocol.LOBBY_CLOSE_IN);
+            boolean enoughPlayersJoined = currentGameState.players.size() > Protocol.MAX_PLAYERS;
+            if (lobbyWaitEnds || enoughPlayersJoined) {
+                currentGameState.switchNextState();
+            }
+
+            if (currentGameState.getPrev() == GameState.State.LOBBY
+            && currentGameState.get() == GameState.State.BATTLE)
+                return;
+            
+            // broadcast HOW MANY PLAYERS WAITING
+            JSONObject jao = new JSONObject();
+            jao.put("type", "LOBBY");
+
+            JSONArray ja = new JSONArray();
+            for (Player player : currentGameState.players) {
+                JSONObject j = new JSONObject()
+                .put("id", player.id)
+                .put("name", player.name);
+                ja.put(j);
+            }
+
+            jao.put("players", ja);
+            broadcastAll(jao);
+
+
+            // sleep, or not if thread time exceeds 50ms
+    }
     
     public static void main(String[] args) throws Exception {
         // socket handshake
@@ -93,7 +129,11 @@ public class GameServer {
             try { Thread.sleep(Protocol.TICK_MS * 100); } catch (Exception e) {}
             while (true) { try {
                 long start = System.currentTimeMillis();
-
+                if (currentGameState.get() == GameState.State.POST_BATTLE) {
+                    broadcastAll(getTopFive(currentGameState.players));
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
                 // == Mutate GameState ==
                 // do sth pls *poke stick* :[
 
@@ -102,10 +142,18 @@ public class GameServer {
                 processIncomingPlayerRequests();
 
                 // Tick increase
-                gameState.updateTick();
+                currentGameState.updateTick();
+
+                        
+                if (currentGameState.get() == GameState.State.LOBBY) {
+                    lobby();
+                    long end = System.currentTimeMillis();
+                    Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
+                    continue;
+                }
                 
                 // bullet movement and death
-                for (Bullet bullet : gameState.bullets) {
+                for (Bullet bullet : currentGameState.bullets) {
                     bullet.pos.iHaveValidatedB4Setting();
                     if (!bullet.dead()) {
                         bullet.pos.accum(bullet.vy, bullet.vx);
@@ -116,25 +164,25 @@ public class GameServer {
                         bullet.pos.set(-69, -420);
                 }
 
-//                gameState.bullets.removeIf(b -> b.timeLeft <= 0);
+//                currentGameState.bullets.removeIf(b -> b.timeLeft <= 0);
                 
                 // enemy stuff
-                if (gameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                    gameState.spawnWave(4);
-                gameState.updateEnemies();
+                if (currentGameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
+                    currentGameState.spawnWave(4);
+                currentGameState.updateEnemies();
 
                 // now, pos uodated, we do collision check and porcess
-                gameState.processAllCollisions();
+                currentGameState.processAllCollisions();
 
                 // revive
                 // anything players really
-                for (Player p : gameState.players) {
+                for (Player p : currentGameState.players) {
                     p.uptickHitCooldown();
                     if (p.fireCooldown > 0) p.fireCooldown--;
                     if (!p.dead()) continue;
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
-                    p.bullets = 10;
+                    p.bullets = 100;
                 }
                 
                 // == Encode result ==
@@ -145,16 +193,16 @@ public class GameServer {
                 // broadcast PLAYER STATUS
                 JSONObject stateArrayJSON = new JSONObject()
                 .put("type", "ENTITY_STATE")
-                .put("tickCounter", gameState.getCurrentTick())
-                .put("waveNumber", gameState.getWaveLevel())
-                .put("levelTimer", gameState.getLevelTimeLeft());
+                .put("tickCounter", currentGameState.getCurrentTick())
+                .put("waveNumber", currentGameState.getWaveLevel())
+                .put("levelTimer", currentGameState.getLevelTimeLeft());
 
                 JSONArray bulletArray = new JSONArray();
                 JSONArray playerArray = new JSONArray();
                 JSONArray enemyArray = new JSONArray();                           
                 // TEMPORSRY!!!!!!!
                 // Bullet
-                for (Bullet bullet : gameState.bullets) {
+                for (Bullet bullet : currentGameState.bullets) {
                     if (bullet.dead()) continue;                
                     bulletArray.put(new JSONObject()
                     .put("direction", bullet.direction)
@@ -165,7 +213,7 @@ public class GameServer {
                 }
                 
                 // player info
-                for (Player player : gameState.players) {
+                for (Player player : currentGameState.players) {
                     if (player.dead()) continue;
                     playerArray.put(new JSONObject()
                     .put("id", player.id)
@@ -182,7 +230,7 @@ public class GameServer {
                 }
                                     
                 // enemy info
-                for (Enemy enemy : gameState.enemies) {
+                for (Enemy enemy : currentGameState.enemies) {
                     if (enemy.dead()) continue;                
                     enemyArray.put(new JSONObject()
                     .put("id", enemy.id)
@@ -208,11 +256,13 @@ public class GameServer {
                 long end = System.currentTimeMillis();
                 Thread.sleep(Math.max(0, Protocol.TICK_MS - (end - start)));
 
-                // if (gameState.getLevelTimeLeft() == 0) → broadcast GAME_OVER with winner (highest score) → write leaderboard.txt → (eventually) close sockets
+                // if (currentGameState.getLevelTimeLeft() == 0) → broadcast GAME_OVER with winner (highest score) → write leaderboard.txt → (eventually) close sockets
                 // switch OVER state
-                if (gameState.getLevelTimeLeft() != 0) continue;
-                broadcastAll(getTopFive(gameState.players));
-                Thread.sleep(Protocol.TICK_MS * 10);
+                
+                if (currentGameState.getLevelTimeLeft() != 0) continue;
+                currentGameState.switchNextState();
+                broadcastAll(getTopFive(currentGameState.players));
+                Thread.sleep(Protocol.TICK_MS);
 //                System.exit(0); // placeholder
             } catch (Exception e) {
                 System.out.println("Exception caught GameServer broadcast thread: " + e);

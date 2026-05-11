@@ -1,4 +1,4 @@
-package client;
+        package client;
 
 import java.net.*;
 import java.util.*;
@@ -26,21 +26,51 @@ import shared.*;
 public class GameClient {
     // Render
     private static int cols = 0, rows = 0;
-    private static Screen screen;
+    static Screen screen;
     private static volatile int shift = 0; // volatile force update value for N threads potentially reading it
     private static volatile JSONObject to_render;
     private static TerminalPosition tp;
     private static String direction = "";
     private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown;
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
+
+    // keyboard mode    
+    private static State state = State.BLOCK;
+    
+    public static enum State {
+        BLOCK(0), // alow join
+        GAME(1), // bl6ocm all join
+        CHAT(2); // block all join
+        private final int val;
+        private State(int v) { val = v; }
+        private int getVal() { return val; }
+        private static final State[] vals = values();
+        private static State statePrev;
+        private State mutate(State s) {
+          statePrev = this;
+          return s;
+        }
+    }
+    private static synchronized State get() {
+        return state;
+    }
+    private static synchronized State getPrev() {
+        return State.statePrev;
+    }
+    private static synchronized void switchState(State s) {
+        state = state.mutate(s);
+    }
+        
+    // render mode is obtained thru server
     
     // player info, local copy
     public static final String playerID = UUID.randomUUID().toString().substring(0,8);
     static HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();    
+    public static String playerName = "";
     
     // Sockets
     private static Socket socket;
-    private static PrintWriter writer;
+    static PrintWriter writer;
     private static BufferedReader reader;
 
     // Magic lookup table
@@ -96,8 +126,46 @@ public class GameClient {
             closeClient();
             System.exit(0);
         } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient unfit_screen: " + e);          
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+    
+    private static void draw_reject_screen() {
+        try {
+            TextGraphics tg = screen.newTextGraphics();
+            screen.clear();
+            while (true) {
+                // render
+                tg.setBackgroundColor(new TextColor.RGB(255, 255, 255));
+                tg.setForegroundColor(new TextColor.RGB(0, 0, 0));
+                tg.drawRectangle(new TerminalPosition(2, 2), new TerminalSize(cols - 2 - 2, rows - 2 - 2), '+');
+                tg.setBackgroundColor(new TextColor.RGB(160, 0, 0));
+                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                tg.putString(cols / 3, rows / 2 - 1, "u came too late :(( game is ongoin'");
+                tg.putString(cols / 3, rows / 2, "rejoin when lobby is opened");
+                tg.putString(cols / 3, rows / 2 + 1, "[ PRESS ANY KEY TO EXIT ]");
+
+                // keystroke
+                screen.refresh();
+                if (screen.readInput().getKeyType() != null) break;
+                Thread.sleep(Protocol.TICK_MS);
+            }
+
+            // cease
+            closeClient();
+            System.exit(0);
+        } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
+            closeClient();
+            System.out.println("Exception caught GameClient reject_screen: " + e);          
             e.printStackTrace();
             System.exit(0);
         }
@@ -124,6 +192,9 @@ public class GameClient {
                 draw_unfit_screen();
             }
         } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient lanterna_init(): " + e);
             e.printStackTrace();
@@ -131,6 +202,18 @@ public class GameClient {
         }
     }
 
+    private static void drawDirection(int rx, int ry, String d, TextGraphics tg) {
+        if (d == null) return;
+        else if ("N".equals(d)) tg.putString(rx, ry-1, "↑");
+        else if ("S".equals(d)) tg.putString(rx, ry+1, "↓");
+        else if ("E".equals(d)) tg.putString(rx+1, ry, "→");
+        else if ("W".equals(d)) tg.putString(rx-1, ry, "←");
+        else if ("NE".equals(d)) tg.putString(rx+1, ry-1, "↗");
+        else if ("NW".equals(d)) tg.putString(rx-1, ry-1, "↖");
+        else if ("SE".equals(d)) tg.putString(rx+1, ry+1, "↘");
+        else if ("SW".equals(d)) tg.putString(rx-1, ry+1, "↙");
+    }
+    
     // JSONArray -> tg rendering
     private static void processPlayersArrayRender(JSONArray ja, TextGraphics tg, String ava, JSONObject jao) { try { 
     // hahsmap for color assignment id-color
@@ -161,18 +244,13 @@ public class GameClient {
             String type = j.optString("type");
             String playerId = j.optString("id");
             int r = 255, g = 255, b = 255;
-            if ("player".equals(type) && !playerColor.containsKey(playerId)) { do {
+            if ("player".equals(type) && !playerColor.containsKey(playerId)) {
                 if (playerID.equals(Utility.optString(j, "id"))) {
                     playerColor.put(playerId, new TextColor.RGB(255, 255, 255));
-                    break;
-                }
-                int hashColor = playerId.hashCode();
-                r = ((((hashColor & 0xFF0000) >> 16) << 16) | 0x40) % 255;
-                g = ((((hashColor & 0x00FF00) >> 8) << 8) | 0x40) % 255;
-                b = (((hashColor & 0x0000FF)) | 0x40) % 255;
-                TextColor color = new TextColor.RGB(r, g, b);
+                } else {
+                TextColor color = ChatClient.getColor(playerId);
                 playerColor.put(playerId, color);
-            } while (r < 240 && r > 190 && g < 240 && g > 190 && b < 240 && b > 190); }
+            }}
 
 //            System.err.println(playerColor.keySet());
                         
@@ -188,10 +266,6 @@ public class GameClient {
                 int rx = j.optInt("x", -1);
                 int ry = j.optInt("y", -1);
                 String avatar = ava; // for now, will customize later
-
-                // check id to parse direction
-                if (playerID.equals(Utility.optString(j, "id")))
-                    direction = Utility.optString(j, "direction");
 
                 if (rx != -1 && ry > 0) {
                     tg.putString(rx, ry, avatar);
@@ -215,27 +289,28 @@ public class GameClient {
             String avatar = ava; // for now, will customize later
 
             // check id to parse direction
-            if (playerID.equals(Utility.optString(j, "id")))
+//            if (playerID.equals(Utility.optString(j, "id")))
                 direction = Utility.optString(j, "direction");
 
             if (rx != -1 && ry > 0 && "player".equals(j.optString("type"))) {
                 if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
                 tg.putString(rx, ry, avatar);
+                drawDirection(rx, ry, direction, tg);
                 tg.setForegroundColor(wht);                
             }            
          
             // scoreboard
-            String player = String.format("%-12s", Utility.optString(j, "id"));
+            String player = String.format("%-12s", Utility.optString(j, "name"));
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;
             if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
-            tg.putString(Protocol.ARENA_WIDTH-15, Protocol.ARENA_HEIGHT-1- shift, player);        
+            tg.putString(Protocol.ARENA_WIDTH-17, Protocol.ARENA_HEIGHT-1- shift, player);        
             int wRed = color.getRed() + (int)((255 - color.getRed()) * 0.3);
             int wGreen = color.getGreen() + (int)((255 - color.getGreen()) * 0.3);
             int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.3);                       
             TextColor whitened = new TextColor.RGB(wRed, wGreen, wBlue);
             tg.setForegroundColor(whitened);                            
-            tg.putString(Protocol.ARENA_WIDTH-15 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                       tg.setForegroundColor(wht);                  
+            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                       tg.setForegroundColor(wht);                  
 
             // HUD bar
             if (!playerID.equals(Utility.optString(j, "id"))) continue;
@@ -261,9 +336,11 @@ public class GameClient {
             for (int k = 0; k < hp; k++) tg.putString(4+k, 0, "♥");
             tg.setForegroundColor(red);
             for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k, 0, "♡");       
-            tg.setForegroundColor(wht);
+            tg.setForegroundColor(dim);
             tg.putString(4+hp_max, 0, "] "); // 11
 
+            
+            
             if (j.optInt("score", -1) > 0) {
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
                 tg.putString(4+hp_max+2, 0, "◆");
@@ -300,11 +377,12 @@ public class GameClient {
               tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);              
 //            tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
 
-            
+            int rightHUDWidth = 4 + 5 + 7 + wave.length() + 5 + 18;
             // empty space for notif
 
             //money,4
-            int moneyX = 4 + hp_max + 11 + dynSize + 4 + 2;            
+//            int moneyX = 4 + hp_max + 11 + dynSize + 4 + 2;            
+            int moneyX = Protocol.ARENA_WIDTH - rightHUDWidth;
             if (j.optInt("currency", -1) > 0) {            
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
                     moneyTickCooldown = 3;
@@ -353,6 +431,9 @@ public class GameClient {
             shift = 0;        
         }
         catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught: processPlayersArrayRender " + e);
             e.printStackTrace();
@@ -371,13 +452,7 @@ public class GameClient {
                 if (_type == null) continue;
                 // JOIN_ACK test
                 else if ("JOIN_REJECT".equals(_type)) {
-                    KeyStroke keystroke = screen.pollInput();
-                    do {
-                        tg.putString(cols/5, rows/2, "Rejected because game is ongoing!");
-                        tg.putString(cols/5, rows/2+1, "Press [ESC] to quit client.");
-                        screen.refresh();
-                    } while (keystroke != null && keystroke.getKeyType() == KeyType.Escape);
-                    closeClient();
+                    draw_reject_screen();
                 }
                 else if ("JOIN_ACK".equals(_type)) {
                     // recieve
@@ -385,23 +460,31 @@ public class GameClient {
                     String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
                     writer.println(sendMsg);
                 }
-                else if ("STATE".equals(_type)) {
-/*                    if (!playerID.equals(Utility.optString(j, "id"))) continue;;
-                    int _color = j.optInt("color", 60);
-                    to_render = "[SERVER] " + _type + " | " + playerID + " | " + _color;
-                    shift++;
-                    String _playerId = Utility.optString(j, "playerId");
-                    to_render = new JSONObject().put("origin", "[SERVER]").put("type", _type).put("playerID", playerID);*/
-//                    to_render = new JSONObject().put("message", Utility.optString(j, "message"));
-                }
                 else if ("ENTITY_STATE".equals(_type)) {
+                    if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) continue;
+                    if ("LOBBY".equals(Utility.optString(to_render, "type"))) { screen.clear(); switchState(State.GAME); }
                     to_render = new JSONObject(line); // shift handling onto render thread
                 }
                 else if ("LEADERBOARD".equals(_type)) {
+//                    System.exit(0);
+                    if ("LOBBY".equals(Utility.optString(to_render, "type"))) continue;
+                    switchState(State.BLOCK);
                     to_render = new JSONObject(line);
+                }
+                else if ("LOBBY".equals(_type)) {
+                    switchState(State.BLOCK);
+                    to_render = new JSONObject(line);
+                }                
+                else if ("CHAT".equals(_type)) {
+//                     String msg = j.optString("msg");
+                    ChatClient.msgQ.add(j);
+//                    System.err.println(msg);
                 }
 			}
         } catch (Exception e) {
+        
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient listener thread: " + e);
             e.printStackTrace();
@@ -420,14 +503,14 @@ public class GameClient {
             TextCharacter space = new TextCharacter('.', bkg, bkg);
             TextCharacter frame = new TextCharacter('!', frg, frg);            
             
-            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), space);
-            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), frame);
+            tg.fillRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), space);
+            tg.drawRectangle(new TerminalPosition(0,0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER * 2), frame);
             tg.setBackgroundColor(frg);
             tg.setForegroundColor(bkg);            
             tg.enableModifiers(SGR.BOLD);
             for (int j = -3; j <= 3; j++) {
                 int length = "[[ GAME OVER ]]".length();
-                tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + j, "[[ GAME OVER ]]");
+                tg.putString(Protocol.ARENA_WIDTH/2 + (int)(0.5+Protocol.SIDEBAR_WIDTH)/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + j, "[[ GAME OVER ]]");
             }
             screen.refresh();
             Thread.sleep(Protocol.TICK_MS * 10);
@@ -438,12 +521,33 @@ public class GameClient {
 
     public static void splash() { try {
         TextColor.RGB vg = new TextColor.RGB(1,13,1);
-        TextColor.RGB white = new TextColor.RGB(255,255,255);                  
+        TextColor.RGB white = new TextColor.RGB(245,255,245);                      
+        TextColor.RGB white_dim = new TextColor.RGB(80,110,80);                  
         screen.clear();
         TextGraphics tg = screen.newTextGraphics();
         tg.setBackgroundColor(vg);
         TextCharacter space = new TextCharacter('.', vg, vg);
       tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+
+      tg.setForegroundColor(white);
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
+      tg.drawLine(
+            new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            '─'
+        );
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
+  //    tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
+    tg.drawLine(
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0),
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+        '│'
+    );
+      tg.putString(0,0,"┌");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,0,"┐");
+      tg.putString(0,Protocol.ARENA_HEIGHT + Protocol.BORDER,"└");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + Protocol.BORDER,"┘");
+      
         String[] lines = {
             "                  ███████████|     ██|     ██|      █████████|",
             "                      ███|         ██|     ██|      ██|",
@@ -467,7 +571,7 @@ public class GameClient {
         int length = lines[9].length();
 
         for (int tick = 0; tick <= 10; tick++) {
-            if (tick%10==0) tg.setForegroundColor(vg);
+            if (tick%10==0) tg.setForegroundColor(white_dim);
             else if (tick%5==0) tg.setForegroundColor(white);        
             
             for (int i = 0; i < lines.length; i++) {
@@ -476,6 +580,80 @@ public class GameClient {
             screen.refresh();
             Thread.sleep(Protocol.TICK_MS * 2);
         }
+    } catch (Exception e) {} }
+
+
+    public static void renderLobby(JSONObject to_render) { try {
+        TextColor.RGB vg = new TextColor.RGB(1,13,1);
+        TextColor.RGB white = new TextColor.RGB(225,245,225);                      
+        TextColor.RGB white_dim = new TextColor.RGB(80,110,80);                  
+        TextColor.RGB white_txtdim = new TextColor.RGB(145,155,145);                          
+        
+        TextGraphics tg = screen.newTextGraphics();
+        tg.setBackgroundColor(vg);
+        TextCharacter space = new TextCharacter('.', vg, vg);
+      tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+      tg.setForegroundColor(white);
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH +  Protocol.SIDEBAR_WIDTH, 0), '─');
+      tg.drawLine(
+            new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+            '─'
+        );
+      tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
+  //    tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
+    tg.drawLine(
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0),
+        new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+        '│'
+    );
+      tg.putString(0,0,"┌");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,0,"┐");
+      tg.putString(0,Protocol.ARENA_HEIGHT + Protocol.BORDER,"└");
+      tg.putString(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + Protocol.BORDER,"┘");
+      
+      String[] lines = {
+            "                  ███████████|     ██|     ██|      █████████|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██████████|      █████████|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      ██|",
+            "                      ███|         ██|     ██|      █████████|",
+            "",
+            "  ███|    ███|     ██████████|      ████████|       █████████|     ███████████|",
+            "  ███|    ███|     ███|                ██|         ███|                ███|",
+            "  ███|    ███|     ███|                ██|         ███|                ███|",
+            "  ███████████|     █████████|          ██|          ██████|            ███|",
+            "  ███|    ███|     ███|                ██|              █████|         ███|",
+            "  ███|    ███|     ███|                ██|                 ██|         ███|",
+            "  ███|    ███|     ███|                ██|                 ██|         ███|",
+            "  ███|    ███|     ██████████|      ████████|      █████████|          ███|"
+        };
+        
+        int length = lines[9].length();
+
+        tg.setForegroundColor(white);        
+        
+        for (int i = 0; i < lines.length; i++) {
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - length/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + i - lines.length/2, lines[i]);
+        }
+
+        JSONArray players = to_render.getJSONArray("players");
+        
+        for (int i = 0; i < players.length(); i++) {
+            if (playerID.equals(Utility.optString(players.getJSONObject(i), "id")))
+                tg.setForegroundColor(white);
+            else tg.setForegroundColor(white_txtdim); 
+            String playerName = players.getJSONObject(i).optString("name");
+            tg.putString(Protocol.ARENA_WIDTH/2 + Protocol.SIDEBAR_WIDTH/2 - playerName.length()/2, Protocol.ARENA_HEIGHT/2 - Protocol.BORDER + lines.length/2 + 4 + i, playerName);
+            
+        }
+        
+        screen.refresh();
+        Thread.sleep(Protocol.TICK_MS * 2);
+
     } catch (Exception e) {} }
         
     // main({player_name, host})
@@ -507,7 +685,7 @@ public class GameClient {
             TextGraphics tg = screen.newTextGraphics();
             tg.setBackgroundColor(new TextColor.RGB(15,23,42));
             TextCharacter space = new TextCharacter('.', new TextColor.RGB(15,23,42), new TextColor.RGB(15,23,42));
-            tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+//            tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
 
             // EVERYTHING ABOVE RUNS ONCE
             // EVERYTHING BELOW RUNS IN A LOOP
@@ -515,10 +693,12 @@ public class GameClient {
             // --- Thread 1: JSON bureaucracy loop ---
             Thread listener = new Thread(() -> {
                 processServerBroadcast(reader, tg);
-            }); listener.start();
+            }); listener.start();            
 
             // --- Thread 2: Render-keystroke loop ---
             while (!((!( "render".equals(to_render) && !"localhost".equals(host)) && !(!Utility.isJSONValid(join) && !"anon".equals(player_name))) && !(!("render".equals(to_render) || !Utility.isJSONValid(join)) || ("localhost".equals(host) || "anon".equals(player_name))))) {         
+
+                // ==== RENDER ====
                 // skip null
                 // pls check null keystroke always
                 if (to_render == null) {            
@@ -532,39 +712,109 @@ public class GameClient {
                     continue;
                 }
                 
+                if ("LOBBY".equals(Utility.optString(to_render, "type"))) {
+                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
+                    renderLobby(to_render);
+//                    continue;
+                }
                 // Render sth first
                 // all screen stuff, THEN indiv elem
-                tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
-                // HUD MISTBNE AT BOTTOM
-//                tg.putString(cols/2, rows/2, Utility.optString(to_render, "message"));
-///!!!!! if making lobby state, change the tickCounter check to sth else!!!!!!!!!
-                if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
+                else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
+//                    switchState(State.GAME);
+                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
+                    boolean toEmphasizeChat = (state == State.CHAT);
+                    ChatClient.render(toEmphasizeChat);
+                    if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(255,255,255));
+                    else tg.setForegroundColor(new
+    TextColor.RGB(80,90,125));
+                  //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');
+                  tg.drawLine(
+                        new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+                        new TerminalPosition(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+                        '─'
+                    );
+                  tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
+              //    tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
+                tg.drawLine(
+                    new TerminalPosition(Protocol.ARENA_WIDTH, 0),
+                    new TerminalPosition(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+                    '│'
+                );
+                  tg.putString(0,0,"┌");
+                  tg.putString(Protocol.ARENA_WIDTH,0,"┐");
+                  tg.putString(0,Protocol.ARENA_HEIGHT + Protocol.BORDER,"└");
+                  tg.putString(Protocol.ARENA_WIDTH,Protocol.ARENA_HEIGHT + Protocol.BORDER,"┘");
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
-                    if (jap != null) processPlayersArrayRender(jap, tg, "♤", to_render);
-                    if (jab != null) processPlayersArrayRender(jab, tg, "*", to_render);
+                    if (jap != null) processPlayersArrayRender(jap, tg, "⬤", to_render);
+                    if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
                     if (jae != null) processPlayersArrayRender(jae, tg, "P", to_render);  
                     screen.refresh();
                 }
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
                     renderLeaderboard(tg);
                 }            
-                
-                KeyStroke keystroke = screen.pollInput();
-                // pls check null keystroke always
-                if (keystroke == null) {            
-                    screen.refresh();
-                    Thread.sleep(Protocol.TICK_MS);
-                    continue;
-                }
-                
-                // Handle disconnect key
+
+                // ==== keyboard ====                        
+                KeyStroke keystroke;
+                while ((keystroke = screen.pollInput()) != null) {
+//                KeyStroke keystroke = screen.pollInput();
+
+                // Handle disconnect + chat key
                 if (keystroke.getKeyType() == KeyType.Escape) {
+                    if (state == State.CHAT) {
+                        state = state.mutate(State.GAME);
+                        screen.refresh();
+                        Thread.sleep(Protocol.TICK_MS);
+                        continue;
+                    }
                     String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
                     writer.println(discnt);
 //                    listener.interrupt();
                     break;
+                }
+
+                if (state == State.CHAT) {
+                    if (keystroke.getKeyType() == KeyType.Enter) {
+                        ChatClient.msgBuffer = ChatClient.msgBuffer.replace("\n", "");
+                        ChatClient.send(ChatClient.msgBuffer, playerID, player_name);
+                        ChatClient.resetCursor();
+                    }
+                    else if (keystroke.getKeyType() == KeyType.Backspace) {
+                        if (ChatClient.msgBuffer.isEmpty())
+                            ChatClient.msgBuffer = "";
+                        else {
+                            ChatClient.removeAt();
+                       }
+                    }
+                    else if (keystroke.getKeyType() == KeyType.ArrowLeft) {
+                        ChatClient.moveCursor(-1);
+                    }
+                    else if (keystroke.getKeyType() == KeyType.ArrowRight) {
+                        ChatClient.moveCursor(1);
+                    }                    
+                    else if (keystroke.getCharacter() == null) continue;                    
+                    else {
+                        ChatClient.insertChar(keystroke.getCharacter());
+                    }
+                    continue;
+                }                
+                
+                // Handle chat switch
+                if (state == State.GAME && keystroke.getKeyType() == KeyType.Character && 'c' == keystroke.getCharacter()) {
+                    switchState(State.CHAT);
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
+                }
+
+                // DO NOT REGISTER KEY IF NOT ON BATTLE MODE
+                // only esc
+                if (state == State.BLOCK) {
+                    screen.refresh();
+                    Thread.sleep(Protocol.TICK_MS);
+                    continue;
                 }
                 
                 // Register and send out key if not disconnect
@@ -576,7 +826,10 @@ public class GameClient {
                     String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
                     writer.println(sendMsg);
                 }
-        
+
+                } // end of keystroke loop
+                // ==== now render ====
+
                 screen.refresh();
                 Thread.sleep(Protocol.TICK_MS);
             }
@@ -585,6 +838,8 @@ public class GameClient {
             System.exit(0);
 
         } catch (Exception e) {
+            String discnt = new JSONObject().put("type", "LEAVE").put("playerId", playerID).toString();
+            writer.println(discnt);
             closeClient();
             System.out.println("Exception caught GameClient main(): " + e);
             e.printStackTrace();

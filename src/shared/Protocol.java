@@ -7,15 +7,18 @@ public class Protocol {
     public static int ARENA_HEIGHT = 48;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
-    public static final int MAX_PLAYERS = 20;
+    public static final int MAX_PLAYERS = 2;
 
     // for GameState
-    public static final int LEVEL_DURATION_TICKS = 4800;
-    public static final int SIDEBAR_WIDTH = 36;
+    public static final int LEVEL_DURATION_TICKS = 2500;
+    public static final int SIDEBAR_WIDTH = 45;
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
-    public static final int FIRE_COOLDOWN_TICKS = 10;
+    public static final int FIRE_COOLDOWN_TICKS = 5;
     public static final int HIT_COOLDOWN_TICKS = 60;
+    public static final int LOBBY_CLOSE_IN = 10000 * TICK_MS;
+
+    
 //    public static final int WAVE_INTERVAL_TICKS = 600;
     public static final int MAX_BULLETS = 200;
     public static final float PLAYER_SPEED = 0.5f;
@@ -37,4 +40,7 @@ public class Protocol {
     public static final int BULLET_LIFETIME = 300;
     public static final int WAVE_INTERVAL = 300;
     public static final int DESPAWN_TIMER = 3600;
+
+    // chat
+    public static final int MAX_CHAR_PER_LINE = SIDEBAR_WIDTH - 15;
 }
