@@ -253,12 +253,26 @@ public class GameClient {
             }}
 
 //            System.err.println(playerColor.keySet());
+
+           // render non-players for now
+            if ("coins".equals(Utility.optString(j, "type"))) {
+                
+                int rx = j.optInt("x", -1);
+                int ry = j.optInt("y", -1);
+                String avatar = ava;
+// ⛃⛂⭐ for coins, ❓ for gacha
+                if (rx != -1 && ry > 0)
+                    tg.putString(rx, ry, avatar);
+
+                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                continue;
+            }
+
                         
             // render non-players for now
             if (!"player".equals(Utility.optString(j, "type"))) {
                 if ("bullet".equals(j.optString("type"))) {            
                     String id = j.optString("ownerID");
-  //          System.err.println("bull"+id);                    
                     TextColor color = playerColor.get(id);            
                     tg.setForegroundColor(color);
                 } else tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
@@ -267,17 +281,18 @@ public class GameClient {
                 int ry = j.optInt("y", -1);
                 String avatar = ava; // for now, will customize later
 
-                if (rx != -1 && ry > 0) {
+                if (rx != -1 && ry > 0)
                     tg.putString(rx, ry, avatar);
-    //                tg.putString(0, 0, "  ");                
-    //                if (direction != null) tg.putString(0, 0, direction);
-    // enforce rendering proioty later?!?!!??
-                }
 
                 tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                continue;
             }
             
             if (!"player".equals(j.optString("type"))) continue;
+
+
+
+            
             /// belownhere is players obly rendering logic
             playerId = Utility.optString(j,"id");
             if (playerId == null) continue;
@@ -747,9 +762,12 @@ public class GameClient {
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
+                    JSONArray jac = new JSONArray(to_render.getJSONArray("coins"));         
+                    if (jac != null) processPlayersArrayRender(jac, tg, "⭐", to_render); 
+                    if (jae != null) processPlayersArrayRender(jae, tg, "P", to_render);
                     if (jap != null) processPlayersArrayRender(jap, tg, "⬤", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
-                    if (jae != null) processPlayersArrayRender(jae, tg, "P", to_render);  
+
                     screen.refresh();
                 }
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {

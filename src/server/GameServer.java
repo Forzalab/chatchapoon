@@ -58,7 +58,7 @@ public class GameServer {
                      
                 if (cmd.equals("PULL")) {
                     Player p = currentGameState.playerIdMap.get(authorID);
-                    if (p != null) doGachaPull(p);
+//                    if (p != null) doGachaPull(p);
                 }
             }
             else if (type.equals("CHAT")) {
@@ -213,7 +213,9 @@ public class GameServer {
 
                 JSONArray bulletArray = new JSONArray();
                 JSONArray playerArray = new JSONArray();
-                JSONArray enemyArray = new JSONArray();                           
+                JSONArray enemyArray = new JSONArray(); 
+                JSONArray coinsArray = new JSONArray();
+                            
                 // TEMPORSRY!!!!!!!
                 // Bullet
                 for (Bullet bullet : currentGameState.bullets) {
@@ -253,9 +255,21 @@ public class GameServer {
                     .put("y", enemy.pos.getRenderY()));
                 }
 
+                for (Map.Entry<Position, Integer> entry : currentGameState.coinsLoc.entrySet()) {
+                    Position key = entry.getKey();
+                    int x = key.getRenderX();
+                    int y = key.getRenderY();
+                    coinsArray.put(new JSONObject()
+                    .put("x", x)
+                    .put("y", y));                    
+//                    int amt = entry.getValue();
+                    // now work with key and value...
+                }              
+                
                 stateArrayJSON.put("bullets", bulletArray);
                 stateArrayJSON.put("players", playerArray);              
                 stateArrayJSON.put("enemies", enemyArray);
+                stateArrayJSON.put("coins", coinsArray);                
 
                 // broadcast entities
                 broadcastAll(stateArrayJSON);
