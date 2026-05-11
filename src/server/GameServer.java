@@ -89,7 +89,7 @@ public class GameServer {
             // state swotch
             long currentTime = System.currentTimeMillis();
             boolean lobbyWaitEnds = (currentTime - startTimeLobby > Protocol.LOBBY_CLOSE_IN);
-            boolean enoughPlayersJoined = currentGameState.players.size() > Protocol.MAX_PLAYERS;
+            boolean enoughPlayersJoined = currentGameState.players.size() >= Protocol.MAX_PLAYERS;
             if (lobbyWaitEnds || enoughPlayersJoined) {
                 currentGameState.switchNextState();
             }
