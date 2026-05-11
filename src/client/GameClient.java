@@ -397,7 +397,7 @@ public class GameClient {
             // empty space for notif
 
             //money,4
-            int moneyX = 4 + hp_max + 11 + dynSize + 4 + 2;            
+            int moneyX = 4 + hp_max + 3 + 11 + dynSize + 4 + 2;            
 //            int moneyX = Protocol.ARENA_WIDTH+3 - rightHUDWidth;
             if (j.optInt("currency", -1) > 0) {            
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior))

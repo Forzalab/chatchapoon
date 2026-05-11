@@ -82,8 +82,8 @@ public class ChatClient {
         if (!GameClient.playerColor.containsKey(playerID)) {
             int hash = Math.abs(playerID.hashCode());
             
-            int min = 130;
-            int max = 200;
+            int min = 150;
+            int max = 240;
             int range = max - min + 1;
 
             r = (hash % range) + min;
