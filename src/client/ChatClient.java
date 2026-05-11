@@ -52,12 +52,13 @@ public class ChatClient {
         msgBuffer = stringBuffer.toString();
         if (txtOffset == 0) moveCursor(1);
     }
-    public static synchronized void send(String msg, String id, String name) {
+    public static synchronized void send(String msg, String id, String name, String eventType) {
         JSONObject msgJSON = new JSONObject()
         .put("type", "CHAT")
         .put("msg", msg)
         .put("id", id)
-        .put("name", name);
+        .put("name", name)
+        .put("eventType", eventType);
         String msgJSONString = msgJSON.toString();
         GameClient.writer.println(msgJSONString);
         msgBuffer = "";
@@ -116,7 +117,7 @@ public class ChatClient {
             s = stillHaveString ? s.substring(Protocol.MAX_CHAR_PER_LINE) : "";
         }
     }
-    static int displayLine(String string, int offset, String senderID, boolean toEmphasize) {
+    static int displayLine(String string, int offset, String senderID, boolean toEmphasize, String mType) {
         if (string.isEmpty()) return offset;
         tokenize(string, senderID);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
@@ -132,10 +133,18 @@ public class ChatClient {
                 if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
                 else tg.setForegroundColor(colorDimmedLoseFocus);             
             }
+
+            boolean isGacha = (mType.indexOf("G_") != -1); // add blink
+            if (isGacha) tg.setBackgroundColor(new TextColor.RGB(40,20,60)); // purple for gacha
+            else tg.setBackgroundColor(new TextColor.RGB(15, 23, 42)); // base
+
+            // Main text
+            
             tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, msgBlock.get(i));
             int upToColon = msgBlock.get(i).indexOf(": ");
             if (upToColon == -1) continue;
-       
+
+            // Colored text
             String id = msgBlockMapSender.get(msgBlock.get(i));
             String colored = msgBlock.get(i).substring(0, upToColon + 1);
             tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, colored);
@@ -238,7 +247,7 @@ public class ChatClient {
         for (int i = msgQ.size() - 1; i >= 0; i--) {
             String s = formatNormal(msgQ.get(i));
             String senderID = msgQ.get(i).optString("id");
-            offset = displayLine(s, offset, senderID, toEmphasize);
+            offset = displayLine(s, offset, senderID, toEmphasize, msgQ.get(i).optString("eventType"));
         }
     }
 }
