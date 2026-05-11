@@ -22,6 +22,7 @@ public class Actor extends Entity {
         public int deathTimer = 0; // some class need to handle subtraction lol
         public Boolean willRespawn = false;
         private Boolean init = false;
+        private boolean jr = false;
         
         public HP(int hpMax) { 
             this._hpMax = hpMax; 
@@ -40,7 +41,11 @@ public class Actor extends Entity {
                 this._hp = (hp >= 0) ? hp : 0;
                 this._hp = (hp <= _hpMax) ? _hp : _hpMax;
                 this.init = true;
-                if (_hp <= 0) dead = true;
+                if (_hp <= 0) {
+                    dead = true;
+                    if (Actor.this instanceof Player p && p.lives-- == 0)
+                        p.hp.triggerRespawn(false);
+                }
              } catch (Exception e) {
                 System.out.println("Exception caught in Actor.HP.setHP(): " + e);
              }
@@ -54,17 +59,25 @@ public class Actor extends Entity {
         // VERY BAD. have to track 2 fucntion together. 
         // mut add soem form of takeDamge() somehow.
         public synchronized void triggerRespawn(Boolean will_respawn) {
+            if (deathTimer == Protocol.DEATH_COOLDOWN_PERM) return;
             deathTimer = (!will_respawn) ? Protocol.DEATH_COOLDOWN_PERM : Protocol.DEATH_COOLDOWN;
         }
 
         public synchronized HP resuscitate() {
             if (!isDead() || isDeadPerm()) return this;
             else if (deathTimer > 0) return this;
-            _hp = _hpMax; dead = false;
+            _hp = _hpMax; dead = false; jr = true;
+
   //          Actor.this.pos.iHaveValidatedB4Setting();
             // respawn
 //            Actor.this.pos.set(Actor.this.spawnPos.getRenderY(), Actor.this.spawnPos.getRenderX());
             return this;
+        }
+
+        public synchronized boolean justResus() {
+            boolean jjr = jr;
+            jr = jr && false;
+            return jjr;
         }
 
         public synchronized void deathTickUp() {

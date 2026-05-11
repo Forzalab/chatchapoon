@@ -42,7 +42,17 @@ public class GameServer {
         jao.put("players", ja);
         return jao;
     }
-
+    
+    public static synchronized void send(String msg, String id, String name, String eventType) {
+        JSONObject msgJSON = new JSONObject()
+        .put("type", "CHAT")
+        .put("msg", msg)
+        .put("id", id)
+        .put("name", name);
+        String msgJSONString = msgJSON.toString();
+        broadcastAll(msgJSONString);
+    }
+    
     static synchronized void processIncomingPlayerRequests() {
         for (ClientHandler _ch: clients) { String msg; while ((msg = _ch.incoming.poll()) != null) {
             // process _ch msg here
@@ -55,6 +65,14 @@ public class GameServer {
                 String cmd = json.getString("key");
                 String authorID = json.getString("playerId");
                 alterState(cmd, authorID);
+                     
+                if (cmd.equals("PULL")) {
+                    Player p = currentGameState.playerIdMap.get(authorID);
+                    if (p == null) continue;
+                    String rarity = currentGameState.pull(p);
+                    if (rarity.isEmpty()) continue;
+                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, rarity);
+                }
             }
             else if (type.equals("CHAT")) {
                 broadcastAll(msg); // relay old msg
@@ -62,7 +80,7 @@ public class GameServer {
             else if (type.equals("LEAVE")) {
                 System.out.println("Client disconnected!");
                 broadcastAll(msg); // relay old msg
-            } 
+            }
         }
      }}
 
@@ -84,6 +102,12 @@ public class GameServer {
 
     static synchronized void broadcastAll(JSONObject j) {
         broadcastAll(j.toString());
+    }
+
+    static synchronized void checkBroadcastMilestone(String mtype, Player p) { 
+        String milestone = p.checkAddMilestone(mtype);
+        if (!"HAD".equals(milestone) && !"UKN".equals(milestone)) send(milestone, p.id, p.name, mtype);
+//        if ("UKN".equals(milestone)) send(milestone, p.id, p.name, milestone);        
     }
 
     public static synchronized void lobby() {
@@ -177,7 +201,7 @@ public class GameServer {
                 
                 // enemy stuff
                 if (currentGameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                    currentGameState.spawnWave(4);
+                    currentGameState.spawnWave(6);
                 currentGameState.updateEnemies();
 
                 // now, pos uodated, we do collision check and porcess
@@ -188,10 +212,13 @@ public class GameServer {
                 for (Player p : currentGameState.players) {
                     p.uptickHitCooldown();
                     if (p.fireCooldown > 0) p.fireCooldown--;
+                    currentGameState.processCollectableCoin(p);
                     if (!p.dead()) continue;
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
                     p.bullets = 100;
+                    checkBroadcastMilestone("NEW_GACHA", p);
+                    checkBroadcastMilestone("NEAR_DEATH", p);                                        
                 }
                 
                 // == Encode result ==
@@ -208,7 +235,9 @@ public class GameServer {
 
                 JSONArray bulletArray = new JSONArray();
                 JSONArray playerArray = new JSONArray();
-                JSONArray enemyArray = new JSONArray();                           
+                JSONArray enemyArray = new JSONArray(); 
+                JSONArray coinsArray = new JSONArray();
+                            
                 // TEMPORSRY!!!!!!!
                 // Bullet
                 for (Bullet bullet : currentGameState.bullets) {
@@ -248,9 +277,21 @@ public class GameServer {
                     .put("y", enemy.pos.getRenderY()));
                 }
 
+                for (Map.Entry<Position, Integer> entry : currentGameState.coinsLoc.entrySet()) {
+                    Position key = entry.getKey();
+                    int x = key.getRenderX();
+                    int y = key.getRenderY();
+                    coinsArray.put(new JSONObject()
+                    .put("x", x)
+                    .put("y", y));                    
+//                    int amt = entry.getValue();
+                    // now work with key and value...
+                }              
+                
                 stateArrayJSON.put("bullets", bulletArray);
                 stateArrayJSON.put("players", playerArray);              
                 stateArrayJSON.put("enemies", enemyArray);
+                stateArrayJSON.put("coins", coinsArray);                
 
                 // broadcast entities
                 broadcastAll(stateArrayJSON);

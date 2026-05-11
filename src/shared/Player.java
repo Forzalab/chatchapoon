@@ -51,15 +51,43 @@ public class Player extends Actor {
     }
     
     public volatile int score = 0;
-    public volatile int currency;
+    public volatile int currency = 0;
     public final Position spawnPos;
     public final String name;
+    public volatile int pityCounter = 0;
+    public volatile int lives = 3;
+    public volatile LinkedHashMap<String, String> milestone = new LinkedHashMap<String, String>();
+
+    // id input only pls
+    public String checkAddMilestone(String s) {
+        String mst = milestone.getOrDefault(s, "");
+        if (!mst.isEmpty()) return "HAD";
+
+        // money
+        if (s == "NEW_GACHA" && currency < Protocol.GACHA_COST && currency > (int)Math.round(Protocol.GACHA_COST * 0.5))  {
+            int coinLeft = (int)Math.round(Protocol.GACHA_COST*0.5);
+            String status = coinLeft + " more coin" + ((coinLeft > 1)?"s":"") + " to your first Gacha pull! :3";
+            milestone.put(s, status);
+            return status;
+        }
+
+        // health
+        else if (s == "NEAR_DEATH" && hp.justResus() && lives > 0 && lives < Math.min(4, Protocol.PLAYER_RESPAWN_ATTEMPT)) {
+            String logo = lives < 2 ? "⼀  " : lives < 3 ? "⼆  " : "〣  ";
+            String status = logo + String.valueOf(Protocol.PLAYER_RESPAWN_ATTEMPT - lives) + " li" + ((Protocol.PLAYER_RESPAWN_ATTEMPT - lives>1)?"ves":"fe") + " down, " + lives + " to go.";
+//            milestone.put(s, status);
+            return status;
+        }
+        
+
+        return "UKN";
+    }
 
     // <item-name, Item> to which Item has amount
     public volatile Inventory inventory;
     public volatile int fireCooldown, bullets = 100;
    // no color (in Avatar)
-   // no isDead, maxHP, deathTimer (in Actor.HP.isDead())
+   // no isDead, maxHP, deathTimer (in Actor.HisDead())
 
     public Player(Position pos, float vx, float vy, String id, int hp_max, String name) {
         super(pos, vx, vy, "player", id, hp_max);

@@ -1,6 +1,7 @@
 package shared;
 
 import java.io.*;
+import java.util.Objects;
 
 public class Position {
     private volatile int x, y;
@@ -13,7 +14,18 @@ public class Position {
         accumx = 0;
         accumy = 0;
     }
-    
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Position pos)) return false;
+        else return (this.x == pos.x && this.y == pos.y);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.y, this.x);
+    }
+
     // note to future self: VALIDATE B4 SETTING COORDS!!!
     public synchronized void accum(float dy, float dx) {
         checker();

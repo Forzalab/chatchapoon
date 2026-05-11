@@ -19,7 +19,9 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public ConcurrentHashMap<String, Player> playerIdMap = new ConcurrentHashMap<String, Player>();
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
     public HashSet<String> idTaken = new HashSet<String>();
-
+    public LinkedHashMap<Position, Integer> coinsLoc = new LinkedHashMap<Position, Integer>();
+//    public 
+    
     // game state 3 ones
     public static enum State {
         LOBBY(0), // alow join    
@@ -226,11 +228,14 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     }
     private void processBulletHit(Bullet bullet, Actor victim, int dmg) {
         if (!bullet.pos.equals(victim.pos)) return; // same pos?
-        else if (bullet.ownerID.equals(victim.id)) return; // suicide?
+//        else if (bullet.ownerID.equals(victim.id)) return; // suicide?
         else if (victim.dead()) return; // ded? dont hit a zombie
         else if (bullet.dead()) return; // dont accidentally call a bullet that had hit
+
+        int damage = bullet.damage;
+        if (bullet.ownerID.equals(victim.id)) damage = 1;
         
-        victim.hp.setHP(victim.hp.getHP() - bullet.damage); // e.hp -= bullet.damage;
+        victim.hp.setHP(victim.hp.getHP() - damage); // e.hp -= bullet.damage;
         bullet.timeLeft(0);
         
         // killer find and set pt
@@ -242,7 +247,40 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         Player bOwner = playerIdMap.get(bullet.ownerID);
         if (bOwner == null) return;
         bOwner.score += dmg;
-        bOwner.bullets += 10;
+
+        if (victim instanceof Enemy e) {
+            int[] weights = {40,25,20,10,5};
+            int roll = r.nextInt(100);
+            int cum = 0, coins = 1;
+            for (int i = 0; i < weights.length; i++) {
+                cum += weights[i];
+                if (roll < cum) { coins = i+1; break; }
+            }
+
+            // map coin loc
+            Position pos = new Position(e.pos.getRenderY(), e.pos.getRenderX());
+            Integer coinAtAmt = coinsLoc.get(pos);
+            if (coinAtAmt != null) coins += coinAtAmt;
+            coinsLoc.put(pos, coins);
+
+//            bOwner.currency += coins;
+            bOwner.bullets += 1;
+        }
+        else if (victim instanceof Player p) {
+            int coins = p.currency;
+            Position pos = new Position(p.pos.getRenderY(), p.pos.getRenderX());
+            Integer coinAtAmt = coinsLoc.get(pos);
+            if (coinAtAmt != null) coins += coinAtAmt;
+            coinsLoc.put(pos, coins); p.currency = 0;
+            bOwner.bullets += p.bullets; p.bullets = 0;
+        }
+    }
+    
+    public synchronized void processCollectableCoin(Player p) {
+        Position pos = new Position(p.pos.getRenderY(), p.pos.getRenderX());
+        Integer coin = coinsLoc.remove(pos);
+        if (coin == null) return;
+        p.currency += coin;
     }
     
     // lol wont do dispatch
@@ -278,8 +316,22 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             for (Player p : players)
                 processActorHit(e, p);
     }
+
+    public synchronized String pull(Player p) {
+        if (p.currency < Protocol.GACHA_COST) return "";
+        p.currency -= Protocol.GACHA_COST;
+        p.pityCounter++;
+        float roll = (float)Math.random();
+        String rarity;
+        if (p.pityCounter >= 30) rarity = "LEGENDARY";
+        else if (p.pityCounter >= 10) rarity = "RARE";
+        else rarity = roll < 0.85 ? "COMMON" : roll < 0.99 ? "RARE" : "LEGENDARY";
+        if (!rarity.equals("COMMON")) p.pityCounter = 0;
+        return rarity;
+    }
+    
     public GameState(long inception) {
-        this.inception = inception;
+            this.inception = inception;
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
             for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)
