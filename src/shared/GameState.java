@@ -20,6 +20,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
     public HashSet<String> idTaken = new HashSet<String>();
     public LinkedHashMap<Position, Integer> coinsLoc = new LinkedHashMap<Position, Integer>();
+//    public 
     
     // game state 3 ones
     public static enum State {
@@ -315,8 +316,22 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             for (Player p : players)
                 processActorHit(e, p);
     }
+
+    public synchronized String pull(Player p) {
+        if (p.currency < Protocol.GACHA_COST) return "";
+        p.currency -= Protocol.GACHA_COST;
+        p.pityCounter++;
+        float roll = (float)Math.random();
+        String rarity;
+        if (p.pityCounter >= 30) rarity = "LEGENDARY";
+        else if (p.pityCounter >= 10) rarity = "RARE";
+        else rarity = roll < 0.85 ? "COMMON" : roll < 0.99 ? "RARE" : "LEGENDARY";
+        if (!rarity.equals("COMMON")) p.pityCounter = 0;
+        return rarity;
+    }
+    
     public GameState(long inception) {
-        this.inception = inception;
+            this.inception = inception;
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
             for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)

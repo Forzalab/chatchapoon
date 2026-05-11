@@ -41,6 +41,8 @@ public class Protocol {
     public static final int WAVE_INTERVAL = 450;
     public static final int DESPAWN_TIMER = 2400;
 
+    public static final int GACHA_COST = 10;
+    public static final int PLAYER_RESPAWN_ATTEMPT = 3;
     // chat
     public static final int MAX_CHAR_PER_LINE = SIDEBAR_WIDTH - 5;
 }

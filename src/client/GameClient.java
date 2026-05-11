@@ -88,6 +88,7 @@ public class GameClient {
         put(KeyStroke.fromString("e"), "ROTATE_CW");
         put(KeyStroke.fromString("<Space>"), "SHOOT");
         put(KeyStroke.fromString("<Esc>"), "PING");
+        put(KeyStroke.fromString("g"), "PULL");        
     }};
 
     private static void closeClient() {

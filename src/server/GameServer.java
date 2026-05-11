@@ -42,7 +42,17 @@ public class GameServer {
         jao.put("players", ja);
         return jao;
     }
-
+    
+    public static synchronized void send(String msg, String id, String name, String eventType) {
+        JSONObject msgJSON = new JSONObject()
+        .put("type", "CHAT")
+        .put("msg", msg)
+        .put("id", id)
+        .put("name", name);
+        String msgJSONString = msgJSON.toString();
+        broadcastAll(msgJSONString);
+    }
+    
     static synchronized void processIncomingPlayerRequests() {
         for (ClientHandler _ch: clients) { String msg; while ((msg = _ch.incoming.poll()) != null) {
             // process _ch msg here
@@ -58,7 +68,10 @@ public class GameServer {
                      
                 if (cmd.equals("PULL")) {
                     Player p = currentGameState.playerIdMap.get(authorID);
-//                    if (p != null) doGachaPull(p);
+                    if (p == null) continue;
+                    String rarity = currentGameState.pull(p);
+                    if (rarity.isEmpty()) continue;
+                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, rarity);
                 }
             }
             else if (type.equals("CHAT")) {
@@ -89,6 +102,12 @@ public class GameServer {
 
     static synchronized void broadcastAll(JSONObject j) {
         broadcastAll(j.toString());
+    }
+
+    static synchronized void checkBroadcastMilestone(String mtype, Player p) { 
+        String milestone = p.checkAddMilestone(mtype);
+        if (!"HAD".equals(milestone) && !"UKN".equals(milestone)) send(milestone, p.id, p.name, mtype);
+//        if ("UKN".equals(milestone)) send(milestone, p.id, p.name, milestone);        
     }
 
     public static synchronized void lobby() {
@@ -198,6 +217,8 @@ public class GameServer {
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
                     p.bullets = 100;
+                    checkBroadcastMilestone("NEW_GACHA", p);
+                    checkBroadcastMilestone("NEAR_DEATH", p);                                        
                 }
                 
                 // == Encode result ==

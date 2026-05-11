@@ -52,7 +52,7 @@ public class ChatClient {
         msgBuffer = stringBuffer.toString();
         if (txtOffset == 0) moveCursor(1);
     }
-    static synchronized void send(String msg, String id, String name) {
+    public static synchronized void send(String msg, String id, String name) {
         JSONObject msgJSON = new JSONObject()
         .put("type", "CHAT")
         .put("msg", msg)
@@ -124,23 +124,19 @@ public class ChatClient {
             if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255)); 
             else tg.setForegroundColor(new TextColor.RGB(150,150,150));             
             int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
-            if (textY == 0) tg.setForegroundColor(new TextColor.RGB(55, 62, 80));
-            else if (textY == 1) tg.setForegroundColor(new TextColor.RGB(95, 100, 115));
-            else if (textY == 2) tg.setForegroundColor(new TextColor.RGB(135, 139, 150));
-            else if (textY == 3) tg.setForegroundColor(new TextColor.RGB(175, 178, 185));
-            else if (textY == 4) tg.setForegroundColor(new TextColor.RGB(215, 216, 220));
-            else if (textY == 5) tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+            if (textY < 8) {
+                float dimFactor = Math.min(1.0f, (textY+1)/8.0f);
+                TextColor color = getColor(senderID);
+                TextColor colorDimmed = getDimmed(color, dimFactor);
+                TextColor colorDimmedLoseFocus = getDimmed(colorDimmed, dimFactor * 0.65f);            
+                if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
+                else tg.setForegroundColor(colorDimmedLoseFocus);             
+            }
             tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, msgBlock.get(i));
             int upToColon = msgBlock.get(i).indexOf(": ");
             if (upToColon == -1) continue;
        
             String id = msgBlockMapSender.get(msgBlock.get(i));
-            float dimFactor = Math.min(1.0f, (textY+1)/6.0f);
-            TextColor color = getColor(id);
-            TextColor colorDimmed = getDimmed(color, dimFactor);
-            TextColor colorDimmedLoseFocus = getDimmed(colorDimmed, dimFactor * 0.65f);            
-            if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
-            else tg.setForegroundColor(colorDimmedLoseFocus);             
             String colored = msgBlock.get(i).substring(0, upToColon + 1);
             tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, colored);
             if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255)); 
