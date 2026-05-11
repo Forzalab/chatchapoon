@@ -19,7 +19,8 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
     public ConcurrentHashMap<String, Player> playerIdMap = new ConcurrentHashMap<String, Player>();
     public HashSet<Entity.Avatar.Color> colorTaken = new HashSet<Entity.Avatar.Color>();
     public HashSet<String> idTaken = new HashSet<String>();
-
+    public ConcurrentHashMap<Position, Integer> coins = new ConcurrentHashMap<Position, Integer>();
+    
     // game state 3 ones
     public static enum State {
         LOBBY(0), // alow join    
@@ -242,6 +243,16 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         Player bOwner = playerIdMap.get(bullet.ownerID);
         if (bOwner == null) return;
         bOwner.score += dmg;
+
+        int[] weights = {40,25,20,10,5};
+        int roll = r.nextInt(100);
+        int cum = 0, coins = 1;
+        for (int i = 0; i < weights.length; i++) {
+            cum += weights[i];
+            if (roll < cum) { coins = i+1; break; }
+        }
+
+//        bOwner.currency += coins;
         bOwner.bullets += 10;
     }
     

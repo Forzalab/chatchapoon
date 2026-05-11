@@ -55,6 +55,11 @@ public class GameServer {
                 String cmd = json.getString("key");
                 String authorID = json.getString("playerId");
                 alterState(cmd, authorID);
+                     
+                if (cmd.equals("PULL")) {
+                    Player p = currentGameState.playerIdMap.get(authorID);
+                    if (p != null) doGachaPull(p);
+                }
             }
             else if (type.equals("CHAT")) {
                 broadcastAll(msg); // relay old msg
@@ -62,7 +67,7 @@ public class GameServer {
             else if (type.equals("LEAVE")) {
                 System.out.println("Client disconnected!");
                 broadcastAll(msg); // relay old msg
-            } 
+            }
         }
      }}
 
