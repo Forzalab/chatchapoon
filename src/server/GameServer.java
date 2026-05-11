@@ -193,6 +193,7 @@ public class GameServer {
                 for (Player p : currentGameState.players) {
                     p.uptickHitCooldown();
                     if (p.fireCooldown > 0) p.fireCooldown--;
+                    currentGameState.processCollectableCoin(p);
                     if (!p.dead()) continue;
                     p.hp.resuscitate().deathTickUp();
                     p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());

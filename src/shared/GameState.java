@@ -244,19 +244,39 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         if (bOwner == null) return;
         bOwner.score += dmg;
 
-        int[] weights = {40,25,20,10,5};
-        int roll = r.nextInt(100);
-        int cum = 0, coins = 1;
-        for (int i = 0; i < weights.length; i++) {
-            cum += weights[i];
-            if (roll < cum) { coins = i+1; break; }
-        }
+        if (victim instanceof Enemy e) {
+            int[] weights = {40,25,20,10,5};
+            int roll = r.nextInt(100);
+            int cum = 0, coins = 1;
+            for (int i = 0; i < weights.length; i++) {
+                cum += weights[i];
+                if (roll < cum) { coins = i+1; break; }
+            }
 
-        // map coin loc
-        Position pos = new Position(victim.pos.getRenderY(), victim.pos.getRenderX());
-        coinsLoc.put(pos, coins);
-//        bOwner.currency += coins;
-        bOwner.bullets += 10;
+            // map coin loc
+            Position pos = new Position(e.pos.getRenderY(), e.pos.getRenderX());
+            Integer coinAtAmt = coinsLoc.get(pos);
+            if (coinAtAmt != null) coins += coinAtAmt;
+            coinsLoc.put(pos, coins);
+
+//            bOwner.currency += coins;
+            bOwner.bullets += 1;
+        }
+        else if (victim instanceof Player p) {
+            int coins = p.currency;
+            Position pos = new Position(p.pos.getRenderY(), p.pos.getRenderX());
+            Integer coinAtAmt = coinsLoc.get(pos);
+            if (coinAtAmt != null) coins += coinAtAmt;
+            coinsLoc.put(pos, coins); p.currency = 0;
+            bOwner.bullets += p.bullets; p.bullets = 0;
+        }
+    }
+    
+    public synchronized void processCollectableCoin(Player p) {
+        Position pos = new Position(p.pos.getRenderY(), p.pos.getRenderX());
+        Integer coin = coinsLoc.remove(pos);
+        if (coin == null) return;
+        p.currency += coin;
     }
     
     // lol wont do dispatch
