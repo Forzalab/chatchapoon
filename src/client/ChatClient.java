@@ -19,13 +19,14 @@ import shared.*;
 
 public class ChatClient {
     static volatile String msgBuffer = "";
-    static volatile int scrollOffset = 0, renderOffset = 0; // from bottom up
+//    static volatile int scrollOffset = 0, renderOffset = 0; // from bottom up
     static CopyOnWriteArrayList<String> msgBlock = new CopyOnWriteArrayList<>();
     private static ConcurrentHashMap<String, String> msgBlockMapSender = new ConcurrentHashMap<String, String>();    
     static CopyOnWriteArrayList<JSONObject> msgQ = new CopyOnWriteArrayList<JSONObject>();    
     static TextGraphics tg = GameClient.screen.newTextGraphics();
     private static int cursor = 0;
     static int maxTxtWidth = Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2 - (Protocol.ARENA_WIDTH+5);
+    static boolean blink = false; static int tick = 0;
     static synchronized void moveCursor(int dx) {
         int maxDisplayWidth = Math.min(maxTxtWidth, msgBuffer.length());
         if (cursor + dx < 0) cursor = 0;
@@ -37,16 +38,19 @@ public class ChatClient {
     }
     static synchronized void removeAt() {
         int txtLength = msgBuffer.length();
-        int i = cursor - 1; // rmeove BEFORE cursor
-        if (i < 0) return;
+        int txtOffset = (txtLength > maxTxtWidth) ? (txtLength-maxTxtWidth) : 0;        
+        int i = cursor - 1 + txtOffset; // rmeove BEFORE cursor
+        if (i < 0 || cursor == 0) return;
         msgBuffer = msgBuffer.substring(0, i) + msgBuffer.substring(i+1);
-        moveCursor(-1);
+        if (txtOffset == 0) moveCursor(-1);
     }
     static synchronized void insertChar(char c) {
+        int txtLength = msgBuffer.length();
+        int txtOffset = (txtLength > maxTxtWidth) ? (txtLength-maxTxtWidth) : 0;
         StringBuffer stringBuffer = new StringBuffer(msgBuffer);
-        stringBuffer.insert(Math.max(0, cursor), c);
+        stringBuffer.insert(Math.max(0, cursor + txtOffset), c);
         msgBuffer = stringBuffer.toString();
-        moveCursor(1);
+        if (txtOffset == 0) moveCursor(1);
     }
     static synchronized void send(String msg, String id, String name) {
         JSONObject msgJSON = new JSONObject()
@@ -162,8 +166,20 @@ public class ChatClient {
         
         String display = msgBuffer.substring(txtOffset, Math.min(maxTxtWidth + txtOffset, txtWidth));
         tg.putString(Protocol.ARENA_WIDTH+5, Protocol.ARENA_HEIGHT, display);
+
         
-        if (toEmphasize == true) { 
+        int freq = 15;
+        tick = (++tick) % freq;
+        boolean tick0 = (tick == 0);
+        blink = blink ^ tick0;
+
+        String cursorChar = ((cursor+txtOffset) < txtWidth) ? (msgBuffer.charAt(cursor+txtOffset) + "") : (" ");
+
+        if (toEmphasize == true && blink && cursorChar == " ") { 
+            tg.setForegroundColor(new TextColor.RGB(255,255,255));
+            tg.setBackgroundColor(new TextColor.RGB(15,23,42));        
+        }        
+        else if (toEmphasize == true) { 
             tg.setBackgroundColor(new TextColor.RGB(255,255,255));
             tg.setForegroundColor(new TextColor.RGB(15,23,42));        
         }
@@ -171,7 +187,7 @@ public class ChatClient {
             tg.setBackgroundColor(new TextColor.RGB(15,23,42));
             tg.setForegroundColor(new TextColor.RGB(45,53,72));              
         }
-        String cursorChar = ((cursor+txtOffset) < txtWidth) ? (msgBuffer.charAt(cursor+txtOffset) + "") : (" ");
+               
         tg.putString(Protocol.ARENA_WIDTH+5+cursor, Protocol.ARENA_HEIGHT, cursorChar);
 
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
