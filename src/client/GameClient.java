@@ -205,14 +205,14 @@ public class GameClient {
 
     private static void drawDirection(int rx, int ry, String d, TextGraphics tg) {
         if (d == null) return;
-        else if ("N".equals(d)) tg.putString(rx, ry-1, "↑");
-        else if ("S".equals(d)) tg.putString(rx, ry+1, "↓");
-        else if ("E".equals(d)) tg.putString(rx+1, ry, "→");
-        else if ("W".equals(d)) tg.putString(rx-1, ry, "←");
-        else if ("NE".equals(d)) tg.putString(rx+1, ry-1, "↗");
-        else if ("NW".equals(d)) tg.putString(rx-1, ry-1, "↖");
-        else if ("SE".equals(d)) tg.putString(rx+1, ry+1, "↘");
-        else if ("SW".equals(d)) tg.putString(rx-1, ry+1, "↙");
+        else if ("N".equals(d)) tg.putString(rx, ry-1, "|");
+        else if ("S".equals(d)) tg.putString(rx, ry+1, "|");
+        else if ("E".equals(d)) tg.putString(rx+1, ry, "—");
+        else if ("W".equals(d)) tg.putString(rx-1, ry, "—");
+        else if ("NE".equals(d)) tg.putString(rx+1, ry-1, "/");
+        else if ("NW".equals(d)) tg.putString(rx-1, ry-1, "\\");
+        else if ("SE".equals(d)) tg.putString(rx+1, ry+1, "\\");
+        else if ("SW".equals(d)) tg.putString(rx-1, ry+1, "/");
     }
     
     // JSONArray -> tg rendering
@@ -276,15 +276,23 @@ public class GameClient {
                     String id = j.optString("ownerID");
                     TextColor color = playerColor.get(id);            
                     tg.setForegroundColor(color);
-                } else tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                } else tg.setForegroundColor(new TextColor.RGB(240,240,240));
                 
                 int rx = j.optInt("x", -1);
                 int ry = j.optInt("y", -1);
+                String direction = j.optString("direction");
                 String avatar = ava; // for now, will customize later
 
+                if ("enemy".equals(j.optString("type"))) {
+                    if ("PATROL".equals(j.optString("subtype"))) { avatar = "p"; }
+                    else if ("SNIPER".equals(j.optString("subtype"))) { avatar = "s"; }
+                    else if ("COPS".equals(j.optString("subtype"))) { avatar = "c"; }     
+                }
+                
                 if (rx != -1 && ry > 0)
                     tg.putString(rx, ry, avatar);
-
+                    if ("enemy".equals(j.optString("type")))
+                        drawDirection(rx, ry, direction, tg);
                 tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
                 continue;
             }
@@ -344,7 +352,7 @@ public class GameClient {
             int bulletStrL = (amtBullets>0)?7:0;
 
             
-            int dynSize = Protocol.ARENA_WIDTH+3 - (31 + 40);
+            int dynSize = Protocol.ARENA_WIDTH - (31 + 40);
             int hp = j.optInt("hp", 3);
             int hp_max = j.optInt("hp_max", 3);            
             tg.putString(3, 0, "HP [");
@@ -377,14 +385,14 @@ public class GameClient {
             tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
                 
 
-            amtBullets = (amtBullets > 99) ? 99 : amtBullets;
-            String bullets = String.format("%d", amtBullets%10);
+            amtBullets = (amtBullets > 999) ? 999 : amtBullets;
+            String bullets = String.format("%d", amtBullets/10);
             if (amtBullets > 0) {
                 //bullet, 5
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
                 tg.putString(4+hp_max+3+2+scoreStrL, 0, "◆ ");
                 tg.setForegroundColor(wht);            
-                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "B " + bullets + ((amtBullets%10>99)?"+":" "));
+                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "B# " + bullets + ((amtBullets%10>99)?"+":" "));
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
                 tg.drawRectangle(new TerminalPosition(4+hp_max+3+2+scoreStrL, 0), new TerminalSize(7, 0), '.');
@@ -764,9 +772,9 @@ public class GameClient {
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
                     JSONArray jac = new JSONArray(to_render.getJSONArray("coins"));         
-                    if (jac != null) processPlayersArrayRender(jac, tg, "⭐", to_render); 
-                    if (jae != null) processPlayersArrayRender(jae, tg, "P", to_render);
-                    if (jap != null) processPlayersArrayRender(jap, tg, "⬤", to_render);
+                    if (jac != null) processPlayersArrayRender(jac, tg, "*", to_render); 
+                    if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
+                    if (jap != null) processPlayersArrayRender(jap, tg, "Ɵ", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
 
                     screen.refresh();

@@ -278,6 +278,8 @@ public class GameServer {
                     enemyArray.put(new JSONObject()
                     .put("id", enemy.id)
                     .put("type", enemy.type)             
+                    .put("direction", enemy.direction)
+                    .put("subtype", enemy.behaviourType)
                     .put("x", enemy.pos.getRenderX())
                     .put("y", enemy.pos.getRenderY()));
                 }

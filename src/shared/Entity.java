@@ -38,6 +38,10 @@ public class Entity {
             int index = Utility.mod(this.ordinal() - 1, vals.length - 1);
             return vals[index];
         }
+        public static Direction rand() {
+            int index = (int)(System.currentTimeMillis() % (vals.length - 1));  
+            return vals[index];
+        }
     };
         
     public volatile Position pos;

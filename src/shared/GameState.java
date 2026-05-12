@@ -7,7 +7,7 @@ import java.util.*;
 
 public class GameState {
 /*
-List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, levelTimer, waveNumber + terrain[][]
+List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter, levelTimer, waveNumber + terrain[][]
 */
     private int[] idCounter = {0, 0, 0}; // hardcoded P E B
     private Random r = new Random();
@@ -123,7 +123,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         float speed = (d.getVal() % 2 == 0) ? Protocol.BULLET_CARDINAL : Protocol.BULLET_DIAGONAL;
         float vx = VX[d.getVal()] * speed;
         float vy = VY[d.getVal()] * speed;
-        
+
         Bullet b = new Bullet(new Position(e.pos.getRenderY(), e.pos.getRenderX()), vx, vy, registerNewId("bullet"), 1, e.id, 0);
         b.direction = d; // sus
         bullets.add(b);
@@ -131,7 +131,7 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         if (e instanceof Player p) {
             p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS;
             p.bullets--;
-        }
+        } 
     }
 
     public synchronized void rotate(Entity e, String cmd) {
@@ -167,16 +167,29 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
    }
 
     public synchronized void spawnWave(int amt) {
+        waveNumber++;
+
         // pick side -> rnd coords
         int side = r.nextInt(4);
         int wx = -156, wy = -751;
-        
+
         // 0 1 2 3 clockwise, 0 north.
         // always subtract 1 for bounding shit
+
         for (int i = 0; i < amt; i++) {
+            int type = r.nextInt(3);
+
+            float rSpeed = (r.nextInt(7 - 3) + 3) * 0.01f;
+            
+            String etype = "";
+            if (type == 0) { etype = "COPS"; }
+            else if (type == 1) { etype = "SNIPER"; rSpeed = 0; }        
+            else if (type == 2) { etype = "PATROL"; }        
+//            else if (type == 3) { etype = "CAPTAIN"; }        
+
             if (side == 0) {
                 wx = r.nextInt(Protocol.ARENA_WIDTH - 1);
-                wy = 0;
+                wy = 1;
             } else if (side == 1) {
                 wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
                 wx = Protocol.ARENA_WIDTH - 1;
@@ -185,14 +198,21 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
                 wy = Protocol.ARENA_HEIGHT - 1;
             } else if (side == 3) {
                 wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
-                wx = 0;
-            } 
+                wx = 1;
+            } else if (side == 4 || side == 5) { 
+                int cornerOffset = 10;
+                wx = (side == 4) ? r.nextInt(cornerOffset) : Protocol.ARENA_WIDTH - 1 - r.nextInt(cornerOffset);
+                wy = (side == 5) ? r.nextInt(cornerOffset) : Protocol.ARENA_HEIGHT - 1 - r.nextInt(cornerOffset);
+            } else if (side == 6) {
+                int angle = r.nextInt(360) * 6;
+                wx = (int) (Protocol.ARENA_WIDTH/2 + Math.cos(angle) * 20);
+                wy = (int) (Protocol.ARENA_HEIGHT/2 + Math.sin(angle) * 20);
+            }
 
-            float rSpeed = (r.nextInt(7 - 3) + 3) * 0.01f;
-            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, "COPS", 0, rSpeed);
+            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, etype, 0, rSpeed);
+            e.direction = ("SNIPER".equals(etype)) ? Entity.Direction.rand() : Entity.Direction.NONE;
             enemies.add(e);            
         }
-        waveNumber++;
     }        
     public synchronized void updateEnemies() {
         // O(enemies * players) not gud as Quadtree
@@ -224,7 +244,18 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
             }
             // do follow the player
             e.pos.iHaveValidatedB4Setting();
-            e.pos.accum(stepY * e.speed, stepX * e.speed);
+            String type = e.behaviourType;
+            if (type == "PATROL") {
+                int cycle = (int)(e.moveCooldownTimer % 360) / 18 * 3;
+                float sinShift = (float)Math.sin(cycle);
+                e.pos.accum((int)(sinShift * e.speed * Protocol.DRIFTER_SINE_AMP * Protocol.DRIFTER_SINE_FREQ), e.speed);
+            }
+            else if (type == "SNIPER") {
+                e.pos.accum(0, 0);
+                if (e.moveCooldownTimer%Protocol.FIRE_COOLDOWN_TICKS==0 && e.moveCooldownTimer != 0) e.direction = Entity.Direction.rand();
+                /*if (tickCounter%4 == 0)*/ shootFrom(e);
+            }
+            else if (type == "COPS")  e.pos.accum(stepY * e.speed, stepX * e.speed);
         }
     }
     private void processBulletHit(Bullet bullet, Actor victim, int dmg) {
@@ -234,7 +265,8 @@ List<Player/Enemy/Bullet> + playerById + nextId() + colorTaken[] + tickCounter, 
         else if (bullet.dead()) return; // dont accidentally call a bullet that had hit
 
         int damage = bullet.damage;
-        if (bullet.ownerID.equals(victim.id)) damage = 1;
+        if (victim instanceof Enemy e && bullet.ownerID.equals(victim.id)) damage = 0;
+        else if (bullet.ownerID.equals(victim.id)) damage = 1;
         
         victim.hp.setHP(victim.hp.getHP() - damage); // e.hp -= bullet.damage;
         bullet.timeLeft(0);
