@@ -170,14 +170,14 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         waveNumber++;
 
         // pick side -> rnd coords
-        int side = r.nextInt(4);
+        int side = r.nextInt(11);
         int wx = -156, wy = -751;
 
         // 0 1 2 3 clockwise, 0 north.
         // always subtract 1 for bounding shit
 
         for (int i = 0; i < amt; i++) {
-            int type = r.nextInt(3);
+            int type = r.nextInt(11);
 
             float rSpeed = (r.nextInt(7 - 3) + 3) * 0.01f;
             
@@ -187,23 +187,24 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             else if (type == 2) { etype = "PATROL"; }        
 //            else if (type == 3) { etype = "CAPTAIN"; }        
 
-            if (side == 0) {
+            int tempSide = ("SNIPER".equals(type)) ? (side % 4) : side;
+            if (tempSide == 0) {
                 wx = r.nextInt(Protocol.ARENA_WIDTH - 1);
                 wy = 1;
-            } else if (side == 1) {
+            } else if (tempSide == 1) {
                 wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
                 wx = Protocol.ARENA_WIDTH - 1;
-            } else if (side == 2) {
+            } else if (tempSide == 2) {
                 wx = r.nextInt(Protocol.ARENA_WIDTH - 1);
                 wy = Protocol.ARENA_HEIGHT - 1;
-            } else if (side == 3) {
+            } else if (tempSide == 3) {
                 wy = r.nextInt(Protocol.ARENA_HEIGHT - 1);
                 wx = 1;
-            } else if (side == 4 || side == 5) { 
+            } else if (tempSide >= 4 && tempSide <= 7) { 
                 int cornerOffset = 10;
-                wx = (side == 4) ? r.nextInt(cornerOffset) : Protocol.ARENA_WIDTH - 1 - r.nextInt(cornerOffset);
-                wy = (side == 5) ? r.nextInt(cornerOffset) : Protocol.ARENA_HEIGHT - 1 - r.nextInt(cornerOffset);
-            } else if (side == 6) {
+                wx = (tempSide == 4) ? r.nextInt(cornerOffset) : Protocol.ARENA_WIDTH - 1 - r.nextInt(cornerOffset);
+                wy = (tempSide == 5) ? r.nextInt(cornerOffset) : Protocol.ARENA_HEIGHT - 1 - r.nextInt(cornerOffset);
+            } else if (tempSide >= 8 && tempSide <= 11) {
                 int angle = r.nextInt(360) * 6;
                 wx = (int) (Protocol.ARENA_WIDTH/2 + Math.cos(angle) * 20);
                 wy = (int) (Protocol.ARENA_HEIGHT/2 + Math.sin(angle) * 20);
@@ -245,17 +246,17 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             // do follow the player
             e.pos.iHaveValidatedB4Setting();
             String type = e.behaviourType;
-            if (type == "PATROL") {
-                int cycle = (int)(e.moveCooldownTimer % 360) / 18 * 3;
+            if ("PATROL".equals(type)) {
+                int cycle = (int)(tickCounter % 360) / 18 * 3;
                 float sinShift = (float)Math.sin(cycle);
                 e.pos.accum((int)(sinShift * e.speed * Protocol.DRIFTER_SINE_AMP * Protocol.DRIFTER_SINE_FREQ), e.speed);
             }
-            else if (type == "SNIPER") {
+            else if ("SNIPER".equals(type)) {
                 e.pos.accum(0, 0);
                 if (e.moveCooldownTimer%Protocol.FIRE_COOLDOWN_TICKS==0 && e.moveCooldownTimer != 0) e.direction = Entity.Direction.rand();
                 /*if (tickCounter%4 == 0)*/ shootFrom(e);
             }
-            else if (type == "COPS")  e.pos.accum(stepY * e.speed, stepX * e.speed);
+            else if ("COPS".equals(type))  e.pos.accum(stepY * e.speed, stepX * e.speed);
         }
     }
     private void processBulletHit(Bullet bullet, Actor victim, int dmg) {
