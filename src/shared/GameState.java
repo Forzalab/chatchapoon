@@ -179,7 +179,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         for (int i = 0; i < amt; i++) {
             int type = r.nextInt(3);
 
-            float rSpeed = (r.nextInt(7 - 3) + 3) * 0.01f;
+            float rSpeed = (r.nextInt(15 - 8) + 8) * 0.01f;
             
             String etype = "";
             if (type == 0) { etype = "COPS"; }
@@ -247,7 +247,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             e.pos.iHaveValidatedB4Setting();
             String type = e.behaviourType;
             if ("PATROL".equals(type)) {
-                int cycle = tickCounter / 10; // meth, dotn touch lol
+                int cycle = tickCounter + e.hashCode() % 16; // meth, dotn touch lol
                 float sinShift = (float)Math.sin(cycle);
                 e.pos.accum((int)(sinShift * e.speed * Protocol.DRIFTER_SINE_AMP * Protocol.DRIFTER_SINE_FREQ), e.speed);
             }

@@ -12,9 +12,13 @@ public class Actor extends Entity {
     public final String type;
 */
     private int hitCooldown = 0;
-    public void uptickHitCooldown() { if (hitCooldown <= 0) return; hitCooldown--; }
+    public void uptickHitCooldown() { 
+        if (hitCooldown > 0) hitCooldown--; 
+        if (hitCd > 0) hitCd--;         
+    }
     public void startHitCooldown() { if (hitCooldown >= Protocol.HIT_COOLDOWN_TICKS) return; hitCooldown = Protocol.HIT_COOLDOWN_TICKS; }   
     public int hitCooldown() { return hitCooldown; }
+    public int hitCd = 0; // for flashing ani
     
     public class HP {
         private int _hp;
@@ -38,6 +42,7 @@ public class Actor extends Entity {
         public synchronized HP setHP(int hp) {
             try {
                 if (_hp <= 0 && init) throw new Exception("Actor already ded, double stabbing!");
+                if (hp < _hp) hitCd = Protocol.HIT_FLASH_TICK;
                 this._hp = (hp >= 0) ? hp : 0;
                 this._hp = (hp <= _hpMax) ? _hp : _hpMax;
                 this.init = true;

@@ -12,7 +12,7 @@ public class Protocol {
     public static final int MAX_PLAYERS = 1;
 
     // for GameState
-    public static final int LEVEL_DURATION_TICKS = 4800;
+    public static final int LEVEL_DURATION_TICKS = 2400;
     public static final int SIDEBAR_WIDTH = 50;
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
@@ -32,7 +32,7 @@ public class Protocol {
     public static final float CHASER_SPEED = 0.25f;
     public static final float SHOOTER_SPEED = 0.1667f;
     public static final float DRIFTER_SPEED = 0.3333f;
-    public static final float DRIFTER_SINE_AMP = (float)(ARENA_HEIGHT);
+    public static final float DRIFTER_SINE_AMP = (float)(ARENA_HEIGHT*2);
     public static final float DRIFTER_SINE_FREQ = 0.15f;
     public static final int DEATH_COOLDOWN = 60; // instant gratification 3s
     public static final int DEATH_COOLDOWN_PERM = -4968; // aptx idk
@@ -40,11 +40,12 @@ public class Protocol {
     public static final int PLAYER_HP_MAX = 20;
 
     public static final int BULLET_LIFETIME = 100;
-    public static final int WAVE_INTERVAL = 150;
+    public static final int WAVE_INTERVAL = 180;
     public static final int DESPAWN_TIMER = 2400;
 
     public static final int GACHA_COST = 10;
     public static final int PLAYER_RESPAWN_ATTEMPT = 3;
     // chat
     public static final int MAX_CHAR_PER_LINE = SIDEBAR_WIDTH - 5;
+    public static final int HIT_FLASH_TICK = 2;
 }

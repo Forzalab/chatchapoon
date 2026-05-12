@@ -204,6 +204,10 @@ public class GameClient {
     }
 
     private static void drawDirection(int rx, int ry, String d, TextGraphics tg) {
+        TextColor tc = tg.getBackgroundColor();
+        TextColor.RGB bkg = new TextColor.RGB(15,23,42);        
+        TextColor.RGB grn = new TextColor.RGB(0,255,0);                
+        tg.setBackgroundColor(bkg);        
         if (d == null) return;
         else if ("N".equals(d)) tg.putString(rx, ry-1, "|");
         else if ("S".equals(d)) tg.putString(rx, ry+1, "|");
@@ -213,6 +217,7 @@ public class GameClient {
         else if ("NW".equals(d)) tg.putString(rx-1, ry-1, "\\");
         else if ("SE".equals(d)) tg.putString(rx+1, ry+1, "\\");
         else if ("SW".equals(d)) tg.putString(rx-1, ry+1, "/");
+       tg.setBackgroundColor(tc);
     }
     
     // JSONArray -> tg rendering
@@ -241,6 +246,8 @@ public class GameClient {
             JSONObject j = ja.getJSONObject(i);
             if (j == null) continue;
 
+            boolean hit = j.optBoolean("hit");
+
             // determine color for bullet B4 render
             String type = j.optString("type");
             String playerId = j.optString("id");
@@ -255,7 +262,7 @@ public class GameClient {
 
 //            System.err.println(playerColor.keySet());
 
-           // render non-players for now
+           // render coins
             if ("coins".equals(Utility.optString(j, "type"))) {
                 
                 int rx = j.optInt("x", -1);
@@ -271,6 +278,7 @@ public class GameClient {
 
                         
             // render non-players for now
+            if (hit) tg.setBackgroundColor(red);
             if (!"player".equals(Utility.optString(j, "type"))) {
                 if ("bullet".equals(j.optString("type"))) {            
                     String id = j.optString("ownerID");
@@ -289,14 +297,16 @@ public class GameClient {
                     else if ("COPS".equals(j.optString("subtype"))) { avatar = "c"; }     
                 }
                 
-                if (rx != -1 && ry > 0)
+                if (rx != -1 && ry > 0) {
+                      if (hit) tg.setBackgroundColor(red);
                     tg.putString(rx, ry, avatar);
                     if ("enemy".equals(j.optString("type")))
                         drawDirection(rx, ry, direction, tg);
-                tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
+                }
+                tg.setForegroundColor(wht);
                 continue;
             }
-            
+           
             if (!"player".equals(j.optString("type"))) continue;
 
 
@@ -317,24 +327,40 @@ public class GameClient {
                 direction = Utility.optString(j, "direction");
 
             if (rx != -1 && ry > 0 && "player".equals(j.optString("type"))) {
-                if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
+                if (!playerID.equals(Utility.optString(j,"id"))) {
+                    tg.setForegroundColor(color);
+                    tg.setBackgroundColor(color);                        
+                }
+                else {
+                    tg.setForegroundColor(color);
+                    tg.setBackgroundColor(color);                    
+                }
+                if (hit) tg.setBackgroundColor(red);
                 tg.putString(rx, ry, avatar);
                 drawDirection(rx, ry, direction, tg);
-                tg.setForegroundColor(wht);                
+//                tg.setForegroundColor(wht);                
             }            
+            if (hit) tg.setBackgroundColor(bkg);
          
             // scoreboard
             String player = String.format("%-12s", Utility.optString(j, "name"));
             String score = String.format("%3d", j.optInt("score", -1));
             String display = player + score;
-            if (!playerID.equals(Utility.optString(j,"id"))) tg.setForegroundColor(color);
+            if (!playerID.equals(Utility.optString(j,"id"))) {
+                tg.setForegroundColor(color);
+                tg.setBackgroundColor(ChatClient.getDimmed(color,0.1f));                
+            } else {
+                tg.setForegroundColor(wht);
+                tg.setBackgroundColor(ChatClient.getDimmed(bkg, 1.3f));                
+            }
+            
             tg.putString(Protocol.ARENA_WIDTH-17, Protocol.ARENA_HEIGHT-1- shift, player);        
             int wRed = color.getRed() + (int)((255 - color.getRed()) * 0.3);
             int wGreen = color.getGreen() + (int)((255 - color.getGreen()) * 0.3);
             int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.3);                       
             TextColor whitened = new TextColor.RGB(wRed, wGreen, wBlue);
             tg.setForegroundColor(whitened);                            
-            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                       tg.setForegroundColor(wht);                  
+            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                                tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);
 
             // HUD bar
             if (!playerID.equals(Utility.optString(j, "id"))) continue;

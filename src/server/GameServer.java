@@ -265,6 +265,7 @@ public class GameServer {
                     .put("type", player.type)
                     .put("x", player.pos.getRenderX())
                     .put("y", player.pos.getRenderY())
+                    .put("hit", (player.hitCd > 0))                    
                     .put("hp", player.hp.getHP())
                     .put("hp_max", player.hp._hpMax)
                     .put("score", player.score)
@@ -280,6 +281,7 @@ public class GameServer {
                     .put("id", enemy.id)
                     .put("type", enemy.type)             
                     .put("direction", enemy.direction)
+                    .put("hit", (enemy.hitCd > 0))
                     .put("subtype", enemy.behaviourType)
                     .put("x", enemy.pos.getRenderX())
                     .put("y", enemy.pos.getRenderY()));
