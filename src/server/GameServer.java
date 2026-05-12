@@ -196,6 +196,7 @@ public class GameServer {
                     if (!bullet.dead()) {
                         bullet.pos.accum(bullet.vy, bullet.vx);
                         bullet.timeLeft(bullet.timeLeft() - 1);
+                        bullet.decayImmune--;
                     }
                     else
                         // hide corpses for now
@@ -206,7 +207,7 @@ public class GameServer {
                 
                 // enemy stuff
                 if (currentGameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                    currentGameState.spawnWave(6);
+                    currentGameState.spawnWave(2);
                 currentGameState.updateEnemies();
 
                 // now, pos uodated, we do collision check and porcess

@@ -177,7 +177,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         // always subtract 1 for bounding shit
 
         for (int i = 0; i < amt; i++) {
-            int type = r.nextInt(11);
+            int type = r.nextInt(3);
 
             float rSpeed = (r.nextInt(7 - 3) + 3) * 0.01f;
             
@@ -210,7 +210,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
                 wy = (int) (Protocol.ARENA_HEIGHT/2 + Math.sin(angle) * 20);
             }
 
-            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), Protocol.PLAYER_HP_MAX, etype, 0, rSpeed);
+            Enemy e = new Enemy(new Position(wy, wx), 0, 0, "enemy", registerNewId("enemy"), r.nextInt((int)(Protocol.PLAYER_HP_MAX * 0.4)) + 2, etype, 0, rSpeed);
             e.direction = ("SNIPER".equals(etype)) ? Entity.Direction.rand() : Entity.Direction.NONE;
             enemies.add(e);            
         }
@@ -247,14 +247,14 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             e.pos.iHaveValidatedB4Setting();
             String type = e.behaviourType;
             if ("PATROL".equals(type)) {
-                int cycle = (int)(tickCounter % 360) / 18 * 3;
+                int cycle = tickCounter / 10; // meth, dotn touch lol
                 float sinShift = (float)Math.sin(cycle);
                 e.pos.accum((int)(sinShift * e.speed * Protocol.DRIFTER_SINE_AMP * Protocol.DRIFTER_SINE_FREQ), e.speed);
             }
             else if ("SNIPER".equals(type)) {
                 e.pos.accum(0, 0);
-                if (e.moveCooldownTimer%Protocol.FIRE_COOLDOWN_TICKS==0 && e.moveCooldownTimer != 0) e.direction = Entity.Direction.rand();
-                /*if (tickCounter%4 == 0)*/ shootFrom(e);
+                if (tickCounter%21 == 0) e.direction = Entity.Direction.rand();
+                if (tickCounter%10 == 0) shootFrom(e);
             }
             else if ("COPS".equals(type))  e.pos.accum(stepY * e.speed, stepX * e.speed);
         }
@@ -270,7 +270,9 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         else if (bullet.ownerID.equals(victim.id)) damage = 1;
         
         victim.hp.setHP(victim.hp.getHP() - damage); // e.hp -= bullet.damage;
-        bullet.timeLeft(0);
+
+        boolean hitDecay = playerIdMap.contains(bullet.ownerID);
+        if (hitDecay) bullet.timeLeft(0);
         
         // killer find and set pt
         if (!victim.hp.isDead()) return; // onyl cred pt when ded
@@ -298,7 +300,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             if (coins > 0) coinsLoc.put(pos, coins);
 
 //            bOwner.currency += coins;
-            bOwner.bullets += 1;
+            bOwner.bullets += 50;
         }
         else if (victim instanceof Player p) {
             int coins = p.currency;

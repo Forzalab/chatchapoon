@@ -352,7 +352,7 @@ public class GameClient {
             int bulletStrL = (amtBullets>0)?7:0;
 
             
-            int dynSize = Protocol.ARENA_WIDTH - (31 + 40);
+            int dynSize = Protocol.ARENA_WIDTH - (43 + 40);
             int hp = j.optInt("hp", 3);
             int hp_max = j.optInt("hp_max", 3);            
             tg.putString(3, 0, "HP [");
@@ -386,13 +386,13 @@ public class GameClient {
                 
 
             amtBullets = (amtBullets > 999) ? 999 : amtBullets;
-            String bullets = String.format("%d", amtBullets/10);
+            String bullets = String.format("%d", amtBullets);
             if (amtBullets > 0) {
                 //bullet, 5
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
                 tg.putString(4+hp_max+3+2+scoreStrL, 0, "◆ ");
                 tg.setForegroundColor(wht);            
-                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "B# " + bullets + ((amtBullets%10>99)?"+":" "));
+                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "B# " + bullets + ((amtBullets==999)?"+":" "));
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
                 tg.drawRectangle(new TerminalPosition(4+hp_max+3+2+scoreStrL, 0), new TerminalSize(7, 0), '.');

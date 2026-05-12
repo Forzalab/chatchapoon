@@ -85,7 +85,7 @@ public class Player extends Actor {
 
     // <item-name, Item> to which Item has amount
     public volatile Inventory inventory;
-    public volatile int fireCooldown, bullets = 1000;
+    public volatile int fireCooldown, bullets = 100;
    // no color (in Avatar)
    // no isDead, maxHP, deathTimer (in Actor.HisDead())
 

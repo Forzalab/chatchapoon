@@ -32,15 +32,15 @@ public class Protocol {
     public static final float CHASER_SPEED = 0.25f;
     public static final float SHOOTER_SPEED = 0.1667f;
     public static final float DRIFTER_SPEED = 0.3333f;
-    public static final float DRIFTER_SINE_AMP = 3.0f;
+    public static final float DRIFTER_SINE_AMP = (float)(ARENA_HEIGHT);
     public static final float DRIFTER_SINE_FREQ = 0.15f;
     public static final int DEATH_COOLDOWN = 60; // instant gratification 3s
     public static final int DEATH_COOLDOWN_PERM = -4968; // aptx idk
-    public static final int PLAYER_MAX_HP = 8;
-    public static final int PLAYER_HP_MAX = 8;
+    public static final int PLAYER_MAX_HP = 20;
+    public static final int PLAYER_HP_MAX = 20;
 
-    public static final int BULLET_LIFETIME = 150;
-    public static final int WAVE_INTERVAL = 450;
+    public static final int BULLET_LIFETIME = 100;
+    public static final int WAVE_INTERVAL = 150;
     public static final int DESPAWN_TIMER = 2400;
 
     public static final int GACHA_COST = 10;
