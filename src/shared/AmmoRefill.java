@@ -1,13 +1,12 @@
 package shared;
-class AmmoRefill extends ItemEffect { 
-    AmmoRefill(int a) { super("AmmoRefill", a); }
 
-    @Override
-    public void useSpecifics(Player user) {}
-    
+class AmmoRefill extends ItemEffect { 
     @Override
     public boolean onHit(Player user) { return false; }
-
-    @Override
-    public void tickDown(Player user) { }
+    
+    AmmoRefill(int a) { 
+        super("AmmoRefill", a);
+        IEProperty iep = new IEProperty("Gun Magazine", "The newest magazine for your gun!\nAdds 150 bullets when used.", IEProperty.Rarity.COMMON, Protocol.ONE_USE_ITEM_TIME);
+        ItemEffect.register("AmmoRefill", iep);
+    }
 }

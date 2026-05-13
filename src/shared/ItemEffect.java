@@ -38,8 +38,18 @@ public abstract class ItemEffect implements Effect {
         private int remaining;
         public final int max;
         private void setRemaining(int time) {
+            if (remaining == Protocol.ONE_USE_ITEM_TIME_ACTIVE && time == 0) {
+                remaining = Protocol.ONE_USE_ITEM_TIME;
+                return;
+            }
+            else if (remaining == Protocol.ONE_USE_ITEM_TIME && time == max) {
+                remaining = Protocol.ONE_USE_ITEM_TIME_ACTIVE;
+                mutateAmount(amount - 1);
+                return;
+            }
             remaining = (time < 0) ? 0 : time;
             remaining = (time > max) ? max : remaining;
+            if (remaining <= 0) mutateAmount(amount - 1);
         }
         public int getRemaining() {
             return remaining;
@@ -47,9 +57,8 @@ public abstract class ItemEffect implements Effect {
         public Countdown(int max) {
             this.max = max;
             try {
-                if (max < 0) 
+                if (max < 0 && !(max == Protocol.ONE_USE_ITEM_TIME) && !(max == Protocol.ONE_USE_ITEM_TIME_ACTIVE) )
                     throw new Exception("dumbass set max time to less than zero");
-                setRemaining(max);
             }
             catch (Exception e) {
                 System.out.println("Exception caught in ItemEffect.countdown.Countdown(): " + e);
@@ -84,17 +93,31 @@ public abstract class ItemEffect implements Effect {
 
     public Boolean isActive() {
         if (amount <= 0) return false;
-        return (countdown.getRemaining() > 0);
+        return (countdown.getRemaining() > 0 || countdown.getRemaining() == Protocol.ONE_USE_ITEM_TIME_ACTIVE);
     }
 
+    @Override
+    public final void tickDown(Player p) {
+        if (countdown.max == Protocol.ONE_USE_ITEM_TIME) return;
+        countdown.setRemaining(countdown.getRemaining()-1);
+    }
+
+    @Override
+    public void useSpecifics(Player p) {}
+    
     public synchronized final void use(Player user) {
         if (amount <= 0) return;
-        else if (isActive()) return;
+        else if (isActive()) return; 
         countdown.setRemaining(countdown.max);
         this.useSpecifics(user);
-        mutateAmount(amount - 1);
     }
 
+    // Item is endUse when manually triggered
+    // tick down enough, it will also endUse, but this is handled in setCountdown directly
+    public synchronized final void forceEndUse(Player user) {
+        countdown.setRemaining(0);
+    }
+    
     public int amount() { return (amount > 0)?amount:0; }
     
     public void mutateAmount(int new_amt) {
