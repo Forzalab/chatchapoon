@@ -2,6 +2,7 @@ package shared;
 
 import java.io.*;
 import java.util.LinkedHashMap;
+import java.util.*;
 
 public class Player extends Actor {
 /*    public volatile Position pos;
@@ -49,6 +50,11 @@ public class Player extends Actor {
                 this.inventory.put(item.name, item);
             }
         }
+
+        public synchronized void useAll() {
+            for (Map.Entry<String, ItemEffect> entry : inventory.entrySet())
+                entry.getValue().use(Player.this); 
+        }
         
         public ItemEffect get(String name) {
             return this.inventory.get(name);
@@ -80,11 +86,17 @@ public class Player extends Actor {
             return status;
         }
 
+        else if (s == "CAN_FIRST_GACHA" && currency >= Protocol.GACHA_COST) {
+            String status = "Try your first GACHA! Pull one with [G].";
+            milestone.put(s, status);
+            return status;
+        }
+
         // health
         else if (s == "NEAR_DEATH" && hp.justResus() && lives > 0 && lives < Math.min(4, Protocol.PLAYER_RESPAWN_ATTEMPT)) {
             String logo = lives < 2 ? "⼀  " : lives < 3 ? "⼆  " : "〣  ";
             String status = logo + String.valueOf(Protocol.PLAYER_RESPAWN_ATTEMPT - lives) + " li" + ((Protocol.PLAYER_RESPAWN_ATTEMPT - lives>1)?"ves":"fe") + " down, " + lives + " to go.";
-//            milestone.put(s, status);
+            milestone.put(s, status);
             return status;
         }
         

@@ -217,12 +217,17 @@ public class GameServer {
                     p.uptickHitCooldown();
                     if (p.fireCooldown > 0) p.fireCooldown--;
                     currentGameState.processCollectableCoin(p);
-                    if (!p.dead()) continue;
-                    p.hp.resuscitate().deathTickUp();
-                    p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
-                    p.bullets = 100;
+                    
                     checkBroadcastMilestone("NEW_GACHA", p);
+                    checkBroadcastMilestone("CAN_FIRST_GACHA", p);      
                     checkBroadcastMilestone("NEAR_DEATH", p);                                        
+                    if (p.dead()) {
+                        p.hp.resuscitate().deathTickUp();
+                        p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
+                        p.bullets = 100;
+                    } else {
+                        p.inventory.useAll();
+                    }
                 }
 
                 // now, pos uodated, we do collision check and porcess
