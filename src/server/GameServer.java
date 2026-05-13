@@ -197,6 +197,7 @@ public class GameServer {
                         bullet.pos.accum(bullet.vy, bullet.vx);
                         bullet.timeLeft(bullet.timeLeft() - 1);
                         bullet.decayImmune--;
+                        bullet.inceptionDamageWait--;
                     }
                     else
                         // hide corpses for now
@@ -209,9 +210,6 @@ public class GameServer {
                 if (currentGameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
                     currentGameState.spawnWave(2);
                 currentGameState.updateEnemies();
-
-                // now, pos uodated, we do collision check and porcess
-                currentGameState.processAllCollisions();
 
                 // revive
                 // anything players really
@@ -226,6 +224,10 @@ public class GameServer {
                     checkBroadcastMilestone("NEW_GACHA", p);
                     checkBroadcastMilestone("NEAR_DEATH", p);                                        
                 }
+
+                // now, pos uodated, we do collision check and porcess
+                currentGameState.processAllCollisions();
+
                 
                 // == Encode result ==
                 // -- NO MORE CHANGING GameState AFTER THIS --

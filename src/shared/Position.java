@@ -33,14 +33,14 @@ public class Position {
         // processs x-axis
         // assume x = 1, accumx + dx = -2.5, border = 6
         accumx += dx; // b4, is always < 1.0f
-        int accumxInt = (int)accumx; // -2
+        int accumxInt = (int)Math.round(accumx); // -2
         x += accumxInt; // plus naively
         x = Utility.mod(x, Protocol.ARENA_WIDTH);
         accumx -= (float)accumxInt; // -2.5 - (-2.0) = -0.5
 
         // process y-axis
         accumy += dy; // b4, is always < 1.0f
-        int accumyInt = (int)accumy; // -2
+        int accumyInt = (int)Math.round(accumy); // -2
         y += accumyInt; // plus naively
         y = Utility.mod(y, Protocol.ARENA_HEIGHT);
         accumy -= (float)accumyInt; // -2.5 - (-2.0) = -0.5

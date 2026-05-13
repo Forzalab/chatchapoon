@@ -296,7 +296,8 @@ public class GameClient {
                     else if ("SNIPER".equals(j.optString("subtype"))) { avatar = "s"; }
                     else if ("COPS".equals(j.optString("subtype"))) { avatar = "c"; }     
                 }
-                
+
+                tg.setForegroundColor(wht);
                 if (rx != -1 && ry > 0) {
                       if (hit) tg.setBackgroundColor(red);
                     tg.putString(rx, ry, avatar);
@@ -304,6 +305,7 @@ public class GameClient {
                         drawDirection(rx, ry, direction, tg);
                 }
                 tg.setForegroundColor(wht);
+                tg.setBackgroundColor(bkg);
                 continue;
             }
            

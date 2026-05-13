@@ -261,9 +261,10 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
     }
     private void processBulletHit(Bullet bullet, Actor victim, int dmg) {
         if (!bullet.pos.equals(victim.pos)) return; // same pos?
-//        else if (bullet.ownerID.equals(victim.id)) return; // suicide?
+        //else if (bullet.ownerID.equals(victim.id)) return; // suicide?
         else if (victim.dead()) return; // ded? dont hit a zombie
         else if (bullet.dead()) return; // dont accidentally call a bullet that had hit
+        else if (bullet.inceptionDamageWait > 0) return;
 
         int damage = bullet.damage;
         if (victim instanceof Enemy e && bullet.ownerID.equals(victim.id)) damage = 0;
@@ -271,7 +272,8 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         
         victim.hp.setHP(victim.hp.getHP() - damage); // e.hp -= bullet.damage;
 
-        boolean hitDecay = playerIdMap.contains(bullet.ownerID);
+        // only decay uf hit a player
+        boolean hitDecay = playerIdMap.containsKey(bullet.ownerID);
         if (hitDecay) bullet.timeLeft(0);
         
         // killer find and set pt
