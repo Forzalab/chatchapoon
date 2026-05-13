@@ -2,6 +2,7 @@ package shared;
 
 import java.io.*;
 import java.util.LinkedHashMap;
+import java.util.*;
 
 public class Player extends Actor {
 /*    public volatile Position pos;
@@ -21,24 +22,42 @@ public class Player extends Actor {
     public class Inventory {
         // i trust myself to not tocuh this list raw
         // unless for iterating shit
-        public volatile LinkedHashMap<String, ItemEffect> inventory;
+        public volatile LinkedHashMap<String, ItemEffect> inventory = new LinkedHashMap<String, ItemEffect>();
 
-        private synchronized void changeAmount(String name, int amt) {
-            ItemEffect old = get(name);
-            this.inventory.put(name, old.mutateAmount(old.amount+1));
-        }
+        // overide amount
+        private synchronized void changeAmount(String name, int amt) { try {
+            ItemEffect item = get(name);
+
+            // tombstone
+            // collect dead keys first in a list, then remove after loop
+            if (item.amount() <= 0 || item.countdown.getRemaining() <= 0)
+                throw new Exception("No update a \"null\" item! item.amount = " + item.amount() +"; item.Countdown.remaining = " + item.countdown.getRemaining());
+
+            item.mutateAmount(amt);
+            this.inventory.put(name, item);
+        } catch (Exception e) { System.out.println("Exp Player.Inventory.changeAmount(): item.mutateAmount(item.amount()+amt);"); } }
         
-        public synchronized void add(String name, int amt) {
+
+        // ONLY ADD ITEM FROM GACHA!!
+        // onec added, use name to crawl
+        public synchronized void add(ItemEffect item) {
             // have item? add the amt in!
-            if (this.inventory.containsKey(name)) {
-                ItemEffect stock = get(name);
-                changeAmount(name, amt + stock.amount);
+            if (this.inventory.containsKey(item.name)) {
+                ItemEffect stock = get(item.name);
+                changeAmount(item.name, item.amount() + stock.amount());
             }
             // dont? add it in.
             else {
-                ItemEffect item = new ItemEffect(name, amt);
-                this.inventory.put(name, item);
+                this.inventory.put(item.name, item);
             }
+        }
+
+        public synchronized void useAll() {
+            for (Map.Entry<String, ItemEffect> entry : inventory.entrySet())
+                entry.getValue().use(Player.this); 
+            inventory.entrySet().removeIf(
+                entries->(entries.getValue().amount() == 0)
+            );
         }
         
         public ItemEffect get(String name) {
@@ -46,12 +65,17 @@ public class Player extends Actor {
         }
         
         public synchronized void rmv(String name, int amt) {
-            changeAmount(name, get(name).amount - amt);
+            changeAmount(name, get(name).amount() - amt);
         }
+
+        public synchronized void wipe() {
+            inventory.clear();
+        }
+        
     }
     
     public volatile int score = 0;
-    public volatile int currency = 0;
+    public volatile int currency = 10;
     public final Position spawnPos;
     public final String name;
     public volatile int pityCounter = 0;
@@ -71,11 +95,17 @@ public class Player extends Actor {
             return status;
         }
 
+        else if (s == "CAN_FIRST_GACHA" && currency >= Protocol.GACHA_COST) {
+            String status = "Try your first GACHA! Pull one with [G].";
+            milestone.put(s, status);
+            return status;
+        }
+
         // health
         else if (s == "NEAR_DEATH" && hp.justResus() && lives > 0 && lives < Math.min(4, Protocol.PLAYER_RESPAWN_ATTEMPT)) {
             String logo = lives < 2 ? "⼀  " : lives < 3 ? "⼆  " : "〣  ";
             String status = logo + String.valueOf(Protocol.PLAYER_RESPAWN_ATTEMPT - lives) + " li" + ((Protocol.PLAYER_RESPAWN_ATTEMPT - lives>1)?"ves":"fe") + " down, " + lives + " to go.";
-//            milestone.put(s, status);
+            milestone.put(s, status);
             return status;
         }
         
@@ -93,5 +123,6 @@ public class Player extends Actor {
         super(pos, vx, vy, "player", id, hp_max);
         this.spawnPos = new Position(pos.getRenderY(), pos.getRenderX());
         this.name = name;
+        this.inventory = new Inventory();
     }
 }

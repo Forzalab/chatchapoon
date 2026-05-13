@@ -4,6 +4,9 @@ import java.util.concurrent.*;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import org.json.*;
 
 public class GameState {
 /*
@@ -113,7 +116,13 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
 
     public synchronized void shootFrom(Entity e) {
         if (e.dead()) return;
-        else if (e instanceof Player p && (p.fireCooldown > 0 || p.bullets <= 0)) return;
+        
+        if (e instanceof Player p && p.inventory.get("BulletStorm") != null)
+            if (p.inventory.get("BulletStorm").isActive()) p.fireCooldown = 0;
+        else if (p.inventory.get("RapidFire") != null && (p.fireCooldown > Protocol.FIRE_COOLDOWN_TICKS/2))
+            if (p.inventory.get("RapidFire").isActive()) p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS/2;
+                        
+        if (e instanceof Player p && (p.fireCooldown > 0 || p.bullets <= 0)) return;
         float[] VX = { 0, Protocol.INV_SQRT2,  1,  Protocol.INV_SQRT2, 0, -Protocol.INV_SQRT2, -1, -Protocol.INV_SQRT2 };
         float[] VY = {-1,-Protocol.INV_SQRT2,  0,  Protocol.INV_SQRT2, 1,  Protocol.INV_SQRT2,  0, -Protocol.INV_SQRT2 };
 
@@ -269,6 +278,11 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         int damage = bullet.damage;
         if (victim instanceof Enemy e && bullet.ownerID.equals(victim.id)) damage = 0;
         else if (bullet.ownerID.equals(victim.id)) damage = 1;
+
+        if (victim instanceof Player p && p.inventory.get("Shield") != null)
+            if (p.inventory.get("Shield").onHit(p)) return;
+        else if (p.inventory.get("Ghost") != null)
+            if (p.inventory.get("Ghost").onHit(p)) return;            
         
         victim.hp.setHP(victim.hp.getHP() - damage); // e.hp -= bullet.damage;
 
@@ -328,6 +342,11 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         else if (victim.hp.isDead()) return; // ded? dont hit a zombie
         else if (hitter.hitCooldown() > 0) return; // cooldown
 
+        if (victim instanceof Player p && p.inventory.get("Shield") != null)
+            if (p.inventory.get("Shield").onHit(p)) return;
+        else if (p.inventory.get("Ghost") != null)
+            if (p.inventory.get("Ghost").onHit(p)) return;            
+        
         hitter.startHitCooldown();
         victim.hp.setHP(victim.hp.getHP() - 1); // e.hp -= hitter.damage;
         
@@ -355,21 +374,67 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
                 processActorHit(e, p);
     }
 
-    public synchronized String pull(Player p) {
-        if (p.currency < Protocol.GACHA_COST) return "";
+//    public static void queueGachaNotif(Player p) {}
+    
+    public static JSONObject JSONifyItemEffect(ItemEffect item, Player p) {
+        // !!!!!! render big popup for author
+        // pop notif for other!!!!!!
+        JSONObject jo = new JSONObject()
+        .put("pullerName", p.name)
+        .put("itemName", item.name)
+        .put("itemDisplayName", item.property.displayName)
+        .put("itemDesc", item.property.desc)
+        .put("itemRarity", item.property.rarity)
+        .put("itemAmount", item.amount())
+        .put("itemGachaReveal", Protocol.GACHA_REVEAL_IN);        
+        return jo;
+    }
+    
+    public synchronized ItemEffect pull(Player p) {
+        // get rarity first
+        if (p.currency < Protocol.GACHA_COST) return null;
         p.currency -= Protocol.GACHA_COST;
         p.pityCounter++;
         float roll = (float)Math.random();
         String rarity;
-        if (p.pityCounter >= 30) rarity = "LEGENDARY";
-        else if (p.pityCounter >= 10) rarity = "RARE";
-        else rarity = roll < 0.85 ? "COMMON" : roll < 0.99 ? "RARE" : "LEGENDARY";
+        if (p.pityCounter >= 10) rarity = "LEGENDARY";
+        else if (p.pityCounter >= 5) rarity = "RARE";
+        else if (p.pityCounter == 1) rarity = "COMMON";
+        else rarity = roll < 0.5 ? "COMMON" : roll < 0.85 ? "RARE" : "LEGENDARY";
         if (!rarity.equals("COMMON")) p.pityCounter = 0;
-        return rarity;
+//        return ItemEffect.IEProperty.Rarity.valueOf(rarity);
+        
+        // then get an item
+        List<String> IEClassNames = ItemEffect.lookup.entrySet().stream()
+        .filter(e -> (rarity.equals(e.getValue().rarity.name())))
+        .map(Map.Entry::getKey).collect(Collectors.toList());
+        if (IEClassNames == null) return null;
+        
+        String gachaName = IEClassNames.stream()
+        .filter(s -> (r.nextInt(2) == 0)).findAny()
+        .orElse("");
+        
+        if (gachaName.isEmpty()) return null;
+        ItemEffect gachaItem = ItemEffect.create(gachaName, 1);
+        p.inventory.add(gachaItem);
+        return gachaItem;
     }
     
     public GameState(long inception) {
             this.inception = inception;
+         // awaken static block in ItemEffect subclass
+         try {
+            Class.forName("shared.AmmoRefill");
+            Class.forName("shared.BulletStorm");
+            Class.forName("shared.Ghost");
+            Class.forName("shared.CoinMagnet");
+            Class.forName("shared.AreaBomb");
+            Class.forName("shared.RapidFire");
+            Class.forName("shared.ExtraMag");
+            Class.forName("shared.Shield");
+            Class.forName("shared.SmallHeal");
+            Class.forName("shared.FullHeal");
+        } catch (Exception e) { e.printStackTrace(); }
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
             for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)

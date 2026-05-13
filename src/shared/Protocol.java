@@ -5,21 +5,23 @@ import com.googlecode.lanterna.TerminalSize;
 public class Protocol {
     public static final int PORT = 4267;
     public static final int TICK_MS = 45;
-    public static int ARENA_WIDTH = 96; // can chsnge later if too small
+    public static int ARENA_WIDTH = 103; // can chsnge later if too small
     public static int ARENA_HEIGHT = 48;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
     public static final int MAX_PLAYERS = 1;
 
     // for GameState
-    public static final int LEVEL_DURATION_TICKS = 2400;
+    public static final int LEVEL_DURATION_TICKS = 4800;
     public static final int SIDEBAR_WIDTH = 50;
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
     public static final int FIRE_COOLDOWN_TICKS = 5;
     public static final int HIT_COOLDOWN_TICKS = 60;
     public static final int LOBBY_CLOSE_IN = 60000 * TICK_MS;
-
+    public static final int ONE_USE_ITEM_TIME = -76;
+    public static final int ONE_USE_ITEM_TIME_ACTIVE = -84; // can be enum but idc
+    
     
 //    public static final int WAVE_INTERVAL_TICKS = 600;
     public static final int MAX_BULLETS = 1000;
@@ -43,8 +45,10 @@ public class Protocol {
     public static final int WAVE_INTERVAL = 180;
     public static final int DESPAWN_TIMER = 2400;
 
-    public static final int GACHA_COST = 10;
+    public static final int GACHA_COST = 1;
+    public static final int GACHA_REVEAL_IN = 15;
     public static final int PLAYER_RESPAWN_ATTEMPT = 3;
+
     // chat
     public static final int MAX_CHAR_PER_LINE = SIDEBAR_WIDTH - 5;
     public static final int HIT_FLASH_TICK = 2;

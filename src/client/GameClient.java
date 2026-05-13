@@ -269,8 +269,10 @@ public class GameClient {
                 int ry = j.optInt("y", -1);
                 String avatar = ava;
 // ⛃⛂⭐ for coins, ❓ for gacha
+                tg.setBackgroundColor(yel); tg.setForegroundColor(yel);
                 if (rx != -1 && ry > 0)
                     tg.putString(rx, ry, avatar);
+                tg.setBackgroundColor(bkg);
 
                 tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
                 continue;
@@ -433,7 +435,7 @@ public class GameClient {
             // empty space for notif
 
             //money,4
-            int moneyX = 4 + hp_max + 3 + 11 + dynSize + 4 + 2;            
+            int moneyX = 4 + hp_max + 3 + 11 + dynSize + 4 + 3;            
 //            int moneyX = Protocol.ARENA_WIDTH+3 - rightHUDWidth;
             if (j.optInt("currency", -1) > 0) {            
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
@@ -458,7 +460,7 @@ public class GameClient {
                 String reinfStr = "REINF #" + wave;
                 tg.setForegroundColor(waveTickCooldown-- > 0 ? cyn : wht);
                 tg.setBackgroundColor(bkg);
-                tg.putString(moneyX + 5, 0, reinfStr);
+                tg.putString(moneyX + 4, 0, reinfStr);
             } else {
                 tg.putString(moneyX + 5, 0, " ".repeat(7+wave.length()));
             }                
@@ -804,7 +806,6 @@ public class GameClient {
                     if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
                     if (jap != null) processPlayersArrayRender(jap, tg, "Ɵ", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
-
                     screen.refresh();
                 }
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
