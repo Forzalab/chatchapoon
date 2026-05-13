@@ -352,10 +352,10 @@ public class GameClient {
             String display = player + score;
             if (!playerID.equals(Utility.optString(j,"id"))) {
                 tg.setForegroundColor(color);
-                tg.setBackgroundColor(ChatClient.getDimmed(color,0.1f));                
+                tg.setBackgroundColor(ChatClient.getDimmed(color,0.2f));                
             } else {
                 tg.setForegroundColor(wht);
-                tg.setBackgroundColor(ChatClient.getDimmed(bkg, 1.3f));                
+                tg.setBackgroundColor(ChatClient.getDimmed(bkg, 1.4f));                
             }
             
             tg.putString(Protocol.ARENA_WIDTH-17, Protocol.ARENA_HEIGHT-1- shift, player);        
@@ -435,7 +435,7 @@ public class GameClient {
             // empty space for notif
 
             //money,4
-            int moneyX = 4 + hp_max + 3 + 11 + dynSize + 4 + 3;            
+            int moneyX = 4 + hp_max + 3 + 11 + dynSize + 7;            
 //            int moneyX = Protocol.ARENA_WIDTH+3 - rightHUDWidth;
             if (j.optInt("currency", -1) > 0) {            
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
@@ -460,7 +460,7 @@ public class GameClient {
                 String reinfStr = "REINF #" + wave;
                 tg.setForegroundColor(waveTickCooldown-- > 0 ? cyn : wht);
                 tg.setBackgroundColor(bkg);
-                tg.putString(moneyX + 4, 0, reinfStr);
+                tg.putString(moneyX + 5, 0, reinfStr);
             } else {
                 tg.putString(moneyX + 5, 0, " ".repeat(7+wave.length()));
             }                
@@ -775,7 +775,7 @@ public class GameClient {
                 // all screen stuff, THEN indiv elem
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
 //                    switchState(State.GAME);
-                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
+                    tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
                     boolean toEmphasizeChat = (state == State.CHAT);
                     ChatClient.render(toEmphasizeChat);
                     if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(255,255,255));
@@ -784,27 +784,27 @@ public class GameClient {
                   //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');
                   tg.drawLine(
                         new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
-                        new TerminalPosition(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+                        new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
                         '─'
                     );
                   tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
               //    tg.drawRectangle(new TerminalPosition(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH - 1, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│'); 
                 tg.drawLine(
-                    new TerminalPosition(Protocol.ARENA_WIDTH, 0),
-                    new TerminalPosition(Protocol.ARENA_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+                    new TerminalPosition(Protocol.ARENA_WIDTH + 1, 0),
+                    new TerminalPosition(Protocol.ARENA_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
                     '│'
                 );
                   tg.putString(0,0,"┌");
-                  tg.putString(Protocol.ARENA_WIDTH,0,"┐");
+                  tg.putString(Protocol.ARENA_WIDTH+1,0,"┐");
                   tg.putString(0,Protocol.ARENA_HEIGHT + Protocol.BORDER,"└");
-                  tg.putString(Protocol.ARENA_WIDTH,Protocol.ARENA_HEIGHT + Protocol.BORDER,"┘");
+                  tg.putString(Protocol.ARENA_WIDTH+1,Protocol.ARENA_HEIGHT + Protocol.BORDER,"┘");
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
                     JSONArray jac = new JSONArray(to_render.getJSONArray("coins"));         
                     if (jac != null) processPlayersArrayRender(jac, tg, "*", to_render); 
                     if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
-                    if (jap != null) processPlayersArrayRender(jap, tg, "Ɵ", to_render);
+                    if (jap != null) processPlayersArrayRender(jap, tg, "o", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
                     screen.refresh();
                 }

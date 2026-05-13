@@ -5,15 +5,15 @@ import com.googlecode.lanterna.TerminalSize;
 public class Protocol {
     public static final int PORT = 4267;
     public static final int TICK_MS = 45;
-    public static int ARENA_WIDTH = 103; // can chsnge later if too small
-    public static int ARENA_HEIGHT = 48;
+    public static int ARENA_WIDTH = 225; // can chsnge later if too small
+    public static int ARENA_HEIGHT = 85;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
-    public static final int MAX_PLAYERS = 1;
+    public static final int MAX_PLAYERS = 2;
 
     // for GameState
     public static final int LEVEL_DURATION_TICKS = 4800;
-    public static final int SIDEBAR_WIDTH = 50;
+    public static final int SIDEBAR_WIDTH = 75;
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
     public static final int FIRE_COOLDOWN_TICKS = 5;
@@ -41,7 +41,7 @@ public class Protocol {
     public static final int PLAYER_MAX_HP = 20;
     public static final int PLAYER_HP_MAX = 20;
 
-    public static final int BULLET_LIFETIME = 100;
+    public static final int BULLET_LIFETIME = 80;
     public static final int WAVE_INTERVAL = 180;
     public static final int DESPAWN_TIMER = 2400;
 

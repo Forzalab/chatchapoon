@@ -18,6 +18,8 @@ import com.googlecode.lanterna.*;
 import shared.*;
 
 public class ChatClient {
+    static int ARENA_WIDTH = Protocol.ARENA_WIDTH + 1;
+    static int SIDEBAR_WIDTH = Protocol.SIDEBAR_WIDTH + 1;    
     static volatile String msgBuffer = "";
 //    static volatile int scrollOffset = 0, renderOffset = 0; // from bottom up
     static CopyOnWriteArrayList<String> msgBlock = new CopyOnWriteArrayList<>();
@@ -25,7 +27,7 @@ public class ChatClient {
     static CopyOnWriteArrayList<JSONObject> msgQ = new CopyOnWriteArrayList<JSONObject>();    
     static TextGraphics tg = GameClient.screen.newTextGraphics();
     private static int cursor = 0;
-    static int maxTxtWidth = Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2 - (Protocol.ARENA_WIDTH+5);
+    static int maxTxtWidth = ARENA_WIDTH+1 + SIDEBAR_WIDTH - 2 - (ARENA_WIDTH+5);
     static boolean blink = false; static int tick = 0;
     static synchronized void moveCursor(int dx) {
         int maxDisplayWidth = Math.min(maxTxtWidth, msgBuffer.length());
@@ -82,8 +84,8 @@ public class ChatClient {
         if (!GameClient.playerColor.containsKey(playerID)) {
             int hash = Math.abs(playerID.hashCode());
             
-            int min = 150;
-            int max = 240;
+            int min = 135;
+            int max = 235;
             int range = max - min + 1;
 
             r = (hash % range) + min;
@@ -123,33 +125,40 @@ public class ChatClient {
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT + 1-3-offset >= Protocol.BORDER + 1); i--, offset++) {    
             if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255)); 
-            else tg.setForegroundColor(new TextColor.RGB(150,150,150));             
-            int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
-            if (textY < 8) {
-                float dimFactor = Math.min(1.0f, (textY+1)/8.0f);
-                TextColor color = getColor(senderID);
-                TextColor colorDimmed = getDimmed(color, dimFactor);
-                TextColor colorDimmedLoseFocus = getDimmed(colorDimmed, dimFactor * 0.65f);            
-                if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
-                else tg.setForegroundColor(colorDimmedLoseFocus);             
-            }
-
+            else tg.setForegroundColor(new TextColor.RGB(150,150,150));                         
             boolean isGacha = (mType.indexOf("G_") != -1); // add blink
             if (isGacha) tg.setBackgroundColor(new TextColor.RGB(40,20,60)); // purple for gacha
             else tg.setBackgroundColor(new TextColor.RGB(15, 23, 42)); // base
 
             // Main text
             
-            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, msgBlock.get(i));
+            tg.putString(ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, msgBlock.get(i));
             int upToColon = msgBlock.get(i).indexOf(": ");
             if (upToColon == -1) continue;
 
             // Colored text
+            
+            TextColor color = getColor(senderID);
+                
+            if (GameClient.playerID.equals(senderID))
+                color = new TextColor.RGB(255,255,255);
+
+            TextColor colorDimmed = new TextColor.RGB(150, 150, 150);
+            
+            int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
+            if (textY < 8) {
+                float dimFactor = Math.min(1.0f, (textY+1)/8.0f);
+                colorDimmed = getDimmed(color, dimFactor);
+                TextColor colorDimmedLoseFocus = getDimmed(colorDimmed, dimFactor * 0.65f);  
+                if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
+                else tg.setForegroundColor(colorDimmedLoseFocus);             
+            } 
+            
             String id = msgBlockMapSender.get(msgBlock.get(i));
             String colored = msgBlock.get(i).substring(0, upToColon + 1);
-            tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, colored);
-            if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255)); 
-            else tg.setForegroundColor(new TextColor.RGB(150,150,150));             
+            tg.putString(ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, colored);
+            if (toEmphasize == true) tg.setForegroundColor(color); 
+            else tg.setForegroundColor(colorDimmed);             
         }
         msgBlock.clear();
         return offset;
@@ -157,12 +166,12 @@ public class ChatClient {
     static synchronized void render(boolean toEmphasize) {
         // box
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-        tg.fillRectangle(new TerminalPosition(Protocol.ARENA_WIDTH+1,0), new TerminalSize(Protocol.SIDEBAR_WIDTH + 2 - 4, Protocol.ARENA_HEIGHT + 1),' ');
+        tg.fillRectangle(new TerminalPosition(ARENA_WIDTH+1,0), new TerminalSize(SIDEBAR_WIDTH + 3 - 4, Protocol.ARENA_HEIGHT + 1),' ');
 
         // input box
         if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
         else tg.setForegroundColor(new TextColor.RGB(45, 53, 72));              
-        tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT, "> ");
+        tg.putString(ARENA_WIDTH+3, Protocol.ARENA_HEIGHT, "> ");
 
         // msg here
         //tg.setForegroundColor(new TextColor.RGB(255,255,255));
@@ -172,7 +181,7 @@ public class ChatClient {
         if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
         else tg.setForegroundColor(new TextColor.RGB(80,90,125));                
         String display = msgBuffer.substring(txtOffset, Math.min(maxTxtWidth + txtOffset, txtWidth));
-        tg.putString(Protocol.ARENA_WIDTH+5, Protocol.ARENA_HEIGHT, display);
+        tg.putString(ARENA_WIDTH+5, Protocol.ARENA_HEIGHT, display);
 
         
         int freq = 15;
@@ -195,7 +204,7 @@ public class ChatClient {
             tg.setForegroundColor(new TextColor.RGB(45,53,72));              
         }
                
-        tg.putString(Protocol.ARENA_WIDTH+5+cursor, Protocol.ARENA_HEIGHT, cursorChar);
+        tg.putString(ARENA_WIDTH+5+cursor, Protocol.ARENA_HEIGHT, cursorChar);
 
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(235,235,235));        
@@ -203,43 +212,43 @@ public class ChatClient {
         
         // chats: prize and nonPrize
           tg.drawLine(
-                new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 1 + 0),
-                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 1 + 0),
+                new TerminalPosition(ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 1 + 0),
+                new TerminalPosition(ARENA_WIDTH+1 + SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 1 + 0),
                 '─'
             );
           tg.drawLine(
-                new TerminalPosition(Protocol.ARENA_WIDTH+1, 0),
-                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, 0),
+                new TerminalPosition(ARENA_WIDTH+1, 0),
+                new TerminalPosition(ARENA_WIDTH+1 + SIDEBAR_WIDTH - 1, 0),
                 '─'
             );            
             
         tg.drawLine(
-            new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, 0),
-            new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 1 + 0),
+            new TerminalPosition(ARENA_WIDTH+1 + SIDEBAR_WIDTH - 1, 0),
+            new TerminalPosition(ARENA_WIDTH+1 + SIDEBAR_WIDTH - 1, Protocol.ARENA_HEIGHT + 1 + 0),
             '│'
         );
         tg.drawLine(
-            new TerminalPosition(Protocol.ARENA_WIDTH+1, 0),
-            new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 1 + 0),
+            new TerminalPosition(ARENA_WIDTH+1, 0),
+            new TerminalPosition(ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + 1 + 0),
             '│'
         );
-          tg.putString(Protocol.ARENA_WIDTH+1,0,"┌");
-          tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,0,"┐");
-          tg.putString(Protocol.ARENA_WIDTH+1,Protocol.ARENA_HEIGHT + 1 + 0,"└");
-          tg.putString(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + 1 + 0,"┘");
+          tg.putString(ARENA_WIDTH+1,0,"┌");
+          tg.putString(ARENA_WIDTH+1 + SIDEBAR_WIDTH - 1,0,"┐");
+          tg.putString(ARENA_WIDTH+1,Protocol.ARENA_HEIGHT + 1 + 0,"└");
+          tg.putString(ARENA_WIDTH+1 + SIDEBAR_WIDTH - 1,Protocol.ARENA_HEIGHT + 1 + 0,"┘");
 
           
         if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
         else tg.setForegroundColor(new TextColor.RGB(100,110,145));        
-          int titleCenter = (Protocol.ARENA_WIDTH+1) + (Protocol.SIDEBAR_WIDTH - 1)/2 - 8/2;
-          tg.putString(titleCenter,0,"{ CHAT }");          
+          int titleCenter = (ARENA_WIDTH+1) + (SIDEBAR_WIDTH - 1)/2 - 10/2;
+          tg.putString(titleCenter,0,"{{ CHAT }}");          
 
           if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(140, 150, 209));        
           else tg.setForegroundColor(new TextColor.RGB(45, 53, 72));        
         
           tg.drawLine(
-                new TerminalPosition(Protocol.ARENA_WIDTH+2, Protocol.ARENA_HEIGHT + 1 - 2),
-                new TerminalPosition(Protocol.ARENA_WIDTH+1 + Protocol.SIDEBAR_WIDTH - 2, Protocol.ARENA_HEIGHT + 1 - 2),
+                new TerminalPosition(ARENA_WIDTH+2, Protocol.ARENA_HEIGHT + 1 - 2),
+                new TerminalPosition(ARENA_WIDTH+1 + SIDEBAR_WIDTH - 2, Protocol.ARENA_HEIGHT + 1 - 2),
                 '─'
             );           
 
