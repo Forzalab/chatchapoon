@@ -79,5 +79,6 @@ public class Enemy extends Actor {
         this.behaviourType = behaviourType;
         this.moveCooldownTimer = moveCooldownTimer;
         this.speed = speed;
+        if (this.behaviourType == "SNIPER") this.direction = Entity.Direction.rand();
     }
 }

@@ -1,6 +1,7 @@
 package shared;
 
 import java.io.*;
+import java.util.Random;
 
 public class Entity {
     public static class Avatar {
@@ -36,6 +37,10 @@ public class Entity {
         }
         public Direction prev() {
             int index = Utility.mod(this.ordinal() - 1, vals.length - 1);
+            return vals[index];
+        }
+        public static Direction rand() {
+            int index = new Random().nextInt(vals.length-2);
             return vals[index];
         }
     };

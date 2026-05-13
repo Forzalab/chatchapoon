@@ -16,6 +16,7 @@ import shared.*;
 public class GameServer {
     static List < ClientHandler > clients = new CopyOnWriteArrayList < ClientHandler > ();
     public static long startTimeLobby = System.currentTimeMillis();    
+    public static long tempStartTimeLobby = System.currentTimeMillis();        
     static volatile GameState currentGameState = new GameState(startTimeLobby);    
     static Random r = new Random();
     static boolean changed = false;
@@ -115,13 +116,16 @@ public class GameServer {
             // state swotch
             long currentTime = System.currentTimeMillis();
             if (currentGameState.players.size() == Protocol.MAX_PLAYERS && !changed) {
-                startTimeLobby = currentTime - Protocol.LOBBY_CLOSE_IN;
+                tempStartTimeLobby = currentTime - Protocol.LOBBY_CLOSE_IN;
                 changed = true;
+            } else if (currentGameState.players.size() < Protocol.MAX_PLAYERS) {
+                tempStartTimeLobby = startTimeLobby;
+                changed = false;
             }
 
             // 40 > 20 + 30 false 40 = 20 + 20
             // 65 > 60 + 25 false 65 = 60 + 5 
-            boolean lobbyWaitEnds = (currentTime > Protocol.LOBBY_CLOSE_IN + startTimeLobby);
+            boolean lobbyWaitEnds = (currentTime > Protocol.LOBBY_CLOSE_IN + tempStartTimeLobby);
             boolean enoughPlayersJoined = currentGameState.players.size() > Protocol.MAX_PLAYERS;
 
             if (lobbyWaitEnds || enoughPlayersJoined) {
@@ -192,6 +196,8 @@ public class GameServer {
                     if (!bullet.dead()) {
                         bullet.pos.accum(bullet.vy, bullet.vx);
                         bullet.timeLeft(bullet.timeLeft() - 1);
+                        bullet.decayImmune--;
+                        bullet.inceptionDamageWait--;
                     }
                     else
                         // hide corpses for now
@@ -202,11 +208,8 @@ public class GameServer {
                 
                 // enemy stuff
                 if (currentGameState.getCurrentTick() % Protocol.WAVE_INTERVAL == 0)
-                    currentGameState.spawnWave(6);
+                    currentGameState.spawnWave(2);
                 currentGameState.updateEnemies();
-
-                // now, pos uodated, we do collision check and porcess
-                currentGameState.processAllCollisions();
 
                 // revive
                 // anything players really
@@ -221,6 +224,10 @@ public class GameServer {
                     checkBroadcastMilestone("NEW_GACHA", p);
                     checkBroadcastMilestone("NEAR_DEATH", p);                                        
                 }
+
+                // now, pos uodated, we do collision check and porcess
+                currentGameState.processAllCollisions();
+
                 
                 // == Encode result ==
                 // -- NO MORE CHANGING GameState AFTER THIS --
@@ -260,6 +267,7 @@ public class GameServer {
                     .put("type", player.type)
                     .put("x", player.pos.getRenderX())
                     .put("y", player.pos.getRenderY())
+                    .put("hit", (player.hitCd > 0))                    
                     .put("hp", player.hp.getHP())
                     .put("hp_max", player.hp._hpMax)
                     .put("score", player.score)
@@ -274,6 +282,9 @@ public class GameServer {
                     enemyArray.put(new JSONObject()
                     .put("id", enemy.id)
                     .put("type", enemy.type)             
+                    .put("direction", enemy.direction)
+                    .put("hit", (enemy.hitCd > 0))
+                    .put("subtype", enemy.behaviourType)
                     .put("x", enemy.pos.getRenderX())
                     .put("y", enemy.pos.getRenderY()));
                 }

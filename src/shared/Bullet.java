@@ -21,9 +21,11 @@ public class Bullet extends Entity {
     public String ownerID;
     public int splitDepth;
     private int timeLeft;
-
+    public int decayImmune = 2;
+    public int inceptionDamageWait = 2;
+    
     public void timeLeft(int tl) {
-        if (tl <= 0) dead = true;
+        if (tl <= 0 && decayImmune <= 0) dead = true;
         timeLeft = tl;
     }
 
