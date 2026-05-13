@@ -575,7 +575,7 @@ public class GameClient {
 
     public static void splash() { try {
         TextColor.RGB vg = new TextColor.RGB(1,13,1);
-        TextColor.RGB white = new TextColor.RGB(245,255,245);                      
+        TextColor.RGB white = new TextColor.RGB(225,240,225);                      
         TextColor.RGB white_dim = new TextColor.RGB(80,110,80);                  
         screen.clear();
         TextGraphics tg = screen.newTextGraphics();
@@ -778,7 +778,7 @@ public class GameClient {
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
                     boolean toEmphasizeChat = (state == State.CHAT);
                     ChatClient.render(toEmphasizeChat);
-                    if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(255,255,255));
+                    if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(235,235,235));
                     else tg.setForegroundColor(new
     TextColor.RGB(80,90,125));
                   //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');

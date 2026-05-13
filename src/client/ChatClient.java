@@ -84,7 +84,7 @@ public class ChatClient {
         if (!GameClient.playerColor.containsKey(playerID)) {
             int hash = Math.abs(playerID.hashCode());
             
-            int min = 135;
+            int min = 120;
             int max = 235;
             int range = max - min + 1;
 
@@ -124,7 +124,7 @@ public class ChatClient {
         tokenize(string, senderID);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT + 1-3-offset >= Protocol.BORDER + 1); i--, offset++) {    
-            if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255)); 
+            if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(235,235,235)); 
             else tg.setForegroundColor(new TextColor.RGB(150,150,150));                         
             boolean isGacha = (mType.indexOf("G_") != -1); // add blink
             if (isGacha) tg.setBackgroundColor(new TextColor.RGB(40,20,60)); // purple for gacha
@@ -140,14 +140,17 @@ public class ChatClient {
             
             TextColor color = getColor(senderID);
                 
-            if (GameClient.playerID.equals(senderID))
+            if (GameClient.playerID.equals(senderID)) {
                 color = new TextColor.RGB(255,255,255);
+                tg.setBackgroundColor(new TextColor.RGB(25,33,82));        
+            }
 
-            TextColor colorDimmed = new TextColor.RGB(150, 150, 150);
+            float dimFactor = 0.9f;            
+            TextColor colorDimmed = getDimmed(color, dimFactor);
             
             int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
             if (textY < 8) {
-                float dimFactor = Math.min(1.0f, (textY+1)/8.0f);
+                dimFactor = Math.min(0.85f, (textY+1)/8.0f);
                 colorDimmed = getDimmed(color, dimFactor);
                 TextColor colorDimmedLoseFocus = getDimmed(colorDimmed, dimFactor * 0.65f);  
                 if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
@@ -156,9 +159,11 @@ public class ChatClient {
             
             String id = msgBlockMapSender.get(msgBlock.get(i));
             String colored = msgBlock.get(i).substring(0, upToColon + 1);
-            tg.putString(ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, colored);
+
             if (toEmphasize == true) tg.setForegroundColor(color); 
             else tg.setForegroundColor(colorDimmed);             
+            tg.putString(ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, colored, SGR.valueOf("BOLD"));
+            tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         }
         msgBlock.clear();
         return offset;
@@ -207,7 +212,7 @@ public class ChatClient {
         tg.putString(ARENA_WIDTH+5+cursor, Protocol.ARENA_HEIGHT, cursorChar);
 
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
-        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(235,235,235));        
+        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(225,225,225));        
         else tg.setForegroundColor(new TextColor.RGB(80,90,125));        
         
         // chats: prize and nonPrize
