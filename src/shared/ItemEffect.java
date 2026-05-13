@@ -87,10 +87,12 @@ public abstract class ItemEffect implements Effect {
         return (countdown.getRemaining() > 0);
     }
 
-    public synchronized final void use() {
+    public synchronized final void use(Player user) {
         if (amount <= 0) return;
         else if (isActive()) return;
         countdown.setRemaining(countdown.max);
+        this.useSpecifics(user);
+        mutateAmount(amount - 1);
     }
 
     public int amount() { return (amount > 0)?amount:0; }

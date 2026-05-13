@@ -3,11 +3,11 @@ class AmmoRefill extends ItemEffect {
     AmmoRefill(int a) { super("AmmoRefill", a); }
 
     @Override
-    public void useSpecifics(Player useSpecificsr) {}
+    public void useSpecifics(Player user) {}
     
     @Override
-    public boolean onHit(Player useSpecificsr) { return false; }
+    public boolean onHit(Player user) { return false; }
 
     @Override
-    public void tickDown(Player useSpecificsr) { }
+    public void tickDown(Player user) { }
 }
