@@ -481,7 +481,6 @@ public class GameClient {
             tg.putString(timerX, 0, "HEIST ENDS IN " + timerStr);
             tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);
             //money flash
-        
         }
             shift = 0;        
         }

@@ -165,10 +165,12 @@ public class ChatClient {
         tg.putString(Protocol.ARENA_WIDTH+3, Protocol.ARENA_HEIGHT, "> ");
 
         // msg here
-        tg.setForegroundColor(new TextColor.RGB(255,255,255));
+        //tg.setForegroundColor(new TextColor.RGB(255,255,255));
         int txtWidth = msgBuffer.length();
         int txtOffset = (txtWidth > maxTxtWidth) ? (txtWidth-maxTxtWidth) : 0;
         
+        if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(255,255,255));        
+        else tg.setForegroundColor(new TextColor.RGB(80,90,125));                
         String display = msgBuffer.substring(txtOffset, Math.min(maxTxtWidth + txtOffset, txtWidth));
         tg.putString(Protocol.ARENA_WIDTH+5, Protocol.ARENA_HEIGHT, display);
 
