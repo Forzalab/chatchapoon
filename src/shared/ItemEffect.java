@@ -67,14 +67,14 @@ public abstract class ItemEffect implements Effect {
     }
     
     public final String name;
-    public static IEProperty property;
+    public IEProperty property;
     private int amount;
     public volatile Countdown countdown;
     
     // An item can only be applied ONE at a time, no double-stacking. Each use deduct once, only whem eff drained can next item of same type be used.
 
     // <effect-name, property> PUT IN PROTOCOL FILE PLS
-    private static HashMap<String, IEProperty> lookup = new HashMap<String, IEProperty>();
+    protected static HashMap<String, IEProperty> lookup = new HashMap<String, IEProperty>();
 
     protected static boolean register(String subItemClassName, IEProperty iep) {
         boolean result = (null != lookup.putIfAbsent(subItemClassName, iep));

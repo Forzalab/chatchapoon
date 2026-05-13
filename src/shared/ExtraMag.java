@@ -11,6 +11,7 @@ class ExtraMag extends ItemEffect {
     
     ExtraMag(int a) { 
         super("ExtraMag", a);
+        this.property = lookup.get("ExtraMag");
     }
 
     @Override

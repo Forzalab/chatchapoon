@@ -11,6 +11,7 @@ class BulletStorm extends ItemEffect {
     
     BulletStorm(int a) { 
         super("BulletStorm", a);
+        this.property = lookup.get("BulletStorm");
     }
 
     @Override
