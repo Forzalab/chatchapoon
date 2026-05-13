@@ -4,6 +4,7 @@ import java.util.concurrent.*;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.json.*;
 
@@ -119,7 +120,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         if (e instanceof Player p && p.inventory.get("BulletStorm") != null)
             if (p.inventory.get("BulletStorm").isActive()) p.fireCooldown = 0;
         else if (p.inventory.get("RapidFire") != null && (p.fireCooldown > Protocol.FIRE_COOLDOWN_TICKS/2))
-            if (p.inventory.get("BulletStorm").isActive()) p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS/2;
+            if (p.inventory.get("RapidFire").isActive()) p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS/2;
                         
         if (e instanceof Player p && (p.fireCooldown > 0 || p.bullets <= 0)) return;
         float[] VX = { 0, Protocol.INV_SQRT2,  1,  Protocol.INV_SQRT2, 0, -Protocol.INV_SQRT2, -1, -Protocol.INV_SQRT2 };
@@ -404,10 +405,15 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
 //        return ItemEffect.IEProperty.Rarity.valueOf(rarity);
         
         // then get an item
-        String gachaName = ItemEffect.lookup.entrySet().stream()
-        .filter(e -> rarity.equals(e.getValue().rarity.name()))
-        .map(Map.Entry::getKey).findAny()
+        List<String> IEClassNames = ItemEffect.lookup.entrySet().stream()
+        .filter(e -> (rarity.equals(e.getValue().rarity.name())))
+        .map(Map.Entry::getKey).collect(Collectors.toList());
+        if (IEClassNames == null) return null;
+        
+        String gachaName = IEClassNames.stream()
+        .filter(s -> (r.nextInt(2) == 0)).findAny()
         .orElse("");
+        
         if (gachaName.isEmpty()) return null;
         ItemEffect gachaItem = ItemEffect.create(gachaName, 1);
         p.inventory.add(gachaItem);
@@ -416,6 +422,19 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
     
     public GameState(long inception) {
             this.inception = inception;
+         // awaken static block in ItemEffect subclass
+         try {
+            Class.forName("shared.AmmoRefill");
+            Class.forName("shared.BulletStorm");
+            Class.forName("shared.Ghost");
+            Class.forName("shared.CoinMagnet");
+            Class.forName("shared.AreaBomb");
+            Class.forName("shared.RapidFire");
+            Class.forName("shared.ExtraMag");
+            Class.forName("shared.Shield");
+            Class.forName("shared.SmallHeal");
+            Class.forName("shared.FullHeal");
+        } catch (Exception e) { e.printStackTrace(); }
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)
             for (int j = 0; j < Protocol.ARENA_HEIGHT; j++)

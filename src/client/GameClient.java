@@ -806,7 +806,6 @@ public class GameClient {
                     if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
                     if (jap != null) processPlayersArrayRender(jap, tg, "Ɵ", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
-
                     screen.refresh();
                 }
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {

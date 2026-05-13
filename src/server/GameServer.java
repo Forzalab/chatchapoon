@@ -76,6 +76,8 @@ public class GameServer {
                     if (gachaItem == null) continue;
                     JSONObject notifi = GameState.JSONifyItemEffect(gachaItem, p);
                     notif.offer(notifi);
+                    System.out.println("[GACHA] " + p.name + " pulled: " 
+    + gachaItem.property.displayName + " [" + gachaItem.property.rarity + "]");
 //                    if (rarity.isEmpty()) continue;
 //                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, "G_" +  rarity);
                 }
