@@ -9,4 +9,7 @@ class AmmoRefill extends ItemEffect {
         IEProperty iep = new IEProperty("Gun Magazine", "The newest magazine for your gun!\nAdds 150 bullets when used.", IEProperty.Rarity.COMMON, Protocol.ONE_USE_ITEM_TIME);
         ItemEffect.register("AmmoRefill", iep);
     }
+
+    @Override
+    public void useSpecifics(Player user) { user.bullets += 150; }
 }
