@@ -110,7 +110,10 @@ public abstract class ItemEffect implements Effect {
     
     public synchronized final void use(Player user) {
         if (amount <= 0) return;
-        else if (isActive()) return; 
+        else if (isActive()) {
+            tickDown(user);
+            return; 
+        }
         countdown.setRemaining(countdown.max);
         this.useSpecifics(user);
     }
