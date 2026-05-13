@@ -5,13 +5,12 @@ class BulletStorm extends ItemEffect {
     public boolean onHit(Player user) { return false; }
 
     static {
-        IEProperty iep = new IEProperty("Gun Magazine Costco-Edition", "Only $67.99, but it's yours for free (not really)! \nAdds 670 bullets when used.", IEProperty.Rarity.LEGENDARY, Protocol.ONE_USE_ITEM_TIME);
+        IEProperty iep = new IEProperty("Prefilled AK-67 Costco Edition", "For when spamming the keyboard is not enough.\nAdds 670 bullets and no cooldown when used.", IEProperty.Rarity.LEGENDARY, 20);
         ItemEffect.register("BulletStorm", iep);
     }
     
     BulletStorm(int a) { 
         super("BulletStorm", a);
-        this.property = lookup.get("BulletStorm");
     }
 
     @Override

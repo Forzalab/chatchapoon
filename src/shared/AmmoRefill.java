@@ -11,7 +11,6 @@ class AmmoRefill extends ItemEffect {
     
     AmmoRefill(int a) { 
         super("AmmoRefill", a);
-        this.property = lookup.get("AmmoRefill");
     }
 
     @Override

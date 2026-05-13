@@ -24,6 +24,7 @@ public class Player extends Actor {
         // unless for iterating shit
         public volatile LinkedHashMap<String, ItemEffect> inventory = new LinkedHashMap<String, ItemEffect>();
 
+        // overide amount
         private synchronized void changeAmount(String name, int amt) { try {
             ItemEffect item = get(name);
 
@@ -32,18 +33,18 @@ public class Player extends Actor {
             if (item.amount() <= 0 || item.countdown.getRemaining() <= 0)
                 throw new Exception("No update a \"null\" item! item.amount = " + item.amount() +"; item.Countdown.remaining = " + item.countdown.getRemaining());
 
-            item.mutateAmount(item.amount()+1);
+            item.mutateAmount(amt);
             this.inventory.put(name, item);
-        } catch (Exception e) { System.out.println("Exp Player.Inventory.changeAmount(): "); } }
+        } catch (Exception e) { System.out.println("Exp Player.Inventory.changeAmount(): item.mutateAmount(item.amount()+amt);"); } }
         
 
         // ONLY ADD ITEM FROM GACHA!!
         // onec added, use name to crawl
         public synchronized void add(ItemEffect item) {
             // have item? add the amt in!
-            if (this.inventory.containsKey(name)) {
-                ItemEffect stock = get(name);
-                changeAmount(name, item.amount() + stock.amount());
+            if (this.inventory.containsKey(item.name)) {
+                ItemEffect stock = get(item.name);
+                changeAmount(item.name, item.amount() + stock.amount());
             }
             // dont? add it in.
             else {
