@@ -116,10 +116,10 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
     public synchronized void shootFrom(Entity e) {
         if (e.dead()) return;
         
-        if (e instanceof Player p && p.inventory.get("BulletStorm").isActive())
-            p.fireCooldown = 0;
-        else if (e instanceof Player p && p.inventory.get("RapidFire").isActive() && (p.fireCooldown > Protocol.FIRE_COOLDOWN_TICKS/2))
-            p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS/2;
+        if (e instanceof Player p && p.inventory.get("BulletStorm") != null)
+            if (p.inventory.get("BulletStorm").isActive()) p.fireCooldown = 0;
+        else if (p.inventory.get("RapidFire") != null && (p.fireCooldown > Protocol.FIRE_COOLDOWN_TICKS/2))
+            if (p.inventory.get("BulletStorm").isActive()) p.fireCooldown = Protocol.FIRE_COOLDOWN_TICKS/2;
                         
         if (e instanceof Player p && (p.fireCooldown > 0 || p.bullets <= 0)) return;
         float[] VX = { 0, Protocol.INV_SQRT2,  1,  Protocol.INV_SQRT2, 0, -Protocol.INV_SQRT2, -1, -Protocol.INV_SQRT2 };
@@ -278,10 +278,10 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         if (victim instanceof Enemy e && bullet.ownerID.equals(victim.id)) damage = 0;
         else if (bullet.ownerID.equals(victim.id)) damage = 1;
 
-        if (victim instanceof Player p && p.inventory.get("Shield").onHit(p))
-            return;
-        else if (victim instanceof Player p && p.inventory.get("Ghost").onHit(p))
-            return;            
+        if (victim instanceof Player p && p.inventory.get("Shield") != null)
+            if (p.inventory.get("Shield").onHit(p)) return;
+        else if (p.inventory.get("Ghost") != null)
+            if (p.inventory.get("Ghost").onHit(p)) return;            
         
         victim.hp.setHP(victim.hp.getHP() - damage); // e.hp -= bullet.damage;
 
@@ -341,10 +341,10 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         else if (victim.hp.isDead()) return; // ded? dont hit a zombie
         else if (hitter.hitCooldown() > 0) return; // cooldown
 
-        if (victim instanceof Player p && p.inventory.get("Shield").onHit(p))
-            return;
-        else if (victim instanceof Player p && p.inventory.get("Ghost").onHit(p))
-            return;            
+        if (victim instanceof Player p && p.inventory.get("Shield") != null)
+            if (p.inventory.get("Shield").onHit(p)) return;
+        else if (p.inventory.get("Ghost") != null)
+            if (p.inventory.get("Ghost").onHit(p)) return;            
         
         hitter.startHitCooldown();
         victim.hp.setHP(victim.hp.getHP() - 1); // e.hp -= hitter.damage;
