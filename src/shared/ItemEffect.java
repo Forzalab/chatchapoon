@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.lang.reflect.*;
 
 interface Effect {
-    void use(Player user);
+    void useSpecifics(Player user);
     void tickDown(Player user);
     boolean onHit(Player user);
 }

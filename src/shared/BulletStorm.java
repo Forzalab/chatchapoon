@@ -3,11 +3,11 @@ class BulletStorm extends ItemEffect {
     BulletStorm(int a) { super("BulletStorm", a); }
 
     @Override
-    public void use(Player user) {}
+    public void useSpecifics(Player useSpecificsr) {}
     
     @Override
-    public boolean onHit(Player user) { return false; }
+    public boolean onHit(Player useSpecificsr) { return false; }
 
     @Override
-    public void tickDown(Player user) { }
+    public void tickDown(Player useSpecificsr) { }
 }
