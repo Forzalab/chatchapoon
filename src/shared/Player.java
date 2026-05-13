@@ -54,6 +54,9 @@ public class Player extends Actor {
         public synchronized void useAll() {
             for (Map.Entry<String, ItemEffect> entry : inventory.entrySet())
                 entry.getValue().use(Player.this); 
+            inventory.entrySet().removeIf(
+                entries->(entries.getValue().amount() == 0)
+            );
         }
         
         public ItemEffect get(String name) {

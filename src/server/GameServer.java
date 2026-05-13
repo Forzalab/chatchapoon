@@ -226,6 +226,7 @@ public class GameServer {
                         p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
                         p.bullets = 100;
                     } else {
+                        // apply effect
                         p.inventory.useAll();
                     }
                 }
