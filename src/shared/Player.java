@@ -21,29 +21,32 @@ public class Player extends Actor {
     public class Inventory {
         // i trust myself to not tocuh this list raw
         // unless for iterating shit
-        private volatile LinkedHashMap<String, ItemEffect> inventory = new LinkedHashMap<String, ItemEffect>();
+        public volatile LinkedHashMap<String, ItemEffect> inventory = new LinkedHashMap<String, ItemEffect>();
 
         private synchronized void changeAmount(String name, int amt) { try {
-            ItemEffect old = get(name);
+            ItemEffect item = get(name);
 
             // tombstone
             // collect dead keys first in a list, then remove after loop
-            if (old.amount <= 0 || old.property.countdown.getRemaining() <= 0)
-                throw new Exception("No update a \"null\" item! old.amount = " + old.amount +"; old.Countdown.remaining = " + old.property.countdown.getRemaining());
-            else
-                this.inventory.put(name, old.mutateAmount(old.amount+amt));
+            if (item.amount() <= 0 || item.countdown.getRemaining() <= 0)
+                throw new Exception("No update a \"null\" item! item.amount = " + item.amount() +"; item.Countdown.remaining = " + item.countdown.getRemaining());
+
+            item.mutateAmount(item.amount()+1);
+            this.inventory.put(name, item);
         } catch (Exception e) { System.out.println("Exp Player.Inventory.changeAmount(): "); } }
         
-        public synchronized void add(String name, int amt) {
+
+        // ONLY ADD ITEM FROM GACHA!!
+        // onec added, use name to crawl
+        public synchronized void add(ItemEffect item) {
             // have item? add the amt in!
             if (this.inventory.containsKey(name)) {
                 ItemEffect stock = get(name);
-                changeAmount(name, amt + stock.amount);
+                changeAmount(name, item.amount() + stock.amount());
             }
             // dont? add it in.
             else {
-                ItemEffect item = new ItemEffect(name, amt);
-                this.inventory.put(name, item);
+                this.inventory.put(item.name, item);
             }
         }
         
@@ -52,7 +55,7 @@ public class Player extends Actor {
         }
         
         public synchronized void rmv(String name, int amt) {
-            changeAmount(name, get(name).amount - amt);
+            changeAmount(name, get(name).amount() - amt);
         }
     }
     
