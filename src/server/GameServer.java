@@ -71,9 +71,9 @@ public class GameServer {
                 if (cmd.equals("PULL")) {
                     Player p = currentGameState.playerIdMap.get(authorID);
                     if (p == null) continue;
-                    String rarity = currentGameState.pull(p).name();
-                    if (rarity.isEmpty()) continue;
-                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, "G_" +  rarity);
+//                    String rarity = currentGameState.pull(p).name();
+//                    if (rarity.isEmpty()) continue;
+//                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, "G_" +  rarity);
                 }
             }
             else if (type.equals("CHAT")) {

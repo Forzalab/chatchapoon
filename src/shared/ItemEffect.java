@@ -1,7 +1,7 @@
 package shared;
 
 import java.io.*;
-import java.util.HashMap;
+import java.util.*;
 import java.lang.reflect.*;
 
 interface Effect {
@@ -17,14 +17,16 @@ public abstract class ItemEffect implements Effect {
         public static enum Rarity {
             COMMON,
             RARE,
-            LEGENDARY
+            LEGENDARY,
+            NA
         }
 
         // now with stuff IN IEProperty
         public final String displayName, desc;
+        public String name;
         public final Rarity rarity;
         public final int time;
-        
+
         public IEProperty(String displayName, String desc, Rarity rarity, int max) {
             this.displayName = displayName;
             this.desc = desc;
@@ -74,9 +76,10 @@ public abstract class ItemEffect implements Effect {
     // An item can only be applied ONE at a time, no double-stacking. Each use deduct once, only whem eff drained can next item of same type be used.
 
     // <effect-name, property> PUT IN PROTOCOL FILE PLS
-    protected static HashMap<String, IEProperty> lookup = new HashMap<String, IEProperty>();
+    public static LinkedHashMap<String, IEProperty> lookup = new LinkedHashMap<>();
 
     protected static boolean register(String subItemClassName, IEProperty iep) {
+        iep.name = subItemClassName;
         boolean result = (null != lookup.putIfAbsent(subItemClassName, iep));
         return result;
         // subitem must pack their own property.

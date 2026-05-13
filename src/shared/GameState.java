@@ -355,8 +355,9 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
                 processActorHit(e, p);
     }
 
-    public synchronized ItemEffect.IEProperty.Rarity pull(Player p) {
-        if (p.currency < Protocol.GACHA_COST) return ItemEffect.IEProperty.Rarity.valueOf("NA");
+    public synchronized ItemEffect pull(Player p) {
+        // get rarity first
+        if (p.currency < Protocol.GACHA_COST) return null;
         p.currency -= Protocol.GACHA_COST;
         p.pityCounter++;
         float roll = (float)Math.random();
@@ -365,7 +366,17 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         else if (p.pityCounter >= 10) rarity = "RARE";
         else rarity = roll < 0.85 ? "COMMON" : roll < 0.99 ? "RARE" : "LEGENDARY";
         if (!rarity.equals("COMMON")) p.pityCounter = 0;
-        return ItemEffect.IEProperty.Rarity.valueOf(rarity);
+//        return ItemEffect.IEProperty.Rarity.valueOf(rarity);
+
+        // then get an item
+        String gachaName = ItemEffect.lookup.entrySet().stream()
+        .filter(e -> rarity.equals(e.getValue().rarity))
+        .map(Map.Entry::getKey).findAny()
+        .orElse("");
+        if (gachaName.isEmpty()) return null;
+        ItemEffect gachaItem = ItemEffect.create(gachaName, 1);
+        p.inventory.add(gachaItem);
+        return gachaItem;
     }
     
     public GameState(long inception) {
