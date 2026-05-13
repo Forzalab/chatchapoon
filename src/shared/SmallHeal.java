@@ -11,4 +11,7 @@ Protocol.ONE_USE_ITEM_TIME);
 
     @Override   
     public boolean onHit(Player user) { return false; }   
+
+    @Override   
+    public void useSpecifics(Player user) { user.hp.setHP(user.hp.getHP() + 2); }   
 }

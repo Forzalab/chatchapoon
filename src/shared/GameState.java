@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.*;
 
+import org.json.*;
+
 public class GameState {
 /*
 List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter, levelTimer, waveNumber + terrain[][]
@@ -355,6 +357,22 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
                 processActorHit(e, p);
     }
 
+//    public static void queueGachaNotif(Player p) {}
+    
+    public static JSONObject JSONifyItemEffect(ItemEffect item, Player p) {
+        // !!!!!! render big popup for author
+        // pop notif for other!!!!!!
+        JSONObject jo = new JSONObject()
+        .put("pullerName", p.name)
+        .put("itemName", item.name)
+        .put("itemDisplayName", item.property.displayName)
+        .put("itemDesc", item.property.desc)
+        .put("itemRarity", item.property.rarity)
+        .put("itemAmount", item.amount())
+        .put("itemGachaReveal", Protocol.GACHA_REVEAL_IN);        
+        return jo;
+    }
+    
     public synchronized ItemEffect pull(Player p) {
         // get rarity first
         if (p.currency < Protocol.GACHA_COST) return null;
@@ -362,12 +380,13 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         p.pityCounter++;
         float roll = (float)Math.random();
         String rarity;
-        if (p.pityCounter >= 30) rarity = "LEGENDARY";
-        else if (p.pityCounter >= 10) rarity = "RARE";
-        else rarity = roll < 0.85 ? "COMMON" : roll < 0.99 ? "RARE" : "LEGENDARY";
+        if (p.pityCounter >= 10) rarity = "LEGENDARY";
+        else if (p.pityCounter >= 5) rarity = "RARE";
+        else if (p.pityCounter == 1) rarity = "COMMON";
+        else rarity = roll < 0.5 ? "COMMON" : roll < 0.85 ? "RARE" : "LEGENDARY";
         if (!rarity.equals("COMMON")) p.pityCounter = 0;
 //        return ItemEffect.IEProperty.Rarity.valueOf(rarity);
-
+        
         // then get an item
         String gachaName = ItemEffect.lookup.entrySet().stream()
         .filter(e -> rarity.equals(e.getValue().rarity))

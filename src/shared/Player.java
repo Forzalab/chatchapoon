@@ -67,6 +67,11 @@ public class Player extends Actor {
         public synchronized void rmv(String name, int amt) {
             changeAmount(name, get(name).amount() - amt);
         }
+
+        public synchronized void wipe() {
+            inventory.clear();
+        }
+        
     }
     
     public volatile int score = 0;

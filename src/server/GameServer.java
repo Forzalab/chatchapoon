@@ -20,6 +20,7 @@ public class GameServer {
     static volatile GameState currentGameState = new GameState(startTimeLobby);    
     static Random r = new Random();
     static boolean changed = false;
+    static volatile ConcurrentLinkedQueue<JSONObject> notif = new ConcurrentLinkedQueue<>();
 //    static volatile long currentTime = System.currentTimeMillis();    
     private static JSONObject getTopFive(List<Player> players) {
         PriorityQueue<Player> prq = new PriorityQueue<>((a, b) -> a.score - b.score);
@@ -71,7 +72,10 @@ public class GameServer {
                 if (cmd.equals("PULL")) {
                     Player p = currentGameState.playerIdMap.get(authorID);
                     if (p == null) continue;
-//                    String rarity = currentGameState.pull(p).name();
+                    ItemEffect gachaItem = currentGameState.pull(p);
+                    if (gachaItem == null) continue;
+                    JSONObject notifi = GameState.JSONifyItemEffect(gachaItem, p);
+                    notif.offer(notifi);
 //                    if (rarity.isEmpty()) continue;
 //                    GameServer.send("❗❗ I pulled a " + rarity +  " loot ❗❗", p.id, p.name, "G_" +  rarity);
                 }
@@ -221,9 +225,11 @@ public class GameServer {
                     checkBroadcastMilestone("NEW_GACHA", p);
                     checkBroadcastMilestone("CAN_FIRST_GACHA", p);      
                     checkBroadcastMilestone("NEAR_DEATH", p);                                        
+                    
                     if (p.dead()) {
                         p.hp.resuscitate().deathTickUp();
                         p.pos.set(p.spawnPos.getRenderY(), p.spawnPos.getRenderX());
+                        p.inventory.wipe();
                         p.bullets = 100;
                     } else {
                         // apply effect
@@ -295,6 +301,7 @@ public class GameServer {
                     .put("y", enemy.pos.getRenderY()));
                 }
 
+                // coins
                 for (Map.Entry<Position, Integer> entry : currentGameState.coinsLoc.entrySet()) {
                     Position key = entry.getKey();
                     int x = key.getRenderX();
@@ -305,11 +312,27 @@ public class GameServer {
 //                    int amt = entry.getValue();
                     // now work with key and value...
                 }              
-                
+
+
+                // announcements
+                JSONObject annData;
+                JSONArray notifArray = new JSONArray();
+                int size = notif.size();
+                while (size-- > 0)  {
+                    annData = notif.poll();
+                    if (annData == null) continue;
+                    notifArray.put(annData);
+                    int timer = annData.optInt("itemGachaReveal");
+                    if (timer <= 0) continue;
+                    annData.put("itemGachaReveal", --timer);
+                    notif.offer(annData);
+                }
+
                 stateArrayJSON.put("bullets", bulletArray);
                 stateArrayJSON.put("players", playerArray);              
                 stateArrayJSON.put("enemies", enemyArray);
                 stateArrayJSON.put("coins", coinsArray);                
+                stateArrayJSON.put("notifs", notifArray);                                
 
                 // broadcast entities
                 broadcastAll(stateArrayJSON);

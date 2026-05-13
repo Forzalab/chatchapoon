@@ -10,4 +10,7 @@ class FullHeal extends ItemEffect {
 
     @Override   
     public boolean onHit(Player user) { return false; }   
+
+    @Override
+    public void useSpecifics(Player user) { user.hp.setHP(user.hp._hpMax); }
 }

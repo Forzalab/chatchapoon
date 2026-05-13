@@ -10,5 +10,8 @@ Protocol.ONE_USE_ITEM_TIME);
     public Shield(int a) { super("Shield", a); }
 
     @Override   
-    public boolean onHit(Player user) { return false; }   
+    public boolean onHit(Player user) { 
+        this.forceEndUse(user);
+        return true;
+    }   
 }
