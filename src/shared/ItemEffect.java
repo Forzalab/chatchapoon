@@ -12,7 +12,7 @@ interface Effect {
 
 // every item IS an effect
 public abstract class ItemEffect implements Effect {
-    public class IEProperty {
+    public static class IEProperty {
         // Rarity and Countdown type
         public static enum Rarity {
             COMMON,
@@ -67,7 +67,7 @@ public abstract class ItemEffect implements Effect {
     }
     
     public final String name;
-    public IEProperty property;
+    public static IEProperty property;
     private int amount;
     public volatile Countdown countdown;
     
