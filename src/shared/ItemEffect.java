@@ -2,6 +2,7 @@ package shared;
 
 import java.io.*;
 import java.util.HashMap;
+import java.lang.reflect.*;
 
 interface Effect {
     void use(Player user);
@@ -73,7 +74,7 @@ public abstract class ItemEffect implements Effect {
         // must be static final
     }
     
-    private ItemEffect(String name, int amount) {
+    protected ItemEffect(String name, int amount) {
   //      IEProperty iep = lookup.get(name);
         this.name = name;
         this.property = lookup.get(name);  /*iep MUST IMPLEMENT*/
@@ -99,5 +100,14 @@ public abstract class ItemEffect implements Effect {
         else if (amount <= 0) return;
         amount = new_amt;
     }
+
+    // name MUST MATCH ITEM CLASS NAME!!!
+    public static ItemEffect create(String name, int amt) { try {
+        // reflection to avoid if-else
+        ItemEffect item = (ItemEffect)Class.forName("shared." + name)
+                               .getDeclaredConstructors()[0] // blinddart
+                               .newInstance(amt);
+        return item;
+    } catch (Exception e) { System.out.println(e); return null; }}
 }
 
