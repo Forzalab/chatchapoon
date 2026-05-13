@@ -21,12 +21,18 @@ public class Player extends Actor {
     public class Inventory {
         // i trust myself to not tocuh this list raw
         // unless for iterating shit
-        public volatile LinkedHashMap<String, ItemEffect> inventory;
+        private volatile LinkedHashMap<String, ItemEffect> inventory = new LinkedHashMap<String, ItemEffect>();
 
-        private synchronized void changeAmount(String name, int amt) {
+        private synchronized void changeAmount(String name, int amt) { try {
             ItemEffect old = get(name);
-            this.inventory.put(name, old.mutateAmount(old.amount+1));
-        }
+
+            // tombstone
+            // collect dead keys first in a list, then remove after loop
+            if (old.amount <= 0 || old.property.countdown.getRemaining() <= 0)
+                throw new Exception("No update a \"null\" item! old.amount = " + old.amount +"; old.Countdown.remaining = " + old.property.countdown.getRemaining());
+            else
+                this.inventory.put(name, old.mutateAmount(old.amount+amt));
+        } catch (Exception e) { System.out.println("Exp Player.Inventory.changeAmount(): "); } }
         
         public synchronized void add(String name, int amt) {
             // have item? add the amt in!
@@ -93,5 +99,6 @@ public class Player extends Actor {
         super(pos, vx, vy, "player", id, hp_max);
         this.spawnPos = new Position(pos.getRenderY(), pos.getRenderX());
         this.name = name;
+        this.inventory = new Inventory();
     }
 }

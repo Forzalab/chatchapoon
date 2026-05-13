@@ -355,8 +355,8 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
                 processActorHit(e, p);
     }
 
-    public synchronized String pull(Player p) {
-        if (p.currency < Protocol.GACHA_COST) return "";
+    public synchronized ItemEffect.IEProperty.Rarity pull(Player p) {
+        if (p.currency < Protocol.GACHA_COST) return ItemEffect.IEProperty.Rarity.valueOf("NA");
         p.currency -= Protocol.GACHA_COST;
         p.pityCounter++;
         float roll = (float)Math.random();
@@ -365,7 +365,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         else if (p.pityCounter >= 10) rarity = "RARE";
         else rarity = roll < 0.85 ? "COMMON" : roll < 0.99 ? "RARE" : "LEGENDARY";
         if (!rarity.equals("COMMON")) p.pityCounter = 0;
-        return rarity;
+        return ItemEffect.IEProperty.Rarity.valueOf(rarity);
     }
     
     public GameState(long inception) {

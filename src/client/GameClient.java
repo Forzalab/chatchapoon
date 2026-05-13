@@ -269,8 +269,10 @@ public class GameClient {
                 int ry = j.optInt("y", -1);
                 String avatar = ava;
 // ⛃⛂⭐ for coins, ❓ for gacha
+                tg.setBackgroundColor(yel);
                 if (rx != -1 && ry > 0)
                     tg.putString(rx, ry, avatar);
+                tg.setBackgroundColor(bkg);
 
                 tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
                 continue;

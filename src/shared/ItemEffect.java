@@ -3,6 +3,12 @@ package shared;
 import java.io.*;
 import java.util.HashMap;
 
+interface Effect {
+    void use(Player user);
+    default void tickDown(Player user) {}
+    default boolean onHit(Player user) { return false; }
+}
+
 // every item IS an effect
 public class ItemEffect {
     public class IEProperty {
