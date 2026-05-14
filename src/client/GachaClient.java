@@ -46,9 +46,9 @@ public class GachaClient {
 
     private static HashMap<String, ItemEffect.IEProperty> iepMap = new HashMap<>();
     public static final HashMap<Integer, TextCharacter> symbolMap = new HashMap<>() {{
-        put(1, new TextCharacter('C', C_BKG, C_FG));
-        put(2, new TextCharacter('P', P_BKG, P_FG));        
-        put(3, new TextCharacter('S', S_BKG, S_FG));        
+        put(1, new TextCharacter('C', C_FG, C_BKG));
+        put(2, new TextCharacter('P', P_FG, P_BKG));        
+        put(3, new TextCharacter('S', S_FG, S_BKG));        
     }};
     public static final HashMap<Character, Integer> symbolMapInverse = new HashMap<>() {{
         put('C', 1);
@@ -87,7 +87,7 @@ public class GachaClient {
     // circular x y
 
     private static boolean RM4IsZero(int bits) {
-        return (bits & (bits >> 2)) == 0;
+        return ((bits ^ (bits >> 2)) << 2) == 0;
     }
     
     // Invariant: none = 00, c = 01, p = 10, s = 11
@@ -117,16 +117,16 @@ public class GachaClient {
         int[] reels = new int[reelsLength];
         for (int i = 0; i < reelsLength; i++) {
             do { reels[i] = r.nextInt(63); }
-            while (satisfyState(reels[i], rarity.getVal()) && (i == (int)Math.round(reelsLength/2.0f)));
+            while (!satisfyState(reels[i], rarity.getVal()) && (i == (int)Math.round(reelsLength/2.0f)));
         }
         return reels;
     }
 
     static ItemEffect.IEProperty.Rarity evalVisible(char c1, char c2, char c3) {
-        int reel;
-        reel = (symbolMapInverse.get(c1) << 2);
-        reel = (symbolMapInverse.get(c2) << 2);
-        reel = symbolMapInverse.get(c3);        
+        int reel = 0;
+        reel += symbolMapInverse.get(c1); reel <<= 2;
+        reel += symbolMapInverse.get(c2); reel <<= 2;
+        reel += symbolMapInverse.get(c3);        
         for (int i = 1; i <= 3; i++)
             if (satisfyState(reel, i)) return ItemEffect.IEProperty.Rarity.values()[i];
         return ItemEffect.IEProperty.Rarity.values()[0];
