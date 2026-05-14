@@ -139,7 +139,7 @@ public class GachaClient {
 
     SlotState tickSlot(SlotState s) { return s.next(); }
 
-
+    boolean active() { return false; }
 
     // state: LSD is author, 2nd LSD is flahsing
     void drawFrameBox(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
@@ -150,10 +150,10 @@ public class GachaClient {
 
         if ((state & 0b1) == 1) {
             StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
-            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
+            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
         } else {
             StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
         }
         
         // frame big
@@ -178,7 +178,7 @@ public class GachaClient {
         tg.setCharacter(StartX, EndY, '╰');
         tg.setCharacter(EndX, EndY, '╯');
         // subframe
-        final int boundTitleY = lerp(StartY, EndY, 0.33), boundReelY = lerp(StartY, EndY, 0.75);
+        final int boundTitleY = lerp(StartY, EndY, 0.5), boundReelY = lerp(StartY, EndY, 0.9);
         tg.drawLine(StartX, boundTitleY, EndX, boundTitleY, '━');
         tg.drawLine(StartX, boundReelY, EndX, boundReelY, '━');
         tg.setCharacter(StartX, boundTitleY, '┝');
@@ -199,10 +199,10 @@ public class GachaClient {
 
         if ((state & 0b1) == 1) {
             StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
-            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
+            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
         } else {
             StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
         }
     
         tg.setBackgroundColor(panel);
@@ -217,10 +217,10 @@ public class GachaClient {
 
         if ((state & 0b1) == 1) {
             StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
-            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
+            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
         } else {
             StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
         }
     
         tg.setBackgroundColor(panel);

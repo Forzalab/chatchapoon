@@ -401,9 +401,26 @@ public class GameClient {
             int wBlue = color.getBlue() + (int)((255 - color.getBlue()) * 0.3);                       
             TextColor whitened = new TextColor.RGB(wRed, wGreen, wBlue);
             tg.setForegroundColor(whitened);                            
-            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                                tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);
+            tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                                                               
+            tg.setBackgroundColor(bkg);
 
-            // HUD bar
+            boolean toEmphasizeChat = (state == State.CHAT);
+            if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
+            else tg.setForegroundColor(new
+TextColor.RGB(80,90,125));
+
+          // HUD bar
+          tg.drawLine(
+                new TerminalPosition(1, 0),
+                new TerminalPosition(Protocol.ARENA_WIDTH, 0),
+                '─'
+            );            
+
+            tg.putString(0,0,"┌");
+            tg.putString(Protocol.ARENA_WIDTH+1,0,"┐");            
+
+            tg.setForegroundColor(wht);
+            
             if (!playerID.equals(Utility.optString(j, "id"))) continue;
 
             String tick = jao.optInt("tickCounter", 0) + "";
@@ -422,7 +439,7 @@ public class GameClient {
             int dynSize = Protocol.ARENA_WIDTH - (43 + 40);
             int hp = j.optInt("hp", 3);
             int hp_max = j.optInt("hp_max", 3);            
-            tg.putString(3, 0, "HP [");
+            tg.putString(2, 0, " HP [");
             tg.setForegroundColor(red);
             for (int k = 0; k < hp; k++) tg.putString(4+k+3, 0, "♥");
             tg.setForegroundColor(red);
@@ -434,19 +451,19 @@ public class GameClient {
             
             if (j.optInt("score", -1) > 0) {
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-                tg.putString(4+hp_max+2+3, 0, "◆");
+                tg.putString(5+hp_max+2+3-1, 0, " ◆ ");
                 tg.setForegroundColor(wht);
-                tg.putString(4+hp_max+3+3, 0, " SCORE: " + score); // 11
+                tg.putString(5+hp_max+3+2+2, 0, " SCORE: " + score + " "); // 11
         
                 //score, 3
                 if (!"".equals(scorePrior) && !score.equals(scorePrior))
                     scoreTickCooldown = 3;
                 tg.setBackgroundColor((scoreTickCooldown-- > 0)?wht:bkg);
                 tg.setForegroundColor((scoreTickCooldown > 0)?bkg:wht);
-                tg.putString(4+hp_max+11+3, 0, score); // 11
+                tg.putString(5+hp_max+11+3, 0, score); // 11
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
-                tg.drawRectangle(new TerminalPosition(4+hp_max+11, 0), new TerminalSize(14, 0), '.');
+    //            tg.drawRectangle(new TerminalPosition(5+hp_max+11, 0), new TerminalSize(14, 0), '.');
             }
             scorePrior = score;            
             tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
@@ -457,16 +474,16 @@ public class GameClient {
             if (amtBullets > 0) {
                 //bullet, 5
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-                tg.putString(4+hp_max+3+2+scoreStrL, 0, "◆ ");
+                tg.putString(5+hp_max+3+2+scoreStrL, 0, " ◆ ");
                 tg.setForegroundColor(wht);            
-                tg.putString(4+hp_max+3+2+scoreStrL+3, 0, "B# " + bullets + ((amtBullets==999)?"+":" "));
+                tg.putString(5+hp_max+3+2+scoreStrL+3, 0, " B# " + bullets + ((amtBullets==999)?"+ ":"  "));
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
-                tg.drawRectangle(new TerminalPosition(4+hp_max+3+2+scoreStrL, 0), new TerminalSize(7, 0), '.');
+  //              tg.drawRectangle(new TerminalPosition(5+hp_max+3+2+scoreStrL, 0), new TerminalSize(7, 0), '.');
             }
               bulletsPrior = bullets;
               tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);              
-//            tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
+            tg.setForegroundColor(wht);tg.setBackgroundColor(bkg);
 
             int rightHUDWidth = 4 + 5 + 7 + wave.length() + 5 + 18;
             // empty space for notif
@@ -477,6 +494,7 @@ public class GameClient {
             if (j.optInt("currency", -1) > 0) {            
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior))
                     moneyTickCooldown = 3;
+                tg.putString(moneyX - 2 - 3 - 3, 0, "  ");
                 tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
                 tg.putString(moneyX - 2 - 3 - 1, 0, "＄"+money); // 11
                 
@@ -498,11 +516,11 @@ public class GameClient {
                 moneyPrior = money;
             
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);            
-                tg.putString(moneyX, 0, " ◆ ");                
+                tg.putString(moneyX - 1, 0, "  ◆ ");                
             } else {
                 tg.setForegroundColor(bkg);tg.setBackgroundColor(bkg);
-                tg.drawRectangle(new TerminalPosition(4+hp_max+3+11+dynSize, 0), new TerminalSize(6, 0), '.');
-                tg.putString(moneyX, 0, "   ");                                
+//                tg.drawRectangle(new TerminalPosition(5+hp_max+3+11+dynSize, 0), new TerminalSize(6, 0), '.');
+//                tg.putString(moneyX, 0, "   ");                                
             }
             tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);            
             
@@ -510,20 +528,20 @@ public class GameClient {
             if (Integer.parseInt(wave) > 0) {
                 if (!wavePrior.equals(wave)) waveTickCooldown = 2;
             
-                String reinfStr = "REINF #" + wave;
+                String reinfStr = " REINF #" + wave;
                 tg.setForegroundColor(waveTickCooldown-- > 0 ? cyn : wht);
                 tg.setBackgroundColor(bkg);
-                tg.putString(moneyX + 4, 0, reinfStr);
+                tg.putString(moneyX + 3, 0, reinfStr);
             } else {
-                tg.putString(moneyX + 4, 0, " ".repeat(7+wave.length()));
+  //              tg.putString(moneyX + 4, 0, " ".repeat(7+wave.length()));
             }                
             wavePrior = wave;
         
             // timer
             int timerX = moneyX + 5 + 7 + wave.length() - 1;
             tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-            tg.putString(timerX, 0, (Integer.parseInt(wave) > 0)?"  ◆ ":"    ");
-            timerX += 5;
+            tg.putString(timerX, 0, (Integer.parseInt(wave) > 0)?"  ◆  ":"");
+            timerX += 4;
 
             int secs = Integer.parseInt(lvlTicks) / 20;
             String timerStr = String.format("%d:%02d", secs / 60, secs % 60);
@@ -531,10 +549,10 @@ public class GameClient {
             TextColor.RGB timerClr = blink ? bkg : secs < 30 ? red : secs < 60 ? yel : wht;
             tg.setForegroundColor(timerClr);
             tg.setBackgroundColor(bkg);
-            tg.putString(timerX, 0, "HEIST ENDS IN " + timerStr);
+            tg.putString(timerX, 0, " HEIST ENDS IN " + timerStr + " ");
             tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);
             //money flash
-        }
+       }
             shift = 0;        
         }
         catch (Exception e) {
@@ -832,12 +850,51 @@ public class GameClient {
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
 //                    switchState(State.GAME);
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
+
+                                       
+                    JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
+                    JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
+                    JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
+                    JSONArray jac = new JSONArray(to_render.getJSONArray("coins"));         
+                    if (jac != null) processPlayersArrayRender(jac, tg, "$", to_render); 
+                    if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
+                    if (jap != null) processPlayersArrayRender(jap, tg, "o", to_render);
+                    if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
+                }
+                else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
+                    renderLeaderboard(tg);
+                }            
+
+// gacha popup
+                if (gc.active()) { for (int y = 0; y < Protocol.ARENA_HEIGHT+Protocol.BORDER; y++) {
+                    for (int x = 0; x < Protocol.ARENA_WIDTH+1; x++) {
+                        TextCharacter tc = screen.getBackCharacter(new TerminalPosition(x, y));
+                        if (tc == null) continue;
+                        else if (y == 0) {
+                            screen.setCharacter(x, y, tc.withForegroundColor(ChatClient.getDimmed(tc.getForegroundColor(), 1.0f))
+.withBackgroundColor(ChatClient.getDimmed(tc.getBackgroundColor(), 0.15f)));
+                            continue;
+                        }
+                            screen.setCharacter(x, y, tc.withForegroundColor(ChatClient.getDimmed(tc.getForegroundColor(), 0.2f))
+.withBackgroundColor(ChatClient.getDimmed(tc.getBackgroundColor(), 0.15f)));
+                    }
+                }
+
+                gc.drawFrameBox(tg, 10, 15, GachaClient.SlotState.STASIS, 1); }
+
+
+// chatbox
                     boolean toEmphasizeChat = (state == State.CHAT);
                     ChatClient.render(toEmphasizeChat);
                     if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
                     else tg.setForegroundColor(new
     TextColor.RGB(80,90,125));
-                  //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');
+              
+
+// frame
+                    if (gc.active()) 
+                        tg.setBackgroundColor(ChatClient.getDimmed(tg.getBackgroundColor(), 0.15f));
+    //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');
                   tg.drawLine(
                         new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
                         new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
@@ -862,21 +919,8 @@ public class GameClient {
                     if (state == State.GAME) tg.putString(glength - gameTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gameTooltip);
                     else if (state == State.CHAT) tg.putString(clength - chatTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, chatTooltip);
 
-                                       
-                    JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
-                    JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
-                    JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
-                    JSONArray jac = new JSONArray(to_render.getJSONArray("coins"));         
-                    if (jac != null) processPlayersArrayRender(jac, tg, "$", to_render); 
-                    if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
-                    if (jap != null) processPlayersArrayRender(jap, tg, "o", to_render);
-                    if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
-                }
-                else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
-                    renderLeaderboard(tg);
-                }            
 
-                gc.drawFrameBox(tg, 10, 15, GachaClient.SlotState.STASIS, 1);
+
                 
                 // ==== keyboard ====                        
                 KeyStroke keystroke;
