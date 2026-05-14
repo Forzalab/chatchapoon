@@ -35,7 +35,7 @@ public class GameClient {
     private static String direction = "";
     private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown;
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
-
+    private static String coinAvatar = "O";
     // keyboard mode    
     private static State state = State.BLOCK;
     private static String gameTooltip = "  [w/a/s/d] move  [q/e] rotate  [space] shoot  [g]acha  [c]hat  [esc] quit  ";
@@ -301,9 +301,11 @@ public class GameClient {
                 int ry = j.optInt("y", -1);
                 String avatar = ava;
 // ⛃⛂⭐ for coins, ❓ for gacha
-                tg.setBackgroundColor(yel); tg.setForegroundColor(yel);
-                if (rx != -1 && ry > 0)
+                tg.setBackgroundColor(grn_dim);
+                tg.setForegroundColor(wht);
+                if (rx != -1 && ry > 0) {
                     tg.putString(rx, ry, avatar);
+                }
                 tg.setBackgroundColor(bkg);
 
                 tg.setForegroundColor(new TextColor.RGB(255, 255, 255));
@@ -840,12 +842,13 @@ public class GameClient {
 
                     if (state == State.GAME) tg.putString(glength - gameTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gameTooltip);
                     else if (state == State.CHAT) tg.putString(clength - chatTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, chatTooltip);
-                    
+
+                                       
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
                     JSONArray jac = new JSONArray(to_render.getJSONArray("coins"));         
-                    if (jac != null) processPlayersArrayRender(jac, tg, "*", to_render); 
+                    if (jac != null) processPlayersArrayRender(jac, tg, "$", to_render); 
                     if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
                     if (jap != null) processPlayersArrayRender(jap, tg, "o", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
@@ -933,9 +936,9 @@ public class GameClient {
                     writer.println(sendMsg);
                     int index = -1;
                     if (key == "UP" || key == "LEFT" || key == "DOWN" || key == "RIGHT")
-                        index = 0;
+                        index = -1;
                     else if (key == "ROTATE_CW" || key == "ROTATE_CCW")
-                        index = 1;                        
+                        index = -1;                        
                     else if (key == "SHOOT")
                         index = 2;                                           
                     else if (key == "PULL")

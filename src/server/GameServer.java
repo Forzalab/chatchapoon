@@ -310,7 +310,8 @@ public class GameServer {
                     int y = key.getRenderY()+1;
                     coinsArray.put(new JSONObject()
                     .put("x", x)
-                    .put("y", y));                    
+                    .put("y", y)
+                    .put("type", "coins"));
 //                    int amt = entry.getValue();
                     // now work with key and value...
                 }              

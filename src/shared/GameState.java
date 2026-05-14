@@ -306,7 +306,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             int cum = 0, coins = 1;
             for (int i = 0; i < weights.length; i++) {
                 cum += weights[i];
-                if (roll < cum) { coins = i+1; break; }
+                if (roll < cum) { coins = (i+1)*2; break; }
             }
 
             // map coin loc
