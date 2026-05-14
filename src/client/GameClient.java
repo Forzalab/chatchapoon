@@ -445,7 +445,7 @@ TextColor.RGB(80,90,125));
             tg.setForegroundColor(red);
             for (int k = 0; k < hp_max - hp; k++) tg.putString(4+hp+k+3, 0, " ");       
             tg.setForegroundColor(wht);
-            tg.putString(4+hp_max+3, 0, "] "); // 11
+            tg.putString(4+hp_max+3, 0, "]  "); // 11
             tg.setForegroundColor(dim);
             
             
@@ -474,7 +474,7 @@ TextColor.RGB(80,90,125));
             if (amtBullets > 0) {
                 //bullet, 5
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);
-                tg.putString(5+hp_max+3+2+scoreStrL, 0, " ◆ ");
+                tg.putString(5+hp_max+3+2+scoreStrL, 0, "◆  ");
                 tg.setForegroundColor(wht);            
                 tg.putString(5+hp_max+3+2+scoreStrL+3, 0, " B# " + bullets + ((amtBullets==999)?"+ ":"  "));
             } else {
