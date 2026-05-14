@@ -36,6 +36,8 @@ public class GameClient {
     private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown, moneyDeltaTickCooldown = 0;
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
     private static String coinAvatar = "O";
+    private static int delta = 0;
+
     // keyboard mode    
     private static State state = State.BLOCK;
     private static String gameTooltip = "  [w/a/s/d] move  [q/e] rotate  [space] shoot  [g]acha  [c]hat  [esc] quit  ";
@@ -476,18 +478,23 @@ public class GameClient {
                     moneyTickCooldown = 3;
                 tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
                 tg.putString(moneyX - 2 - 3 - 1, 0, "＄"+money); // 11
-
-                if (!"".equals(moneyPrior) && !money.equals(moneyPrior) && (Integer.parseInt(money.strip())
-    - Integer.parseInt(moneyPrior.strip()) > 0)) {
-                    moneyDeltaTickCooldown = 10;
+                
+                if (!"".equals(moneyPrior) && !money.equals(moneyPrior)) {
+                    moneyDeltaTickCooldown = 35;
+                    delta = Integer.parseInt(money.strip()) - Integer.parseInt(moneyPrior.strip());
                 }
 
-                if (moneyDeltaTickCooldown-- > 0) {
+                if (moneyDeltaTickCooldown > 0 && delta != 0) {
                     tg.setBackgroundColor(bkg);
-                    TextColor grnBlend = ChatClient.getLERP(bkg, grn, moneyDeltaTickCooldown/10);
-                    tg.setForegroundColor(grnBlend);
-                    tg.putString(moneyX - 3 - 1, 2, "+" + (Integer.parseInt(money.strip()) - Integer.parseInt(moneyPrior.strip()))); // 11     
-                }           
+                    TextColor grnBlend = ChatClient.getLERP(bkg, grn, moneyDeltaTickCooldown/35.0f);
+                    TextColor redBlend = ChatClient.getLERP(bkg, red, moneyDeltaTickCooldown/35.0f);
+                    TextColor blend = (delta > 0)?grnBlend:redBlend;
+                    tg.setForegroundColor(blend);
+                    tg.putString(moneyX - 3 - 1, 1, ((delta>0)?"+ ":"– ") + delta); // 11     
+                    moneyDeltaTickCooldown--;
+                }
+
+                moneyPrior = money;
             
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);            
                 tg.putString(moneyX, 0, " ◆ ");                
@@ -496,7 +503,6 @@ public class GameClient {
                 tg.drawRectangle(new TerminalPosition(4+hp_max+3+11+dynSize, 0), new TerminalSize(6, 0), '.');
                 tg.putString(moneyX, 0, "   ");                                
             }
-            moneyPrior = money;
             tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);            
             
             //reinforcement

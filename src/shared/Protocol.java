@@ -5,7 +5,7 @@ import com.googlecode.lanterna.TerminalSize;
 public class Protocol {
     public static final int PORT = 4267;
     public static final int TICK_MS = 45;
-    public static int ARENA_WIDTH = 60; // can chsnge later if too small
+    public static int ARENA_WIDTH = 150; // can chsnge later if too small
     public static int ARENA_HEIGHT = 45;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
