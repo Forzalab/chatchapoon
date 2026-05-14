@@ -39,7 +39,9 @@ public class GachaClient {
 
     private SlotState ss = SlotState.STATIS;
 
-    static {}
+    static {
+        // recieves iepMap from server ONCE. its a lookup by name.
+    }
 
     GachaClient() {}
     
@@ -49,34 +51,40 @@ public class GachaClient {
     // s s c
     // p p p
     // circular x y
-    int[][] buildStrips(int trueIdx, int[] nearMissIdxs, ItemEffect.IEProperty.Rarity rarity) {
-        int[][] reels = new int[3][reelsLength];
-        int showIndex = (int)Math.round(reelsLength / 2.0f);
 
-        // to keep track w/o tracin g2nd time
-        int p = 0, s = 0, c = 0;
-        for (int genIndex = 0; genIndex < reelsLength; ) {
-            for (int i = 0; i < 3; i++) {
-                reels[genIndex][i] = r.nextInt(2); // P S C
-                if (reels[genIndex][i] == 0) p++;
-                else if (reels[genIndex][i] == 1) s++;
-                else if (reels[genIndex][i] == 2) c++;
-            }
-            // the ordering only affect show rows
-            if (genIndex != showIndex) genIndex++;
-            else if (rarity == ItemEffect.IEProperty.Rarity.NA) {
-                // do nothing, skip next
-                genIndex++;
-            }
-            else if (rarity == ItemEffect.IEProperty.Rarity.COMMON) {
-                if (s == 1 || c == 1) genIndex++; // C x S or so
-            }
-            else if (rarity == ItemEffect.IEProperty.Rarity.RARE) {
-                if (p == 2 || s == 2 || c == 2) genIndex++; // P P S
-            }
-            else if (rarity == ItemEffect.IEProperty.Rarity.LEGENDARY) { 
-                if (p == 3 || s == 3 || c == 3) genIndex++; // S S S
-            } 
+    private static boolean RM4IsZero(int bits) {
+        return (bits & (bits >> 2)) == 0;
+    }
+    
+    // Invariant: none = 00, c = 01, p = 10, s = 11
+    static boolean satisfyState(int treel, ItemEffect.IEProperty.Rarity rarity) {
+        int reel = treel & 0b111111; // take only 6 bits
+        int rarityIndex = rarity.getVal(); // 0, 1, 2, 3
+        
+        // general: no empty slot
+        if ((reel & 0b11) == 0 || (reel & 0b1100) == 0 || (reel & 0b110000) == 0)
+            return false;
+
+        if (rarityIndex == 0) return true;
+        // case 1: at least one C or S
+        else if ((reel & 0b010101) != 0 && rarityIndex == 1)
+            return true;
+        // case 2: 2 repeat pairs. 
+        else if (rarityIndex == 2) {
+            int il = reel & 0b11, is = (reel & 0b1100) >> 2, im = (reel & 0b110000) >> 4;
+            return (il == is || is == im || im == il);
+        }
+        // case 3: 3 segment repeat
+        else if (RM4IsZero(reel) && rarityIndex == 3)
+            return true;
+        else return false;
+    }
+    
+    int[] buildStrips(int trueIdx, ItemEffect.IEProperty.Rarity rarity) {
+        int[] reels = new int[reelsLength];
+        for (int i = 0; i < reelsLength; i++) {
+            do { reels[i] = r.nextInt(63); }
+            while (satisfyState(reels[i], rarity) && (i == (int)Math.round(reelsLength/2.0f)));
         }
         return reels;
     }
@@ -85,7 +93,7 @@ public class GachaClient {
         return ItemEffect.IEProperty.Rarity.COMMON;
     }
 
-    void tickSlot(SlotState s) {}
+    SlotState tickSlot(SlotState s) {}
 
     void drawSlot(TextGraphics tg, TerminalPosition tp, SlotState s, int[][] strips) {}
 }
