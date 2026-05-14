@@ -75,7 +75,7 @@ public class Player extends Actor {
     }
     
     public volatile int score = 0;
-    public volatile int currency = 10;
+    public volatile int currency = 0;
     public final Position spawnPos;
     public final String name;
     public volatile int pityCounter = 0;
@@ -115,7 +115,7 @@ public class Player extends Actor {
 
     // <item-name, Item> to which Item has amount
     public volatile Inventory inventory;
-    public volatile int fireCooldown, bullets = 100;
+    public volatile int fireCooldown, bullets = 75;
    // no color (in Avatar)
    // no isDead, maxHP, deathTimer (in Actor.HisDead())
 

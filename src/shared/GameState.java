@@ -316,7 +316,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             if (coins > 0) coinsLoc.put(pos, coins);
 
 //            bOwner.currency += coins;
-            bOwner.bullets += 50;
+            bOwner.bullets += 35;
         }
         else if (victim instanceof Player p) {
             int coins = p.currency;
