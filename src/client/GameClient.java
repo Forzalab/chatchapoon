@@ -37,6 +37,7 @@ public class GameClient {
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
     private static String coinAvatar = "O";
     private static int delta = 0;
+    private static GachaClient gc = new GachaClient();  
 
     // keyboard mode    
     private static State state = State.BLOCK;
@@ -876,6 +877,9 @@ public class GameClient {
                     renderLeaderboard(tg);
                 }            
 
+                gc.drawFrameBox(tg, 10, 15, GachaClient.SlotState.STASIS, 1);
+                screen.refresh();
+                Thread.sleep(Protocol.TICK_MS);
                 // ==== keyboard ====                        
                 KeyStroke keystroke;
                 while ((keystroke = screen.pollInput()) != null) {

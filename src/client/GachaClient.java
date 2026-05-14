@@ -61,8 +61,8 @@ public class GachaClient {
     private Random r = new Random();
     private final int reelsLength = 11;
     
-    private static enum SlotState {
-        SPIN(0), LOCK_1(1), LOCK_2(2), LOCK_3(3), REVEAL(4), STATIS(5);
+    static enum SlotState {
+        SPIN(0), LOCK_1(1), LOCK_2(2), LOCK_3(3), REVEAL(4), STASIS(5);
         private int val = 0;
         private SlotState(int val) { this.val = val; }
         private static final SlotState[] vals = values();
@@ -72,7 +72,7 @@ public class GachaClient {
         }
     }
 
-    private SlotState ss = SlotState.STATIS;
+    private SlotState ss = SlotState.STASIS;
 
     static {
         // recieves iepMap from server ONCE. its a lookup by name.
@@ -142,24 +142,24 @@ public class GachaClient {
 
 
     // state: LSD is author, 2nd LSD is flahsing
-    void drawFrameBox(TextGraphics tg, TerminalPosition tp, SlotState s, int state) {
+    void drawFrameBox(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
 
-        final int StartX, StartY, EndX, EndY;
+        int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
         if ((state & 0b1) == 1) {
-            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH;
-            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT;
+            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
+            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
         } else {
-            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
+            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
         }
         
         // frame big
 
         tg.setForegroundColor(panel);
-        tg.fillRectangle(tp, ts, '.');
+        tg.fillRectangle(new TerminalPosition(fromX, fromY), ts, '.');
         tg.setForegroundColor(white);
 
         // flahsing frame
@@ -191,18 +191,19 @@ public class GachaClient {
         
         tg.setBackgroundColor(bkg);
         tg.setForegroundColor(whiteDefault);
+//        try {} catch (Exception e) {}
     }
 
-    void drawFoo(TextGraphics tg, TerminalPosition tp, SlotState s, boolean isAuthor) {
+    void drawFoo(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
     
-        final int StartX, StartY, EndX, EndY;
+        int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
-        if (isAuthor) {
-            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH;
-            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT;
+        if ((state & 0b1) == 1) {
+            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
+            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
         } else {
-            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
+            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
         }
     
         tg.setBackgroundColor(panel);
@@ -211,16 +212,16 @@ public class GachaClient {
         tg.setForegroundColor(whiteDefault);
     }
     
-    void drawSlot(TextGraphics tg, TerminalPosition tp, SlotState s, int[] reels, boolean isAuthor) {
+    void drawSlot(TextGraphics tg, int fromX, int fromY, SlotState s, int[] reels, int state) {
     
-        final int StartX, StartY, EndX, EndY;
+        int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
-        if (isAuthor) {
-            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH;
-            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT;
+        if ((state & 0b1) == 1) {
+            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
+            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
         } else {
-            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
+            EndX = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
         }
     
         tg.setBackgroundColor(panel);
