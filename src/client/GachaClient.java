@@ -21,7 +21,9 @@ import shared.*;
 public class GachaClient {
     private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 42);
     private static final TextColor.RGB panel = new TextColor.RGB(22, 28, 48);
-
+    private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
+    private static final TextColor.RGB white = new TextColor.RGB(215, 215, 215);
+    
     private static final TextColor.RGB C_BKG = new TextColor.RGB(90, 10, 10);
     private static final TextColor.RGB C_FG = new TextColor.RGB(255, 110, 110);
 
@@ -31,10 +33,8 @@ public class GachaClient {
     private static final TextColor.RGB P_BKG = new TextColor.RGB(18, 18, 22);
     private static final TextColor.RGB P_FG = new TextColor.RGB(75, 75, 90);
 
-    private static final TextColor.RGB REEL_BKG = new TextColor.RGB(22, 22, 28); 
     private static final TextColor.RGB REEL_FG_MID = new TextColor.RGB(110, 110, 120); 
     private static final TextColor.RGB REEL_FG_FAR = new TextColor.RGB(45, 45, 52);
-
     private static final TextColor.RGB REEL_HIGHLIGHT = new TextColor.RGB(160, 140, 50);
 
     private static final TextColor.RGB REVEAL_FLASH = new TextColor.RGB(255, 235, 90);
@@ -45,6 +45,8 @@ public class GachaClient {
     private static final TextColor.RGB rLegendary = new TextColor.RGB(255, 195, 0);
 
     private static HashMap<String, ItemEffect.IEProperty> iepMap = new HashMap<>();
+
+    private static final TerminalSize ts = new TerminalSize(Protocol.GACHA_WIDTH, Protocol.GACHA_HEIGHT);
     public static final HashMap<Integer, TextCharacter> symbolMap = new HashMap<>() {{
         put(1, new TextCharacter('C', C_FG, C_BKG));
         put(2, new TextCharacter('P', P_FG, P_BKG));        
@@ -57,7 +59,6 @@ public class GachaClient {
     }};
     
     private Random r = new Random();
-
     private final int reelsLength = 11;
     
     private static enum SlotState {
@@ -87,7 +88,11 @@ public class GachaClient {
     // circular x y
 
     private static boolean RM4IsZero(int bits) {
-        return ((bits ^ (bits >> 2)) << 2) == 0;
+        return (~(bits ^ (bits >> 2)) & 0b1111) == 0b1111;
+    }
+
+    private static int lerp(double start, double end, double t) {
+        return (int)Math.round((1 - t) * start + t * end);
     }
     
     // Invariant: none = 00, c = 01, p = 10, s = 11
@@ -134,5 +139,93 @@ public class GachaClient {
 
     SlotState tickSlot(SlotState s) { return s.next(); }
 
-    void drawSlot(TextGraphics tg, TerminalPosition tp, SlotState s, int[][] strips) {}
+
+
+    // state: LSD is author, 2nd LSD is flahsing
+    void drawFrameBox(TextGraphics tg, TerminalPosition tp, SlotState s, int state) {
+        tg.setBackgroundColor(panel);
+        tg.setForegroundColor(white);
+
+        final int StartX, StartY, EndX, EndY;
+
+        if ((state & 0b1) == 1) {
+            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH;
+            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT;
+        } else {
+            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
+            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+        }
+        
+        // frame big
+
+        tg.setForegroundColor(panel);
+        tg.fillRectangle(tp, ts, '.');
+        tg.setForegroundColor(white);
+
+        // flahsing frame
+        if ((state & 0b10) == 0b10) {
+            tg.setForegroundColor(white);
+        } else {
+            tg.setForegroundColor(REVEAL_FLASH);
+        }
+
+        tg.drawLine(StartX, EndX, StartY, StartY, '─');
+        tg.drawLine(StartX, EndX, EndY, EndY, '─');
+        tg.drawLine(EndX, EndX, StartY, EndY, '│');
+        tg.drawLine(StartX, StartX, StartY, EndY, '│');                        
+        tg.setCharacter(StartX, StartY, '╭');
+        tg.setCharacter(StartX, EndY, '╮');
+        tg.setCharacter(EndX, StartY, '╰');
+        tg.setCharacter(EndX, EndY, '╯');                        
+        
+        // subframe
+        final int boundTitleY = lerp(StartY, EndY, 0.33), boundReelY = lerp(StartY, EndY, 0.75);
+        tg.drawLine(StartX, EndX, boundTitleY, boundTitleY, '━');
+        tg.drawLine(StartX, EndX, boundReelY, boundReelY, '━');                                
+        tg.setCharacter(StartX, boundTitleY, '┝');
+        tg.setCharacter(StartX, boundReelY, '┝');
+        tg.setCharacter(EndX, boundTitleY, '┥');
+        tg.setCharacter(EndX, boundReelY, '┥');        
+        
+        // roll section, frame
+        
+        tg.setBackgroundColor(bkg);
+        tg.setForegroundColor(whiteDefault);
+    }
+
+    void drawFoo(TextGraphics tg, TerminalPosition tp, SlotState s, boolean isAuthor) {
+    
+        final int StartX, StartY, EndX, EndY;
+
+        if (isAuthor) {
+            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH;
+            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT;
+        } else {
+            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
+            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+        }
+    
+        tg.setBackgroundColor(panel);
+        tg.setForegroundColor(white);
+        tg.setBackgroundColor(bkg);
+        tg.setForegroundColor(whiteDefault);
+    }
+    
+    void drawSlot(TextGraphics tg, TerminalPosition tp, SlotState s, int[] reels, boolean isAuthor) {
+    
+        final int StartX, StartY, EndX, EndY;
+
+        if (isAuthor) {
+            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH;
+            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT;
+        } else {
+            StartX = tp.getColumn(); EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
+            EndX = tp.getRow(); EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
+        }
+    
+        tg.setBackgroundColor(panel);
+        tg.setForegroundColor(white);
+        tg.setBackgroundColor(bkg);
+        tg.setForegroundColor(whiteDefault);
+    }
 }
