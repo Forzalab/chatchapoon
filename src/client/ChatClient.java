@@ -97,6 +97,12 @@ public class ChatClient {
         }
         return GameClient.playerColor.get(playerID);
     }
+    static TextColor getLERP(TextColor tc0, TextColor tc1, float slider) {
+        int r0 = tc0.getRed(), r1 = tc1.getRed(), r = (int)Math.round(r0 + slider * (r1 - r0));
+        int g0 = tc0.getGreen(), g1 = tc1.getGreen(), g = (int)Math.round(g0 + slider * (g1 - g0));
+        int b0 = tc0.getBlue(), b1 = tc1.getBlue(), b = (int)Math.round(b0 + slider * (b1 - b0));
+        return new TextColor.RGB(r,g,b);
+    }
     static TextColor getDimmed(TextColor tc, float dimFactor) {
         int r = tc.getRed(); r = (int)(r * dimFactor);
         int g = tc.getGreen(); g = (int)(g * dimFactor);
@@ -124,8 +130,18 @@ public class ChatClient {
         tokenize(string, senderID);
         tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         for (int i = msgBlock.size()-1; i >= 0 && (Protocol.ARENA_HEIGHT + 1-3-offset >= Protocol.BORDER + 1); i--, offset++) {    
-            if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(235,235,235)); 
-            else tg.setForegroundColor(new TextColor.RGB(150,150,150));                         
+            if (toEmphasize == true) tg.setForegroundColor(new TextColor.RGB(225,225,225)); 
+            else tg.setForegroundColor(new TextColor.RGB(150,150,150));                    
+            
+            int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
+            if (textY < 8) {
+                float _dimFactor = Math.min(0.85f, (textY+1)/8.0f);
+                TextColor _colorDimmed = getDimmed(new TextColor.RGB(225,225,225), _dimFactor);
+                TextColor colorDimmedLoseFocus = getDimmed(_colorDimmed, _dimFactor * 0.65f);  
+                if (toEmphasize == true) tg.setForegroundColor(_colorDimmed); 
+                else tg.setForegroundColor(colorDimmedLoseFocus);             
+            } 
+    
             boolean isGacha = (mType.indexOf("G_") != -1); // add blink
             if (isGacha) tg.setBackgroundColor(new TextColor.RGB(40,20,60)); // purple for gacha
             else tg.setBackgroundColor(new TextColor.RGB(15, 23, 42)); // base
@@ -138,30 +154,32 @@ public class ChatClient {
 
             // Colored text
             
-            TextColor color = getColor(senderID);
+            TextColor color = getColor(senderID), bkgColor = getLERP(new TextColor.RGB(15,23,45), getDimmed(color, 0.2f), 0.5f);
                 
             if (GameClient.playerID.equals(senderID)) {
                 color = new TextColor.RGB(255,255,255);
-                tg.setBackgroundColor(new TextColor.RGB(25,33,82));        
+                bkgColor = new TextColor.RGB(25,33,82);        
             }
 
             float dimFactor = 0.9f;            
             TextColor colorDimmed = getDimmed(color, dimFactor);
             
-            int textY = (Protocol.ARENA_HEIGHT + 1-3-offset-Protocol.BORDER-1);
             if (textY < 8) {
                 dimFactor = Math.min(0.85f, (textY+1)/8.0f);
                 colorDimmed = getDimmed(color, dimFactor);
                 TextColor colorDimmedLoseFocus = getDimmed(colorDimmed, dimFactor * 0.65f);  
-                if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
+            if (toEmphasize == true) tg.setForegroundColor(colorDimmed); 
                 else tg.setForegroundColor(colorDimmedLoseFocus);             
-            } 
+            } else {
+                if (toEmphasize == true) tg.setForegroundColor(color); 
+                else tg.setForegroundColor(colorDimmed);             
+            }
+
+            tg.setBackgroundColor(getLERP(new TextColor.RGB(15,23,45), bkgColor, dimFactor));        
             
             String id = msgBlockMapSender.get(msgBlock.get(i));
             String colored = msgBlock.get(i).substring(0, upToColon + 1);
 
-            if (toEmphasize == true) tg.setForegroundColor(color); 
-            else tg.setForegroundColor(colorDimmed);             
             tg.putString(ARENA_WIDTH+3, Protocol.ARENA_HEIGHT + 1-3-offset, colored, SGR.valueOf("BOLD"));
             tg.setBackgroundColor(new TextColor.RGB(15,23,42));
         }
