@@ -139,7 +139,7 @@ public class GachaClient {
 
     SlotState tickSlot(SlotState s) { return s.next(); }
 
-    boolean active() { return false; }
+    boolean active() { return true; }
 
     // state: LSD is author, 2nd LSD is flahsing
     void drawFrameBox(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {

@@ -404,6 +404,7 @@ public class GameClient {
             tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                                                               
             tg.setBackgroundColor(bkg);
 
+
             boolean toEmphasizeChat = (state == State.CHAT);
             if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
             else tg.setForegroundColor(new
@@ -419,6 +420,7 @@ TextColor.RGB(80,90,125));
             tg.putString(0,0,"┌");
             tg.putString(Protocol.ARENA_WIDTH+1,0,"┐");            
 
+
             tg.setForegroundColor(wht);
             
             if (!playerID.equals(Utility.optString(j, "id"))) continue;
@@ -431,7 +433,7 @@ TextColor.RGB(80,90,125));
             String rightHUD = "$350  ◆  REINF #30  ◆  HEIST ENDS IN 2:45"; //40      
             String money = String.format("%3d", j.optInt("currency", -1));
 
-            int scoreStrL = (j.optInt("score", -1)>0)?14:0;
+            int scoreStrL = (j.optInt("score", -1)>0)?15:0;
             int amtBullets = j.optInt("bullets", -1);
             int bulletStrL = (amtBullets>0)?7:0;
 
@@ -496,6 +498,7 @@ TextColor.RGB(80,90,125));
                     moneyTickCooldown = 3;
                 tg.putString(moneyX - 2 - 3 - 3, 0, "  ");
                 tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
+                tg.setBackgroundColor((gc.active())?grn_dim:tg.getBackgroundColor());
                 tg.putString(moneyX - 2 - 3 - 1, 0, "＄"+money); // 11
                 
                 if (!"".equals(moneyPrior) && !money.equals(moneyPrior)) {
@@ -850,6 +853,20 @@ TextColor.RGB(80,90,125));
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
 //                    switchState(State.GAME);
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
+            boolean toEmphasizeChat = (state == State.CHAT);
+            if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
+            else tg.setForegroundColor(new
+TextColor.RGB(80,90,125));
+
+          // HUD bar
+          tg.drawLine(
+                new TerminalPosition(1, 0),
+                new TerminalPosition(Protocol.ARENA_WIDTH, 0),
+                '─'
+            );            
+
+            tg.putString(0,0,"┌");
+            tg.putString(Protocol.ARENA_WIDTH+1,0,"┐");            
 
                                        
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
