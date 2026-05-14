@@ -878,8 +878,7 @@ public class GameClient {
                 }            
 
                 gc.drawFrameBox(tg, 10, 15, GachaClient.SlotState.STASIS, 1);
-                screen.refresh();
-                Thread.sleep(Protocol.TICK_MS);
+                
                 // ==== keyboard ====                        
                 KeyStroke keystroke;
                 while ((keystroke = screen.pollInput()) != null) {

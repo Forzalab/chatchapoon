@@ -163,29 +163,28 @@ public class GachaClient {
         tg.setForegroundColor(white);
 
         // flahsing frame
-        if ((state & 0b10) == 0b10) {
+        if ((state & 0b10) != 0b10) {
             tg.setForegroundColor(white);
         } else {
             tg.setForegroundColor(REVEAL_FLASH);
         }
 
-        tg.drawLine(StartX, EndX, StartY, StartY, '─');
-        tg.drawLine(StartX, EndX, EndY, EndY, '─');
-        tg.drawLine(EndX, EndX, StartY, EndY, '│');
-        tg.drawLine(StartX, StartX, StartY, EndY, '│');                        
+        tg.drawLine(StartX, StartY, EndX, StartY, '─');
+        tg.drawLine(StartX, EndY, EndX, EndY, '─');
+        tg.drawLine(EndX, StartY, EndX, EndY, '│');
+        tg.drawLine(StartX, StartY, StartX, EndY, '│');
         tg.setCharacter(StartX, StartY, '╭');
-        tg.setCharacter(StartX, EndY, '╮');
-        tg.setCharacter(EndX, StartY, '╰');
-        tg.setCharacter(EndX, EndY, '╯');                        
-        
+        tg.setCharacter(EndX, StartY, '╮');
+        tg.setCharacter(StartX, EndY, '╰');
+        tg.setCharacter(EndX, EndY, '╯');
         // subframe
         final int boundTitleY = lerp(StartY, EndY, 0.33), boundReelY = lerp(StartY, EndY, 0.75);
-        tg.drawLine(StartX, EndX, boundTitleY, boundTitleY, '━');
-        tg.drawLine(StartX, EndX, boundReelY, boundReelY, '━');                                
+        tg.drawLine(StartX, boundTitleY, EndX, boundTitleY, '━');
+        tg.drawLine(StartX, boundReelY, EndX, boundReelY, '━');
         tg.setCharacter(StartX, boundTitleY, '┝');
         tg.setCharacter(StartX, boundReelY, '┝');
         tg.setCharacter(EndX, boundTitleY, '┥');
-        tg.setCharacter(EndX, boundReelY, '┥');        
+        tg.setCharacter(EndX, boundReelY, '┥');
         
         // roll section, frame
         
