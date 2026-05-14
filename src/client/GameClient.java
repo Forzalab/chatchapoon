@@ -33,7 +33,7 @@ public class GameClient {
     private static volatile JSONObject to_render;
     private static TerminalPosition tp;
     private static String direction = "";
-    private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown;
+    private static int moneyTickCooldown = 0, scoreTickCooldown = 0, waveTickCooldown = 0, bulletTickCooldown, moneyDeltaTickCooldown = 0;
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
     private static String coinAvatar = "O";
     // keyboard mode    
@@ -476,6 +476,18 @@ public class GameClient {
                     moneyTickCooldown = 3;
                 tg.setBackgroundColor((moneyTickCooldown-- > 0)?grn:grn_dim);
                 tg.putString(moneyX - 2 - 3 - 1, 0, "＄"+money); // 11
+
+                if (!"".equals(moneyPrior) && !money.equals(moneyPrior) && (Integer.parseInt(money.strip())
+    - Integer.parseInt(moneyPrior.strip()) > 0)) {
+                    moneyDeltaTickCooldown = 10;
+                }
+
+                if (moneyDeltaTickCooldown-- > 0) {
+                    tg.setBackgroundColor(bkg);
+                    TextColor grnBlend = ChatClient.getLERP(bkg, grn, moneyDeltaTickCooldown/10);
+                    tg.setForegroundColor(grnBlend);
+                    tg.putString(moneyX - 3 - 1, 2, "+" + (Integer.parseInt(money.strip()) - Integer.parseInt(moneyPrior.strip()))); // 11     
+                }           
             
                 tg.setForegroundColor(dim); tg.setBackgroundColor(bkg);            
                 tg.putString(moneyX, 0, " ◆ ");                
