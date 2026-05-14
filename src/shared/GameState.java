@@ -306,7 +306,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             int cum = 0, coins = 1;
             for (int i = 0; i < weights.length; i++) {
                 cum += weights[i];
-                if (roll < cum) { coins = i+1; break; }
+                if (roll < cum) { coins = (i+1)*2; break; }
             }
 
             // map coin loc
@@ -316,7 +316,7 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             if (coins > 0) coinsLoc.put(pos, coins);
 
 //            bOwner.currency += coins;
-            bOwner.bullets += 50;
+            bOwner.bullets += 35;
         }
         else if (victim instanceof Player p) {
             int coins = p.currency;

@@ -3,6 +3,7 @@ src/server/GameServer.java
 src/server/ClientHandler.java
 src/client/ChatClient.java
 src/client/GameClient.java
+src/client/GachaClient.java
 src/shared/ItemEffect.java
 src/shared/Position.java
 src/shared/Ghost.java

@@ -268,8 +268,8 @@ public class GameServer {
                     .put("direction", bullet.direction)
                     .put("ownerID", bullet.ownerID)
                     .put("type", bullet.type)        
-                    .put("x", bullet.pos.getRenderX())
-                    .put("y", bullet.pos.getRenderY()));
+                    .put("x", bullet.pos.getRenderX()+1)
+                    .put("y", bullet.pos.getRenderY()+1));
                 }
                 
                 // player info
@@ -279,8 +279,8 @@ public class GameServer {
                     .put("id", player.id)
                     .put("name", player.name)
                     .put("type", player.type)
-                    .put("x", player.pos.getRenderX())
-                    .put("y", player.pos.getRenderY())
+                    .put("x", player.pos.getRenderX()+1)
+                    .put("y", player.pos.getRenderY()+1)
                     .put("hit", (player.hitCd > 0))                    
                     .put("hp", player.hp.getHP())
                     .put("hp_max", player.hp._hpMax)
@@ -299,18 +299,19 @@ public class GameServer {
                     .put("direction", enemy.direction)
                     .put("hit", (enemy.hitCd > 0))
                     .put("subtype", enemy.behaviourType)
-                    .put("x", enemy.pos.getRenderX())
-                    .put("y", enemy.pos.getRenderY()));
+                    .put("x", enemy.pos.getRenderX()+1)
+                    .put("y", enemy.pos.getRenderY()+1));
                 }
 
                 // coins
                 for (Map.Entry<Position, Integer> entry : currentGameState.coinsLoc.entrySet()) {
                     Position key = entry.getKey();
-                    int x = key.getRenderX();
-                    int y = key.getRenderY();
+                    int x = key.getRenderX()+1;
+                    int y = key.getRenderY()+1;
                     coinsArray.put(new JSONObject()
                     .put("x", x)
-                    .put("y", y));                    
+                    .put("y", y)
+                    .put("type", "coins"));
 //                    int amt = entry.getValue();
                     // now work with key and value...
                 }              
