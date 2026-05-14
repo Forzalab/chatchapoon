@@ -19,8 +19,42 @@ import com.googlecode.lanterna.*;
 import shared.*;
 
 public class GachaClient {
+    private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 42);
+    private static final TextColor.RGB panel = new TextColor.RGB(22, 28, 48);
+
+    private static final TextColor.RGB C_BKG = new TextColor.RGB(90, 10, 10);
+    private static final TextColor.RGB C_FG = new TextColor.RGB(255, 110, 110);
+
+    private static final TextColor.RGB S_BKG = new TextColor.RGB(35, 38, 48);
+    private static final TextColor.RGB S_FG = new TextColor.RGB(210, 215, 225);
+
+    private static final TextColor.RGB P_BKG = new TextColor.RGB(18, 18, 22);
+    private static final TextColor.RGB P_FG = new TextColor.RGB(75, 75, 90);
+
+    private static final TextColor.RGB REEL_BKG = new TextColor.RGB(22, 22, 28); 
+    private static final TextColor.RGB REEL_FG_MID = new TextColor.RGB(110, 110, 120); 
+    private static final TextColor.RGB REEL_FG_FAR = new TextColor.RGB(45, 45, 52);
+
+    private static final TextColor.RGB REEL_HIGHLIGHT = new TextColor.RGB(160, 140, 50);
+
+    private static final TextColor.RGB REVEAL_FLASH = new TextColor.RGB(255, 235, 90);
+
+    private static final TextColor.RGB rDud = new TextColor.RGB(80, 80, 80);
+    private static final TextColor.RGB rCommon = new TextColor.RGB(160, 160, 160);
+    private static final TextColor.RGB rRare = new TextColor.RGB(90, 140, 255);
+    private static final TextColor.RGB rLegendary = new TextColor.RGB(255, 195, 0);
+
     private static HashMap<String, ItemEffect.IEProperty> iepMap = new HashMap<>();
-    public static final HashMap<Integer, TextCharacter> symbolMap = new HashMap<>();
+    public static final HashMap<Integer, TextCharacter> symbolMap = new HashMap<>() {{
+        put(1, new TextCharacter('C', C_BKG, C_FG));
+        put(2, new TextCharacter('P', P_BKG, P_FG));        
+        put(3, new TextCharacter('S', S_BKG, S_FG));        
+    }};
+    public static final HashMap<Character, Integer> symbolMapInverse = new HashMap<>() {{
+        put('C', 1);
+        put('P', 2);        
+        put('S', 3);        
+    }};
     
     private Random r = new Random();
 
@@ -57,9 +91,8 @@ public class GachaClient {
     }
     
     // Invariant: none = 00, c = 01, p = 10, s = 11
-    static boolean satisfyState(int treel, ItemEffect.IEProperty.Rarity rarity) {
+    static boolean satisfyState(int treel, int rarityIndex) {
         int reel = treel & 0b111111; // take only 6 bits
-        int rarityIndex = rarity.getVal(); // 0, 1, 2, 3
         
         // general: no empty slot
         if ((reel & 0b11) == 0 || (reel & 0b1100) == 0 || (reel & 0b110000) == 0)
@@ -84,16 +117,22 @@ public class GachaClient {
         int[] reels = new int[reelsLength];
         for (int i = 0; i < reelsLength; i++) {
             do { reels[i] = r.nextInt(63); }
-            while (satisfyState(reels[i], rarity) && (i == (int)Math.round(reelsLength/2.0f)));
+            while (satisfyState(reels[i], rarity.getVal()) && (i == (int)Math.round(reelsLength/2.0f)));
         }
         return reels;
     }
 
     static ItemEffect.IEProperty.Rarity evalVisible(char c1, char c2, char c3) {
-        return ItemEffect.IEProperty.Rarity.COMMON;
+        int reel;
+        reel = (symbolMapInverse.get(c1) << 2);
+        reel = (symbolMapInverse.get(c2) << 2);
+        reel = symbolMapInverse.get(c3);        
+        for (int i = 1; i <= 3; i++)
+            if (satisfyState(reel, i)) return ItemEffect.IEProperty.Rarity.values()[i];
+        return ItemEffect.IEProperty.Rarity.values()[0];
     }
 
-    SlotState tickSlot(SlotState s) {}
+    SlotState tickSlot(SlotState s) { return s.next(); }
 
     void drawSlot(TextGraphics tg, TerminalPosition tp, SlotState s, int[][] strips) {}
 }

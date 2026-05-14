@@ -15,10 +15,10 @@ public abstract class ItemEffect implements Effect {
     public static class IEProperty {
         // Rarity and Countdown type
         public static enum Rarity {
+            NA(0),
             COMMON(1),
             RARE(2),
-            LEGENDARY(3),
-            NA(0);
+            LEGENDARY(3);
             private final int val;
             private Rarity(int val) { this.val = val; }
             public int getVal() { return val; }
