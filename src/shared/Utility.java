@@ -32,4 +32,10 @@ public class Utility {
         return (i % n + n) % n;
     }
 
+    public static final int lerp(int s, int e, double t) {
+        int result = (int)Math.round((1 - t) * s + t * e);
+//        result -= (result == e) ? 1 : 0;
+        return result;
+    }
+
 }

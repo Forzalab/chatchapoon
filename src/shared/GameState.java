@@ -386,7 +386,9 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         .put("itemDesc", item.property.desc)
         .put("itemRarity", item.property.rarity)
         .put("itemAmount", item.amount())
-        .put("itemGachaReveal", Protocol.GACHA_REVEAL_IN);        
+        .put("itemGachaReveal", Protocol.GACHA_REVEAL_IN)
+        .put("pullerID", p.id)
+        .put("currency", p.currency);        
         return jo;
     }
     
@@ -409,11 +411,8 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         .filter(e -> (rarity.equals(e.getValue().rarity.name())))
         .map(Map.Entry::getKey).collect(Collectors.toList());
         if (IEClassNames == null) return null;
-        
-        String gachaName = IEClassNames.stream()
-        .filter(s -> (r.nextInt(2) == 0)).findAny()
-        .orElse("");
-        
+        String gachaName = IEClassNames.isEmpty() ? "" : IEClassNames.get(r.nextInt(IEClassNames.size()));
+            
         if (gachaName.isEmpty()) return null;
         ItemEffect gachaItem = ItemEffect.create(gachaName, 1);
         p.inventory.add(gachaItem);
@@ -434,6 +433,11 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             Class.forName("shared.Shield");
             Class.forName("shared.SmallHeal");
             Class.forName("shared.FullHeal");
+            Class.forName("shared.BankFlyer");
+            Class.forName("shared.PlasticGun");
+//            Class.forName("shared.SpeedBoost");
+            Class.forName("shared.CoinPouch");
+            // no need json sharing property
         } catch (Exception e) { e.printStackTrace(); }
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];
         for (int i = 0; i < Protocol.ARENA_WIDTH; i++)

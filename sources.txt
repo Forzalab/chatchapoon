@@ -1,4 +1,3 @@
-src/server/Gacha.java
 src/server/GameServer.java
 src/server/ClientHandler.java
 src/client/ChatClient.java
@@ -16,11 +15,14 @@ src/shared/Shield.java
 src/shared/GameState.java
 src/shared/FullHeal.java
 src/shared/ExtraMag.java
+src/shared/CoinPouch.java
 src/shared/AreaBomb.java
 src/shared/Utility.java
 src/shared/CoinMagnet.java
 src/shared/Actor.java
 src/shared/AmmoRefill.java
+src/shared/PlasticGun.java
+src/shared/BankFlyer.java
 src/shared/Player.java
 src/shared/Entity.java
 src/shared/Enemy.java

@@ -75,7 +75,7 @@ public class Player extends Actor {
     }
     
     public volatile int score = 0;
-    public volatile int currency = 0;
+    public volatile int currency = Protocol.NEW_MONEY;
     public final Position spawnPos;
     public final String name;
     public volatile int pityCounter = 0;
