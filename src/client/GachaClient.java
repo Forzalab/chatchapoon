@@ -57,17 +57,24 @@ public class GachaClient {
         put('P', 2);        
         put('S', 3);        
     }};
+
+    // id - gacha data
+    private static Map<String, JSONObject> data = new LinkedHashMap<>();
+    private static final String authorID = GameClient.playerID;
+
+    private static final boolean isAuthor(String id) { return authorID.equals(id); }
     
     private Random r = new Random();
     private final int reelsLength = 11;
+    private int[] reels = new int[reelsLength];
     
     static enum SlotState {
-        SPIN(0), LOCK_1(1), LOCK_2(2), LOCK_3(3), REVEAL(4), STASIS(5);
+        SPIN(0), LOCK_1(1), LOCK_2(2), LOCK_3(3), REVEAL(4), STASIS(5), NOMONEY(-1);
         private int val = 0;
         private SlotState(int val) { this.val = val; }
         private static final SlotState[] vals = values();
         private SlotState next() {
-             int index = Utility.mod(this.ordinal() + 1, vals.length);
+             int index = Utility.mod(this.ordinal() + 1, vals.length - 1);
              return vals[index];
         }
     }
@@ -118,7 +125,7 @@ public class GachaClient {
         else return false;
     }
     
-    int[] buildStrips(int trueIdx, ItemEffect.IEProperty.Rarity rarity) {
+    int[] buildStrips(ItemEffect.IEProperty.Rarity rarity) {
         int[] reels = new int[reelsLength];
         for (int i = 0; i < reelsLength; i++) {
             do { reels[i] = r.nextInt(63); }
@@ -137,9 +144,24 @@ public class GachaClient {
         return ItemEffect.IEProperty.Rarity.values()[0];
     }
 
-    SlotState tickSlot(SlotState s) { return s.next(); }
+    SlotState tickSlot(SlotState s) { ss = s.next(); return s.next(); }
+    SlotState currentSlotState() { return ss; }    
 
-    boolean active() { return true; }
+    boolean active() { return ss != SlotState.STASIS; }
+
+    void updateInternalDataWith(JSONObject jao, String authorID) {
+        JSONArray ja = new JSONArray(jao.getJSONArray("notifs"));
+        if (ja == null) return;
+       
+       for (int i = 0; i < ja.length(); i++) {
+            if (ja.getJSONObject(i) == null) continue;
+            JSONObject j = ja.getJSONObject(i);
+            if (j == null) continue;
+            String pullerID = j.optString("pullerID");
+            data.put(pullerID, j);
+       }
+    }
+
 
     // state: LSD is author, 2nd LSD is flahsing
     void drawFrameBox(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
@@ -178,7 +200,7 @@ public class GachaClient {
         tg.setCharacter(StartX, EndY, '╰');
         tg.setCharacter(EndX, EndY, '╯');
         // subframe
-        final int boundTitleY = lerp(StartY, EndY, 0.5), boundReelY = lerp(StartY, EndY, 0.9);
+        final int boundTitleY = lerp(StartY, EndY, 0.1), boundReelY = lerp(StartY, EndY, 0.9);
         tg.drawLine(StartX, boundTitleY, EndX, boundTitleY, '━');
         tg.drawLine(StartX, boundReelY, EndX, boundReelY, '━');
         tg.setCharacter(StartX, boundTitleY, '┝');
@@ -193,17 +215,16 @@ public class GachaClient {
 //        try {} catch (Exception e) {}
     }
 
-    void drawFoo(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
+    void drawSideSlot(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
     
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
-        if ((state & 0b1) == 1) {
-            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
-            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
-        } else {
-            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
-        }
+
+        if ((state & 0b1) != 1) return;
+        else if (s == SlotState.STASIS) return;
+        
+        StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
+        StartY = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; EndY = StartY + Protocol.GACHA_HEIGHT;
     
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
@@ -211,17 +232,20 @@ public class GachaClient {
         tg.setForegroundColor(whiteDefault);
     }
     
-    void drawSlot(TextGraphics tg, int fromX, int fromY, SlotState s, int[] reels, int state) {
-    
+    void drawSlot(TextGraphics tg, SlotState s, int state) {
+        
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
+        StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
+        StartY = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; EndY = StartY + Protocol.GACHA_HEIGHT;
 
-        if ((state & 0b1) == 1) {
-            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
-            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
-        } else {
-            StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH_SMALL;
-            StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT_SMALL;
-        }
+        if ((state & 0b1) != 1) return;
+        else if (s == SlotState.STASIS) return;
+
+        ss = s; // assigns slot state
+        drawFrameBox(tg, StartX, StartY, s, state);
+        
+        StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
+        StartY = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; EndY = StartY + Protocol.GACHA_HEIGHT;
     
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);

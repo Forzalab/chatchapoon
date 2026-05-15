@@ -386,7 +386,8 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         .put("itemDesc", item.property.desc)
         .put("itemRarity", item.property.rarity)
         .put("itemAmount", item.amount())
-        .put("itemGachaReveal", Protocol.GACHA_REVEAL_IN);        
+        .put("itemGachaReveal", Protocol.GACHA_REVEAL_IN)
+        .put("pullerID", p.id);
         return jo;
     }
     

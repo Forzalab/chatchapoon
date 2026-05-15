@@ -897,8 +897,10 @@ TextColor.RGB(80,90,125));
                     }
                 }
 
-                gc.drawFrameBox(tg, 10, 15, GachaClient.SlotState.STASIS, 1); }
-
+// only main player can get this
+                gc.drawSlot(tg, GachaClient.SlotState.SPIN, 0); }
+// conditionally fters for non-main MUST CHANGE BRACKET
+                // gc.drawSlot(tg, 2, Protocol.ARENA_HEIGHT + Protocol.BORDER - 3, GachaClient.SlotState.SPIN, 1);
 
 // chatbox
                     boolean toEmphasizeChat = (state == State.CHAT);
@@ -909,8 +911,7 @@ TextColor.RGB(80,90,125));
               
 
 // frame
-                    if (gc.active()) 
-                        tg.setBackgroundColor(ChatClient.getDimmed(tg.getBackgroundColor(), 0.15f));
+                    if (gc.active()) tg.setBackgroundColor(ChatClient.getDimmed(tg.getBackgroundColor(), 0.15f));
     //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');
                   tg.drawLine(
                         new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
@@ -946,8 +947,12 @@ TextColor.RGB(80,90,125));
 
                 // Handle disconnect + chat key
                 if (keystroke.getKeyType() == KeyType.Escape) {
-                    if (state == State.CHAT) {
-                        renderHighlightTooltip(0, tg);
+                    if (state == State.CHAT || gc.active()) {
+                        if (state == State.CHAT) renderHighlightTooltip(0, tg);
+                        if (gc.active() && gc.currentSlotState() == GachaClient.SlotState.NOMONEY) {
+                            renderHighlightTooltip(3, tg);
+                            
+                        }
                         state = state.mutate(State.GAME);
                         screen.refresh();
                         Thread.sleep(Protocol.TICK_MS);
@@ -997,6 +1002,14 @@ TextColor.RGB(80,90,125));
                     screen.refresh();
                     Thread.sleep(Protocol.TICK_MS);
                     continue;
+                }
+                else if (state == State.GAME && keystroke.getKeyType() == KeyType.Character && 'g' == keystroke.getCharacter() && gc.currentSlotState() == GachaClient.SlotState.STASIS) {
+                    renderHighlightTooltip(4, tg);
+                    String key = KEYBIND_MAP.getOrDefault(keystroke, "");
+                    String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
+                    writer.println(sendMsg);                    
+                    gc.tickSlot(GachaClient.SlotState.STASIS);
+                    switchState(State.BLOCK);
                 }
 
                 // DO NOT REGISTER KEY IF NOT ON BATTLE MODE
