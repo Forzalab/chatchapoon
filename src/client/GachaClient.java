@@ -82,7 +82,7 @@ public class GachaClient {
              return vals[index];
         }
         // correspond to ordinals
-        static final int[] duration = { 20, 8, 8, 8, 15, 0, 10 };
+        static final double[] duration = {0.34, 0.48, 0.61, 0.75, 0, 0, 0};
     }
 
     private static SlotState ss = SlotState.STASIS;
@@ -155,20 +155,22 @@ public class GachaClient {
     }
 
     SlotState tickNext(boolean forceNextState) { 
-        boolean reachedMaxDuration = (stateTick >= SlotState.duration[ss.ordinal()]);
+        boolean reachedMaxDuration = (stateTick >= SlotState.duration[ss.ordinal()] * Protocol.GACHA_REVEAL_IN);
         boolean canJumpstartFromStasis = (forceNextState && ss == SlotState.STASIS);
         boolean inStasis = ss == SlotState.STASIS;
         boolean inEndState = (ss == SlotState.NOMONEY) || (ss == SlotState.REVEAL);
         boolean userReadyExitGacha = inEndState && forceNextState;
-    
-        stateTick += (reachedMaxDuration || canJumpstartFromStasis || userReadyExitGacha) ? (-stateTick) : 1;
         
+        stateTick += (reachedMaxDuration || canJumpstartFromStasis || userReadyExitGacha) ? (-stateTick) : 1;
+        aniTick++;
         if (canJumpstartFromStasis)
             // plauer eligible? go to Spin
             // else go to NM
             ss = (eligible) ? SlotState.SPIN : SlotState.NOMONEY;
-        else if (userReadyExitGacha || (!inStasis && reachedMaxDuration && !inEndState))
+        else if (userReadyExitGacha)
             ss = ss.next(); // terminates at R or NM as checkpoints
+        else if (!inStasis && reachedMaxDuration && !inEndState)
+            ss = ss.next(); // terminates at R or NM as checkpoints            
         return ss;
     }
     
@@ -333,7 +335,7 @@ public class GachaClient {
         StartRY = EndTY + 3;
         
         int midRY = mid(StartRY, EndRY);
-        int colW = Utility.lerp(StartX, EndX, 0.333);
+        int colW = (int)Math.round((EndX - StartX) / 3.0f);
         int[] rX = {StartX+colW/2, StartX+colW+colW/2, StartX+2*colW+colW/2};
 
         tg.fillRectangle(new TerminalPosition(StartX, StartRY), new TerminalSize(EndX-StartX-1, EndRY-EndTY-1), ' ');
@@ -352,7 +354,7 @@ public class GachaClient {
             int rowIdx = Utility.mod(spinFactor + dy + reelsLength/2, reelsLength);
             int reelElem = reels[rowIdx]; 
             
-            syms[i] = reelElem & (0b110000 >> i);
+            syms[i] = reelElem & (0b110000 >> (i << 1));
             if (syms[i] == 0) syms[i] = 1;
             TextCharacter tc = symbolMap.get(syms[i]);
             if (tc == null) continue;
@@ -377,8 +379,6 @@ public class GachaClient {
         drawFrameBox(tg, xs, ys, s, true);
         drawSlotTitle(tg, s);
         drawSlotReels(tg, s);
-
-        aniTick++;
         
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);

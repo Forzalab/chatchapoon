@@ -46,7 +46,7 @@ public class Protocol {
     public static final int DESPAWN_TIMER = 2400;
 
     public static final int GACHA_COST = 10;
-    public static final int GACHA_REVEAL_IN = 15;
+    public static final int GACHA_REVEAL_IN = 70;
     public static final int PLAYER_RESPAWN_ATTEMPT = 3;
 
     // chat
