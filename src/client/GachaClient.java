@@ -20,10 +20,10 @@ import shared.*;
 
 public class GachaClient {
     private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 45);
-    private static final TextColor.RGB panel = new TextColor.RGB(5, 8, 15);
+    static final TextColor.RGB panel = new TextColor.RGB(5, 8, 15);
     private static final TextColor.RGB paleGold = new TextColor.RGB(255, 248, 200);
     private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
-    private static final TextColor.RGB white = new TextColor.RGB(205, 205, 205);
+    static final TextColor.RGB white = new TextColor.RGB(205, 205, 205);
     
     private static final TextColor.RGB C_BKG = new TextColor.RGB(80, 10, 10);
     private static final TextColor.RGB C_FG = new TextColor.RGB(255, 120, 120);
@@ -59,7 +59,7 @@ public class GachaClient {
     private static Map<String, JSONObject> data = new LinkedHashMap<>();
 
     private static final boolean isAuthor(String id) { return GameClient.playerID.equals(id); }
-    private static final JSONObject getAuthorGacha() {
+    public static final JSONObject getAuthorGacha() {
         return data.get(GameClient.playerID);
     }
 
@@ -393,7 +393,22 @@ public class GachaClient {
 //            tg.putString(rX[i] - 1, rY-1, " " + tc.getCharacter() + " ");            
             tg.putString(rX[i] - 1, rY, " " + tc.getCharacter() + " ");
 //            tg.putString(rX[i] - 1, rY+1, " " + tc.getCharacter() + " ");            
-        }}
+            }}
+
+                // barliens and pointers
+
+            tg.setForegroundColor(rDud);
+            tg.setBackgroundColor(panel);
+            int sep1X = StartX + colW, sep2X = StartX + colW * 2;
+            tg.drawLine(sep1X, StartRY, sep1X, EndRY, '│');
+            tg.drawLine(sep2X, StartRY, sep2X, EndRY, '│');
+            tg.setForegroundColor(ss == SlotState.REVEAL ? REVEAL_FLASH : white);
+            tg.setCharacter(StartX - 1, midRY, '⟩'); 
+            tg.setCharacter(EndX + 1, midRY, '⟨'); 
+            tg.setForegroundColor(rDud);
+            tg.drawLine(StartX, midRY - 1, EndX, midRY - 1, '─');
+            tg.drawLine(StartX, midRY + 1, EndX, midRY + 1, '─');
+
         tg.setBackgroundColor(panel);
     }
 

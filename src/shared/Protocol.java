@@ -9,7 +9,7 @@ public class Protocol {
     public static int ARENA_HEIGHT = 87;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
-    public static final int MAX_PLAYERS = 2;
+    public static final int MAX_PLAYERS = 1;
 
     // for GameState
     public static final int LEVEL_DURATION_TICKS = 4800;
@@ -21,7 +21,7 @@ public class Protocol {
     public static final int LOBBY_CLOSE_IN = 60000 * TICK_MS;
     public static final int ONE_USE_ITEM_TIME = -76;
     public static final int ONE_USE_ITEM_TIME_ACTIVE = -84; // can be enum but idc
-    public static final int NEW_MONEY = 0;    
+    public static final int NEW_MONEY = 100;    
     
 //    public static final int WAVE_INTERVAL_TICKS = 600;
     public static final int MAX_BULLETS = 1000;
@@ -54,7 +54,7 @@ public class Protocol {
     public static final int HIT_FLASH_TICK = 2;
 
     // gacha
-    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/6.0f);
+    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/5.0f);
     public static final int GACHA_HEIGHT = (int)Math.round(ARENA_HEIGHT/3.0f);
 
     public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/8.0f);

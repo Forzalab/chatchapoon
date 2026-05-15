@@ -599,6 +599,18 @@ TextColor.RGB(80,90,125));
             tg.putString(timerX, 0, " HEIST ENDS IN " + timerStr + " ");
             tg.setForegroundColor(wht); tg.setBackgroundColor(bkg);
             //money flash
+
+            // popup
+            if (!gc.active()) continue;
+                JSONObject _au = GachaClient.getAuthorGacha(); 
+                String _name = (_au != null) ? _au.optString("pullerName","???") : "...";
+                String _bar  = "gacha:  " + _name + "  is pulling...";
+                tg.setBackgroundColor(GachaClient.panel);
+                boolean _pulse = (System.currentTimeMillis() / 300) % 2 == 0;
+                TextColor _col = _pulse ? new TextColor.RGB(255,235,90) : new TextColor.RGB(255,195,0);
+                tg.setForegroundColor(_col);
+                tg.putString(Protocol.ARENA_WIDTH/2 - _bar.length()/2, 0, _bar);
+                tg.setForegroundColor(GachaClient.white); tg.setBackgroundColor(bkg);
        }
             shift = 0;        
         }
@@ -890,7 +902,7 @@ TextColor.RGB(80,90,125));
                 if ("LOBBY".equals(Utility.optString(to_render, "type"))) {
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH, Protocol.ARENA_HEIGHT + Protocol.BORDER), space);
                     renderLobby(to_render);
-//                    continue;
+                    continue;
                 }
                 // Render sth first
                 // all screen stuff, THEN indiv elem
@@ -898,7 +910,7 @@ TextColor.RGB(80,90,125));
 //                    switchState(State.GAME);
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
                     boolean toEmphasizeChat = (state == State.CHAT);
-                    if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
+                    if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(215,215,215));
                     else tg.setForegroundColor(new
         TextColor.RGB(80,90,125));
 
