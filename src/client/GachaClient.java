@@ -81,7 +81,7 @@ public class GachaClient {
              return vals[index];
         }
         // correspond to ordinals
-        static final double[] duration = {0.34, 0.48, 0.61, 0.75, 0, 0, 0};
+        static final int[] duration = {22, 18, 18, 18, 0, 0, 0};
     }
 
     private static SlotState ss = SlotState.STASIS;
@@ -154,7 +154,7 @@ public class GachaClient {
     }
 
     SlotState tickNext(boolean forceNextState) { 
-        boolean reachedMaxDuration = (stateTick >= SlotState.duration[ss.ordinal()] * Protocol.GACHA_REVEAL_IN);
+        boolean reachedMaxDuration = (stateTick >= SlotState.duration[ss.ordinal()]);
         boolean canJumpstartFromStasis = (forceNextState && ss == SlotState.STASIS);
         boolean inStasis = ss == SlotState.STASIS;
         boolean inEndState = (ss == SlotState.NOMONEY) || (ss == SlotState.REVEAL);
@@ -358,8 +358,9 @@ public class GachaClient {
         
           // 5 rows 3 col
         for (int dy = -Protocol.GACHA_ROWS_HALF; dy <= Protocol.GACHA_ROWS_HALF; dy++) {
-            int rY = midRY + dy - 1;
-            float dimFactor = (float)Math.pow(1.0/Math.abs(dy), Math.abs(dy));      
+            int rY = midRY + dy;
+            float dimFactor = 1.0f - (float)Math.abs(dy) / (Protocol.GACHA_ROWS_HALF + 1.0f);
+
 
         for (int i = 0; i < 3; i++) {
         
