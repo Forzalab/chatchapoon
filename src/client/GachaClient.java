@@ -94,6 +94,7 @@ public class GachaClient {
     private static final String dollarString = "$ ".repeat(100);
     private static final TextColor[] dollarColors = {REVEAL_FLASH, rLegendary, paleGold, rLegendary, REVEAL_FLASH, panel};
     private static final TextColor[] dollarDullColors = {rDud, rCommon, paleGold, rCommon, rDud, panel};    
+    private static int aniTick = 0;
 
     static {
         // recieves iepMap from server ONCE. its a lookup by name.
@@ -281,6 +282,24 @@ public class GachaClient {
         return Utility.lerp(start, end, 0.5);
     }
 
+    void drawDollarBkg(TextGraphics tg, SlotState s, int sX, int sY, int eX, int eY) {
+        tg.setBackgroundColor(panel); 
+        tg.setForegroundColor(white);
+     
+        float scale = (s == SlotState.REVEAL) ? 3.0f : 2.0f;
+        for (int y = sY; y <= eY; y++) { for (int x = sX; x <= eX; x++, aniTick++) {
+            int charIndex = (x-sX + (int)Math.round((y-sY) * 1.5f * aniTick)) % dollarString.length();
+            int colorIndex = (x-sX + (int)Math.round((y-sY) * 1.5f * aniTick * scale)) % dollarColors.length;
+            TextColor dc = s == SlotState.NOMONEY ? dollarDullColors[colorIndex] : dollarColors[colorIndex];
+            char c = dollarString.charAt(charIndex);
+            tg.setForegroundColor(dc);
+            tg.setCharacter(x, y, c);
+        }}
+
+        tg.setBackgroundColor(bkg); 
+        tg.setForegroundColor(whiteDefault);
+    }
+    
     void drawSlotTitle(TextGraphics tg, SlotState s, int state) {
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
@@ -288,8 +307,7 @@ public class GachaClient {
         if (author == null) return;
         String pullerName = author.optString("pullerName", "???");
         String spinnerChar = Character.toString("|/—\\".charAt(stateTick % 4));
-        String dollarLeftChar = Character.toString("|/—\\".charAt(stateTick % 4));
-        
+
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
         StartX = xs + 1; EndX = StartX + Protocol.GACHA_WIDTH - 1;
         StartY = ys + 1; EndY = StartY + Protocol.GACHA_HEIGHT - 1;
@@ -297,7 +315,11 @@ public class GachaClient {
         int midX = mid(StartX, EndX), midY = mid(StartY, EndY);
         
         String titleCenter = spinnerChar + " " + pullerName + " " + spinnerChar;
-        tg.setBackgroundColor(bkg);
+
+        // draw dolar bkg first
+        // then draw txt
+
+        tg.setBackgroundColor(bkg); 
         tg.setForegroundColor(whiteDefault);
     }
 
@@ -308,7 +330,7 @@ public class GachaClient {
 
         if (s == SlotState.STASIS) return;
 
-        drawFrameBox(tg, xs, xe, s, state);
+        drawFrameBox(tg, xs, xe, s, 1);
         
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);

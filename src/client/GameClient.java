@@ -53,8 +53,8 @@ public class GameClient {
     private static List<String> crl= new ArrayList<>();
     private static List<String> gcrl= new ArrayList<>();    
     
-    private static int glength = (Protocol.ARENA_WIDTH + 1)/2;
-    private static int clength = Protocol.ARENA_WIDTH + (Protocol.SIDEBAR_WIDTH + 1)/2;
+    private static int glength = (int)Math.round((Protocol.ARENA_WIDTH + 1)/2.0f);
+    private static int clength = Protocol.ARENA_WIDTH + (int)Math.round((Protocol.SIDEBAR_WIDTH + 1)/2.0f);
 
     static {
         Pattern ptrn = Pattern.compile("\\[[^\\]]+\\][^\\[]*"); // wtf regex
