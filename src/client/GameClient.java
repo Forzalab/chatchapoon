@@ -473,7 +473,7 @@ public class GameClient {
             else tg.setForegroundColor(new
 TextColor.RGB(80,90,125));
 
-            tg.setBackgroundColor(15,23,45);
+            tg.setBackgroundColor(new TextColor.RGB(15,23,45));
             
           // HUD bar
           tg.drawLine(
