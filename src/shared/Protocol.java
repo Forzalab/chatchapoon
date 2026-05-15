@@ -9,7 +9,7 @@ public class Protocol {
     public static int ARENA_HEIGHT = 87;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
-    public static final int MAX_PLAYERS = 2;
+    public static final int MAX_PLAYERS = 1;
 
     // for GameState
     public static final int LEVEL_DURATION_TICKS = 4800;

@@ -79,7 +79,7 @@ public class GameClient {
     }
 
     private static GachaClient gc = new GachaClient();  
-    static volatile JSONObject author_jo = null;
+    static volatile JSONObject author_jo = new JSONObject();
 
     private static void renderHighlightTooltip(int index, TextGraphics tg) {
         if (index < 0) return;
@@ -319,11 +319,13 @@ public class GameClient {
             String type = j.optString("type");
             String playerId = j.optString("id");
             int r = 255, g = 255, b = 255;
-            if ("player".equals(type) && !playerColor.containsKey(playerId)) {
+                                         //   System.err.println("cli 323 " + j.optString("type","THE FACKDJJRJEJRBRJRNDHD THE  FREAKY FREAK") + " time: " + System.currentTimeMillis());
+            if ("player".equals(type) && playerColor.containsKey(playerId)) {
                 if (playerID.equals(Utility.optString(j, "id"))) {
                     playerColor.put(playerId, new TextColor.RGB(255, 255, 255));
                     // also hitch a quick ride to Gacha-town
                     author_jo = new JSONObject(j, JSONObject.getNames(j));
+                   // System.err.println("cli 327 " + author_jo.optInt("currency",-69) + " time: " + System.currentTimeMillis());
                     playerName = j.optString("name");
                 } else {
                 TextColor color = ChatClient.getColor(playerId);
@@ -911,6 +913,7 @@ TextColor.RGB(80,90,125));
                     if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
                     if (jap != null) processPlayersArrayRender(jap, tg, "o", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
+//                                        System.err.println("cli 915 " + author_jo.optInt("currency",-69) + " time: " + System.currentTimeMillis());
                     gc.updateInternalDataWith(to_render, author_jo);
                     gc.tickNext(false);
                 }

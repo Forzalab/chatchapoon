@@ -387,7 +387,8 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         .put("itemRarity", item.property.rarity)
         .put("itemAmount", item.amount())
         .put("itemGachaReveal", Protocol.GACHA_REVEAL_IN)
-        .put("pullerID", p.id);
+        .put("pullerID", p.id)
+        .put("currency", p.currency);        
         return jo;
     }
     
@@ -410,11 +411,8 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
         .filter(e -> (rarity.equals(e.getValue().rarity.name())))
         .map(Map.Entry::getKey).collect(Collectors.toList());
         if (IEClassNames == null) return null;
-        
-        String gachaName = IEClassNames.stream()
-        .filter(s -> (r.nextInt(2) == 0)).findAny()
-        .orElse("");
-        
+        String gachaName = IEClassNames.isEmpty() ? "" : IEClassNames.get(r.nextInt(IEClassNames.size()));
+            
         if (gachaName.isEmpty()) return null;
         ItemEffect gachaItem = ItemEffect.create(gachaName, 1);
         p.inventory.add(gachaItem);

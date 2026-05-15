@@ -150,7 +150,7 @@ public class GachaClient {
         reel += symbolMapInverse.get(c2); reel <<= 2;
         reel += symbolMapInverse.get(c3);        
         // check L -> R -> C or everyone will lose their mibds
-        for (int i = 3; i >= 1; i++)
+        for (int i = 3; i >= 1; i--)
             if (satisfyState(reel, i)) return ItemEffect.IEProperty.Rarity.values()[i];
         return ItemEffect.IEProperty.Rarity.values()[0];
     }
@@ -169,8 +169,10 @@ public class GachaClient {
             // plauer eligible? go to Spin
             // else go to NM
             ss = (eligible) ? SlotState.SPIN : SlotState.NOMONEY;
-        else if (userReadyExitGacha)
+        else if (userReadyExitGacha) {
             ss = ss.next(); // terminates at R or NM as checkpoints
+            if (ss == SlotState.STASIS) stripsBuilt = false;
+        }
         else if (!inStasis && reachedMaxDuration && !inEndState)
             ss = ss.next(); // terminates at R or NM as checkpoints            
         return ss;
@@ -199,11 +201,15 @@ public class GachaClient {
 
             // for author
             if (!GameClient.playerID.equals(pullerID)) continue;            
-
+/// System.err.println("reached: " + data.get(pullerID).optString("itemDisplayName", "badbadbabdbadbad"));
+            //System.err.println("reached: currency is Not null and is chekc for eligibel. " + data.get(pullerID).optInt("currency", -1));
             // start to slot up
             String itemName = j.optString("itemName");
             ItemEffect.IEProperty prop = ItemEffect.lookup.get(itemName);
-            if (prop != null) reels = buildStrips(prop.rarity);
+            if (prop != null && !stripsBuilt) {
+                reels = buildStrips(prop.rarity);
+//                stripsBuilt = true;
+            }
         }
     }
 
@@ -364,7 +370,6 @@ public class GachaClient {
             int rY = midRY + dy - 1;
             float dimFactor = 1.0f - (float)Math.abs(dy) / (Protocol.GACHA_ROWS_HALF + 1.0f);
 
-
         for (int i = 0; i < 3; i++) {
         
             // index each RC, noting that a col can be locked or not
@@ -394,7 +399,7 @@ public class GachaClient {
 
     void drawSlotResult(TextGraphics tg, SlotState s) {
         int StartX = xs+1, EndX = xe-1;
-        int startRZ = Utility.lerp(ys, ye, Protocol.GACHA_REELS_RATIO) + 1;
+        int startRZ = ys + (int)Math.round((ye - ys) * Protocol.GACHA_REELS_RATIO) + 1;
         int endRZ = ye - 1;
         int midRZY = mid(startRZ, endRZ);
         int midRZX = mid(StartX, EndX);
@@ -403,18 +408,19 @@ public class GachaClient {
         tg.fillRectangle(new TerminalPosition(StartX, startRZ), new TerminalSize(EndX-StartX, endRZ-startRZ+1), ' ');
 
         JSONObject author = getAuthorGacha();
-//        System.err.println(author.optString("pullerName","nu"));
+        //System.err.println(author.optString("pullerName","nu"));
+        //System.err.println(s);
         if (s == SlotState.REVEAL && author != null) {
             String displayName = author.optString("itemDisplayName", "???");
             String rarityStr = author.optString("itemRarity", "");
             String desc = author.optString("itemDesc", "");
-System.err.println("[RESULT] " + displayName + " | " + rarityStr);
+//System.err.println("[RESULT] " + displayName + " | " + rarityStr);
             TextColor rarityColor
             = ("LEGENDARY".equals(rarityStr)) ? rLegendary
             : ("RARE".equals(rarityStr)) ? rRare
             : ("COMMON".equals(rarityStr)) ? rCommon
             : ("NA".equals(rarityStr)) ? rDud : white;
-
+        //System.err.println(author.optString("pullerName","@@@@@@@@@@@@@@@@@@@@@@"));
             tg.setForegroundColor(rarityColor);
             tg.putString(midRZX - rarityStr.length()/2, midRZY - 1, rarityStr);
             tg.setForegroundColor(whiteDefault);
@@ -431,6 +437,9 @@ System.err.println("[RESULT] " + displayName + " | " + rarityStr);
         xs = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; xe = xs + Protocol.GACHA_WIDTH;
         ys = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; ye = ys + Protocol.GACHA_HEIGHT;
 
+        tg.setBackgroundColor(panel);
+        tg.setForegroundColor(white);
+        
         // DO NOT CHANGE XS YS FROM THIS STAGE
         if (s == SlotState.STASIS) return;
 
@@ -439,8 +448,6 @@ System.err.println("[RESULT] " + displayName + " | " + rarityStr);
         drawSlotReels(tg, s);
         drawSlotResult(tg, s);
         
-        tg.setBackgroundColor(panel);
-        tg.setForegroundColor(white);
         tg.setBackgroundColor(bkg);
         tg.setForegroundColor(whiteDefault);
     }
