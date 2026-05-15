@@ -79,7 +79,7 @@ public class GameClient {
     }
 
     private static GachaClient gc = new GachaClient();  
-    private static JSONObject author_jo = null;
+    static volatile JSONObject author_jo = null;
 
     private static void renderHighlightTooltip(int index, TextGraphics tg) {
         if (index < 0) return;

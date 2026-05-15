@@ -9,7 +9,7 @@ public class Protocol {
     public static int ARENA_HEIGHT = 87;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
-    public static final int MAX_PLAYERS = 1;
+    public static final int MAX_PLAYERS = 2;
 
     // for GameState
     public static final int LEVEL_DURATION_TICKS = 4800;
@@ -60,7 +60,7 @@ public class Protocol {
     public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/8.0f);
     public static final int GACHA_HEIGHT_SMALL = (int)Math.round(ARENA_HEIGHT/8.0f);    
 
-    public static final int GACHA_ROWS_HALF = (int)Math.round(GACHA_HEIGHT/100.0f * 60.0f * 0.5f);
+    public static final int GACHA_ROWS_HALF = 5;
 
     public static final double GACHA_TITLE_RATIO = 0.2;
     public static final double GACHA_REELS_RATIO = 0.65;    

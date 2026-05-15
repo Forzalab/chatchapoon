@@ -20,7 +20,7 @@ import shared.*;
 
 public class GachaClient {
     private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 45);
-    private static final TextColor.RGB panel = new TextColor.RGB(5, 13, 15);
+    private static final TextColor.RGB panel = new TextColor.RGB(5, 8, 15);
     private static final TextColor.RGB paleGold = new TextColor.RGB(255, 248, 200);
     private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
     private static final TextColor.RGB white = new TextColor.RGB(205, 205, 205);
@@ -28,11 +28,11 @@ public class GachaClient {
     private static final TextColor.RGB C_BKG = new TextColor.RGB(90, 10, 10);
     private static final TextColor.RGB C_FG = new TextColor.RGB(255, 110, 110);
 
-    private static final TextColor.RGB S_BKG = new TextColor.RGB(35, 38, 48);
+    private static final TextColor.RGB S_BKG = new TextColor.RGB(55, 58, 68);
     private static final TextColor.RGB S_FG = new TextColor.RGB(210, 215, 225);
 
-    private static final TextColor.RGB P_BKG = new TextColor.RGB(18, 18, 22);
-    private static final TextColor.RGB P_FG = new TextColor.RGB(75, 75, 90);
+    private static final TextColor.RGB P_BKG = new TextColor.RGB(102, 88, 102);
+    private static final TextColor.RGB P_FG = new TextColor.RGB(215, 175, 215);
 
     private static final TextColor.RGB REVEAL_FLASH = new TextColor.RGB(255, 235, 90);
 
@@ -57,11 +57,10 @@ public class GachaClient {
 
     // id - gacha data
     private static Map<String, JSONObject> data = new LinkedHashMap<>();
-    private static final String authorID = GameClient.playerID;
 
-    private static final boolean isAuthor(String id) { return authorID.equals(id); }
+    private static final boolean isAuthor(String id) { return GameClient.playerID.equals(id); }
     private static final JSONObject getAuthorGacha() {
-        return data.get(authorID);
+        return data.get(GameClient.playerID);
     }
 
     private static boolean eligible = false;
@@ -196,7 +195,7 @@ public class GachaClient {
             data.put(pullerID, j);
 
             // for author
-            if (!authorID.equals(pullerID)) continue;            
+            if (!GameClient.playerID.equals(pullerID)) continue;            
 
             // start to slot up
             String itemName = j.optString("itemName");
@@ -359,7 +358,7 @@ public class GachaClient {
         
           // 5 rows 3 col
         for (int dy = -Protocol.GACHA_ROWS_HALF; dy <= Protocol.GACHA_ROWS_HALF; dy++) {
-            int rY = midRY + dy;
+            int rY = midRY + dy - 1;
             float dimFactor = (float)Math.pow(1.0/Math.abs(dy), Math.abs(dy));      
 
         for (int i = 0; i < 3; i++) {
@@ -400,6 +399,7 @@ public class GachaClient {
         tg.fillRectangle(new TerminalPosition(StartX, startRZ), new TerminalSize(EndX-StartX, endRZ-startRZ+1), ' ');
 
         JSONObject author = getAuthorGacha();
+//        System.err.println(author.optString("pullerName","nu"));
         if (s == SlotState.REVEAL && author != null) {
             String displayName = author.optString("itemDisplayName", "???");
             String rarityStr = author.optString("itemRarity", "");
