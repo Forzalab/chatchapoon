@@ -162,7 +162,6 @@ public class GachaClient {
         boolean notInStasis = ss != SlotState.STASIS;
     
         stateTick += (reachedMaxDuration || jumpstartFromStasis) ? (-stateTick) : 1;
-    
         if (jumpstartFromStasis)
             // plauer eligible? go to Spin
             // else go to NM
@@ -176,12 +175,27 @@ public class GachaClient {
 
     boolean active() { return ss != SlotState.STASIS; }
 
-    void updateInternalDataWith(JSONObject jao) {
+    synchronized void updateInternalDataWith(JSONObject jao) {
        JSONArray ja = new JSONArray(jao.getJSONArray("notifs"));
+       JSONArray jap = new JSONArray(jao.getJSONArray("players"));
+       
        if (ja == null) return;
 
        eligible = false;
-
+        
+       for (int i = 0; i < jap.length(); i++) {
+            if (jap.getJSONObject(i) == null) continue;
+            JSONObject j = jap.getJSONObject(i);
+            if (j == null) continue;
+            String id = j.optString("id");
+            
+            if (!authorID.equals(id)) continue;
+            int gachaCost = Protocol.GACHA_COST;
+            int coinsHave = (new JSONArray(jao.getJSONArray("players")).getJSONObject(i).optInt("currency", -1));
+            eligible = (coinsHave >= gachaCost); 
+            break;
+       }
+       
        for (int i = 0; i < ja.length(); i++) {
             if (ja.getJSONObject(i) == null) continue;
             JSONObject j = ja.getJSONObject(i);
@@ -190,9 +204,7 @@ public class GachaClient {
             data.put(pullerID, j);
 
             // for author
-            if (pullerID != authorID) continue;
-            eligible = true; // if authro is elegible for the gacha, the notif must send to here, and logic must reach here, to which i can recah out and set `eligible` back!
-            // if they not eligible, we cant reach this section/line, then  sentinel/tombstone-like guard assumes we cannot pull. voila!
+            if (!authorID.equals(pullerID)) continue;            
        }
     }
 
@@ -275,7 +287,6 @@ public class GachaClient {
         if ((state & 0b1) != 1) return;
         else if (s == SlotState.STASIS) return;
 
-        ss = s; // assigns slot state
         drawFrameBox(tg, StartX, StartY, s, state);
         
         StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
