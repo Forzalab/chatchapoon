@@ -23,7 +23,7 @@ public class GachaClient {
     private static final TextColor.RGB panel = new TextColor.RGB(22, 28, 48);
     private static final TextColor.RGB paleGold = new TextColor.RGB(255, 248, 200);
     private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
-    private static final TextColor.RGB white = new TextColor.RGB(215, 215, 215);
+    private static final TextColor.RGB white = new TextColor.RGB(205, 205, 205);
     
     private static final TextColor.RGB C_BKG = new TextColor.RGB(90, 10, 10);
     private static final TextColor.RGB C_FG = new TextColor.RGB(255, 110, 110);
@@ -244,7 +244,7 @@ public class GachaClient {
         tg.setCharacter(StartX, EndY, '╰');
         tg.setCharacter(EndX, EndY, '╯');
         // subframe
-        final int boundTitleY = Utility.lerp(StartY, EndY, 0.1), boundReelY = Utility.lerp(StartY, EndY, 0.9);
+        final int boundTitleY = Utility.lerp(StartY, EndY, 0.14), boundReelY = Utility.lerp(StartY, EndY, 0.9);
         tg.drawLine(StartX, boundTitleY, EndX, boundTitleY, '━');
         tg.drawLine(StartX, boundReelY, EndX, boundReelY, '━');
         tg.setCharacter(StartX, boundTitleY, '┝');
@@ -300,18 +300,22 @@ public class GachaClient {
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
        
-        String pullerName = GameClient.playerID;
-        String spinnerChar = Character.toString("|/—\\".charAt(stateTick % 4));
+        String pullerName = GameClient.playerName + " is trying to unlock vault, hehe...";
+        String spinnerChar = Character.toString("|/—\\".charAt(stateTick/4 % 4));
 
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
         StartX = xs + 1; EndX = xe - 1;
-        StartY = ys + 1; EndY = Utility.lerp(ys, ye, 0.1) - 1;
+        StartY = ys + 1; EndY = Utility.lerp(ys, ye, 0.14) - 1;
 
         int midX = mid(StartX, EndX), midY = mid(StartY, EndY);
 
         drawDollarBkg(tg, s, StartX, StartY, EndX, EndY);
         
-        String titleCenter = spinnerChar + " " + pullerName + " " + spinnerChar;
+        String titleCenter = "   " + spinnerChar + " " + pullerName + " " + spinnerChar + "   ";
+
+        tg.setBackgroundColor(panel);
+        tg.setForegroundColor(s == SlotState.REVEAL?REVEAL_FLASH:white);
+        tg.putString(midX - titleCenter.length()/2, midY, titleCenter);
 
         // draw dolar bkg first
         // then draw txt

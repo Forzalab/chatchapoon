@@ -340,7 +340,7 @@ public class GameClient {
 // ⛃⛂⭐ for coins, ❓ for gacha
                 tg.setBackgroundColor(grn_dim);
                 tg.setForegroundColor(wht);
-                if (rx != -1 && ry > 0) {
+                if (rx != -1 && ry > 0  && ry < Protocol.ARENA_HEIGHT + Protocol.BORDER) {
                     tg.putString(rx, ry, avatar);
                 }
                 tg.setBackgroundColor(bkg);
@@ -371,7 +371,7 @@ public class GameClient {
                 }
 
                 tg.setForegroundColor(wht);
-                if (rx != -1 && ry > 0) {
+                if (rx != -1 && ry > 0 && ry < Protocol.ARENA_HEIGHT + Protocol.BORDER) {
                       if (hit) tg.setBackgroundColor(red);
                     tg.putString(rx, ry, avatar);
                     if ("enemy".equals(j.optString("type")))
@@ -401,7 +401,7 @@ public class GameClient {
 //            if (playerID.equals(Utility.optString(j, "id")))
                 direction = Utility.optString(j, "direction");
 
-            if (rx != -1 && ry > 0 && "player".equals(j.optString("type"))) {
+            if (rx != -1 && ry > 0 && "player".equals(j.optString("type"))  && ry < Protocol.ARENA_HEIGHT + Protocol.BORDER) {
                 if (!playerID.equals(Utility.optString(j,"id"))) {
                     tg.setForegroundColor(color);
                     tg.setBackgroundColor(color);                        
