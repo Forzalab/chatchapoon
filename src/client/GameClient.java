@@ -46,19 +46,22 @@ public class GameClient {
 
     // keyboard mode    
     private static State state = State.BLOCK;
-    private static String gameTooltip = "  [w/a/s/d] move  [q/e] rotate  [space] shoot  [g]acha  [c]hat  [esc] quit  ";
-    private static String chatTooltip = "  [esc] exit chat & re-enter game  ";
+    private static String gameTooltip = "  [w/a/s/d] move  [q/e] rotate  [space] shoot  [g]acha  [c]hat  [esc] end session  ";
+    private static String chatTooltip = "  [esc] exit chat & game on  ";
+    private static String gachaTooltip = "  [esc] exit vault ";    
     private static List<String> grl= new ArrayList<>();
     private static List<String> crl= new ArrayList<>();
+    private static List<String> gcrl= new ArrayList<>();    
     
     private static int glength = (Protocol.ARENA_WIDTH + 1)/2;
     private static int clength = Protocol.ARENA_WIDTH + (Protocol.SIDEBAR_WIDTH + 1)/2;
 
     static {
         Pattern ptrn = Pattern.compile("\\[[^\\]]+\\][^\\[]*"); // wtf regex
-        Matcher mg = ptrn.matcher(gameTooltip), mc = ptrn.matcher(chatTooltip);
+        Matcher mg = ptrn.matcher(gameTooltip), mc = ptrn.matcher(chatTooltip), mgc = ptrn.matcher(chatTooltip);
         while (mg.find()) grl.add(mg.group().strip());
         while (mc.find()) crl.add(mc.group().strip());        
+        while (mgc.find()) gcrl.add(mgc.group().strip());                
         // awaken static block in ItemEffect subclass
          try {
             Class.forName("shared.AmmoRefill");
@@ -83,10 +86,22 @@ public class GameClient {
         // button highlight for the dopamineeee
         TextColor tcb = tg.getBackgroundColor();
         tg.setBackgroundColor(new TextColor.RGB(80,90,100));
-        List<String> parts = (state == State.CHAT)?crl:(state == State.GAME)?grl:null;
+
+        /*
+            Game #3
+            Gacha #2
+                        Chat #1
+        */
+
+        List<String> parts = (state == State.CHAT) ? crl
+                       : gc.active() ? gcrl
+                       : (state == State.GAME) ? grl
+                       : null;
         if (parts == null) return;
         String sub = parts.get(index); // [c]hat
-        String tooltip = (state == State.CHAT)?chatTooltip:gameTooltip;
+        String tooltip = (state == State.CHAT) ? chatTooltip
+                         : gc.active() ? gachaTooltip
+                         : gameTooltip;
         int b4subLength = tooltip.indexOf(sub);
         int length = (state == State.CHAT)?clength:glength;
         int ttlength = tooltip.length();
@@ -954,9 +969,15 @@ TextColor.RGB(80,90,125));
                   tg.setForegroundColor(new TextColor.RGB(225,225,225));
                    tg.setBackgroundColor(new TextColor.RGB(15, 23, 42));
 
-                    if (state == State.GAME) tg.putString(glength - gameTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gameTooltip);
-                    else if (state == State.CHAT) tg.putString(clength - chatTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, chatTooltip);
 
+                    // gacha OR game render tt first, chat later
+                    if (gc.active()) {
+                        if (gc.currentSlotState() == GachaClient.SlotState.NOMONEY || gc.currentSlotState() == GachaClient.SlotState.REVEAL) tg.putString(glength - gachaTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gachaTooltip);
+                        else {/* dont render even if in gameState */}
+                    }
+                    else if (state == State.GAME) tg.putString(glength - gameTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gameTooltip);
+
+                    if (state == State.CHAT) tg.putString(clength - chatTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, chatTooltip);
 
 
                 
@@ -967,19 +988,24 @@ TextColor.RGB(80,90,125));
 
                 // Handle disconnect + chat key
                 if (keystroke.getKeyType() == KeyType.Escape) {
-                    // exit the gacha First. 2nd esc exit chat, 3rd exit game!
-                    if (gc.active()) {
-                            renderHighlightTooltip(3, tg);
-                            // on otger state, esc is ignored!
-                            // flow naturally on all stages.
-                            // wont reach this block on state STASIS bcs big brain
-                            if (gc.currentSlotState() == GachaClient.SlotState.NOMONEY) gc.tickNext(false); // immediately switch to STASIS, to whcih it will exit. skips NOMONY frames.
-                    }
-                    else if (state == State.CHAT) {
+                    // INVARIANT: gacha IS part of game, so logic: ENTER game to exit gacha
+                    // exit the chat First. 2nd esc gacha, 3rd exit game!
+                    // can only exit gacha when reached a concluding screen
+                    if (state == State.CHAT) {
                         renderHighlightTooltip(0, tg);
                         state = state.mutate(State.GAME);
                         screen.refresh();
                         Thread.sleep(Protocol.TICK_MS);
+                        continue;
+                    }
+                    else if (gc.active()) {
+                        renderHighlightTooltip(0, tg);
+                        // on otger state, esc is ignored!
+                        // flow naturally on all stages.
+                        // wont reach this block on state STASIS bcs big brain
+                        if (gc.currentSlotState() == GachaClient.SlotState.NOMONEY || gc.currentSlotState() == GachaClient.SlotState.REVEAL) gc.tickNext(false); // immediately switch to STASIS, to whcih it will exit. skips NOMONY frames.
+                        // STASIS -> ... -> Reveal [wait here] -> STASIS
+                        // STASIS -> No Money [wait here] -> STASIS
                         continue;
                     }
                     else if (state == State.GAME) renderHighlightTooltip(5, tg);
@@ -1037,7 +1063,7 @@ TextColor.RGB(80,90,125));
                 }
 
                 // DO NOT REGISTER KEY IF NOT ON BATTLE MODE
-                // only esc
+                // only esc, c, g
                 if (state == State.BLOCK) {
                     screen.refresh();
                     Thread.sleep(Protocol.TICK_MS);
