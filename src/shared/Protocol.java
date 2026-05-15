@@ -54,8 +54,8 @@ public class Protocol {
     public static final int HIT_FLASH_TICK = 2;
 
     // gacha
-    public static final int GACHA_WIDTH = ARENA_WIDTH/2;
-    public static final int GACHA_HEIGHT = ARENA_HEIGHT/2;
+    public static final int GACHA_WIDTH = ARENA_WIDTH/4 * 3;
+    public static final int GACHA_HEIGHT = ARENA_HEIGHT/4 * 3;
 
     public static final int GACHA_WIDTH_SMALL = ARENA_WIDTH/6;
     public static final int GACHA_HEIGHT_SMALL = ARENA_HEIGHT/10;    

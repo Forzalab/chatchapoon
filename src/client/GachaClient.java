@@ -21,6 +21,7 @@ import shared.*;
 public class GachaClient {
     private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 42);
     private static final TextColor.RGB panel = new TextColor.RGB(22, 28, 48);
+    private static final TextColor.RGB paleGold = new TextColor.RGB(255, 248, 200);
     private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
     private static final TextColor.RGB white = new TextColor.RGB(215, 215, 215);
     
@@ -69,7 +70,7 @@ public class GachaClient {
 
     private static boolean eligible = false;
     private static int stateTick = 0;
-    
+    private static int xs = 0, xe = 0, ys = 0, ye = 0;
     private static Random r = new Random();
     private static final int reelsLength = 11;
     private static int[] reels = new int[reelsLength];
@@ -89,6 +90,10 @@ public class GachaClient {
     }
 
     private static SlotState ss = SlotState.STASIS;
+
+    private static final String dollarString = "$ ".repeat(100);
+    private static final TextColor[] dollarColors = {REVEAL_FLASH, rLegendary, paleGold, rLegendary, REVEAL_FLASH, panel};
+    private static final TextColor[] dollarDullColors = {rDud, rCommon, paleGold, rCommon, rDud, panel};    
 
     static {
         // recieves iepMap from server ONCE. its a lookup by name.
@@ -272,20 +277,39 @@ public class GachaClient {
         tg.setForegroundColor(whiteDefault);
     }
 
-    // bit 0 int state is redundant rn, but leave it for later usr    
-    void drawSlot(TextGraphics tg, SlotState s, int state) {
+    private static int mid(int start, int end) {
+        return Utility.lerp(start, end, 0.5);
+    }
+
+    void drawSlotTitle(TextGraphics tg, SlotState s, int state) {
+        tg.setBackgroundColor(panel);
+        tg.setForegroundColor(white);
+        JSONObject author = getAuthorGacha();
+        if (author == null) return;
+        String pullerName = author.optString("pullerName", "???");
+        String spinnerChar = Character.toString("|/—\\".charAt(stateTick % 4));
+        String dollarLeftChar = Character.toString("|/—\\".charAt(stateTick % 4));
         
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
-        StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
-        StartY = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; EndY = StartY + Protocol.GACHA_HEIGHT;
+        StartX = xs + 1; EndX = StartX + Protocol.GACHA_WIDTH - 1;
+        StartY = ys + 1; EndY = StartY + Protocol.GACHA_HEIGHT - 1;
+    
+        int midX = mid(StartX, EndX), midY = mid(StartY, EndY);
+        
+        String titleCenter = spinnerChar + " " + pullerName + " " + spinnerChar;
+        tg.setBackgroundColor(bkg);
+        tg.setForegroundColor(whiteDefault);
+    }
+
+    // bit 0 int state is redundant rn, but leave it for later usr    
+    void drawSlot(TextGraphics tg, SlotState s, int state) {
+        xs = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; xe = xs + Protocol.GACHA_WIDTH;
+        ys = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; ye = ys + Protocol.GACHA_HEIGHT;
 
         if (s == SlotState.STASIS) return;
 
-        drawFrameBox(tg, StartX, StartY, s, state);
+        drawFrameBox(tg, xs, xe, s, state);
         
-        StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
-        StartY = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; EndY = StartY + Protocol.GACHA_HEIGHT;
-    
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
         tg.setBackgroundColor(bkg);
