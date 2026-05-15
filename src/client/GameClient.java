@@ -26,6 +26,12 @@ import shared.*;
 // so everything is static
 // EVERYTHING IS STATIC!!!!!! NO INSTANCE VAR HERE!!!!!
 public class GameClient {
+    
+    // player info, local copy
+    public static final String playerID = UUID.randomUUID().toString().substring(0,8);
+    static HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();    
+    public static String playerName = "";
+
     // Render
     private static int cols = 0, rows = 0;
     static Screen screen;
@@ -37,7 +43,6 @@ public class GameClient {
     private static String moneyPrior = "", scorePrior = "", wavePrior = "", bulletsPrior = "";    
     private static String coinAvatar = "O";
     private static int delta = 0;
-    private static GachaClient gc = new GachaClient();  
 
     // keyboard mode    
     private static State state = State.BLOCK;
@@ -69,6 +74,8 @@ public class GameClient {
             // no need json sharing property
         } catch (Exception e) { e.printStackTrace(); }
     }
+
+    private static GachaClient gc = new GachaClient();  
 
     private static void renderHighlightTooltip(int index, TextGraphics tg) {
         if (index < 0) return;
@@ -111,11 +118,6 @@ public class GameClient {
     }
         
     // render mode is obtained thru server
-    
-    // player info, local copy
-    public static final String playerID = UUID.randomUUID().toString().substring(0,8);
-    static HashMap<String, TextColor> playerColor = new HashMap<String, TextColor>();    
-    public static String playerName = "";
     
     // Sockets
     private static Socket socket;
@@ -867,22 +869,23 @@ TextColor.RGB(80,90,125));
                 else if ("ENTITY_STATE".equals(Utility.optString(to_render, "type")) && to_render.optInt("tickCounter", -1) > 0) {
 //                    switchState(State.GAME);
                     tg.fillRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH + Protocol.SIDEBAR_WIDTH + 1, Protocol.ARENA_HEIGHT + Protocol.BORDER + 1), space);
-            boolean toEmphasizeChat = (state == State.CHAT);
-            if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
-            else tg.setForegroundColor(new
-TextColor.RGB(80,90,125));
+                    boolean toEmphasizeChat = (state == State.CHAT);
+                    if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
+                    else tg.setForegroundColor(new
+        TextColor.RGB(80,90,125));
 
-          // HUD bar
-          tg.drawLine(
-                new TerminalPosition(1, 0),
-                new TerminalPosition(Protocol.ARENA_WIDTH, 0),
-                '─'
-            );            
+                  // HUD bar
+                  tg.drawLine(
+                        new TerminalPosition(1, 0),
+                        new TerminalPosition(Protocol.ARENA_WIDTH, 0),
+                        '─'
+                    );            
 
-            tg.putString(0,0,"┌");
-            tg.putString(Protocol.ARENA_WIDTH+1,0,"┐");            
+                    tg.putString(0,0,"┌");
+                    tg.putString(Protocol.ARENA_WIDTH+1,0,"┐");            
 
-                                       
+                    gc.updateInternalDataWith(to_render);                                        gc.tickNext(false);
+
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
@@ -961,12 +964,16 @@ TextColor.RGB(80,90,125));
 
                 // Handle disconnect + chat key
                 if (keystroke.getKeyType() == KeyType.Escape) {
-                    if (state == State.CHAT || gc.active()) {
-                        if (state == State.CHAT) renderHighlightTooltip(0, tg);
-                        if (gc.active() && gc.currentSlotState() == GachaClient.SlotState.NOMONEY) {
+                    // exit the gacha First. 2nd esc exit chat, 3rd exit game!
+                    if (gc.active()) {
                             renderHighlightTooltip(3, tg);
-                            
-                        }
+                            // on otger state, esc is ignored!
+                            // flow naturally on all stages.
+                            // wont reach this block on state STASIS bcs big brain
+                            if (gc.currentSlotState() == GachaClient.SlotState.NOMONEY) gc.tickNext(false); // immediately switch to STASIS, to whcih it will exit. skips NOMONY frames.
+                    }
+                    else if (state == State.CHAT) {
+                        renderHighlightTooltip(0, tg);
                         state = state.mutate(State.GAME);
                         screen.refresh();
                         Thread.sleep(Protocol.TICK_MS);
@@ -1022,7 +1029,7 @@ TextColor.RGB(80,90,125));
                     String key = KEYBIND_MAP.getOrDefault(keystroke, "");
                     String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
                     writer.println(sendMsg);                    
-                    gc.tickSlot(GachaClient.SlotState.STASIS);
+                    gc.tickNext(true);
                     switchState(State.BLOCK);
                 }
 

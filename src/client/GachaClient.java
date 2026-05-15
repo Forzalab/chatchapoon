@@ -44,7 +44,7 @@ public class GachaClient {
     private static final TextColor.RGB rRare = new TextColor.RGB(90, 140, 255);
     private static final TextColor.RGB rLegendary = new TextColor.RGB(255, 195, 0);
 
-    private static HashMap<String, ItemEffect.IEProperty> iepMap = new HashMap<>();
+    private static HashMap<String, ItemEffect.IEProperty> iepMap = new LinkedHashMap<>();
 
     private static final TerminalSize ts = new TerminalSize(Protocol.GACHA_WIDTH, Protocol.GACHA_HEIGHT);
     public static final HashMap<Integer, TextCharacter> symbolMap = new HashMap<>() {{
@@ -63,26 +63,36 @@ public class GachaClient {
     private static final String authorID = GameClient.playerID;
 
     private static final boolean isAuthor(String id) { return authorID.equals(id); }
+    private static final JSONObject getAuthorGacha() {
+        return data.get(authorID);
+    }
+
+    private static boolean eligible = false;
+    private static int stateTick = 0;
     
-    private Random r = new Random();
-    private final int reelsLength = 11;
-    private int[] reels = new int[reelsLength];
+    private static Random r = new Random();
+    private static final int reelsLength = 11;
+    private static int[] reels = new int[reelsLength];
     
     static enum SlotState {
-        SPIN(0), LOCK_1(1), LOCK_2(2), LOCK_3(3), REVEAL(4), STASIS(5), NOMONEY(-1);
+        SPIN(0), LOCK_1(1), LOCK_2(2), LOCK_3(3), REVEAL(4), STASIS(5), NOMONEY(6);
         private int val = 0;
         private SlotState(int val) { this.val = val; }
         private static final SlotState[] vals = values();
         private SlotState next() {
+             if (val == 6) return vals[5];// NM -> STASIS
              int index = Utility.mod(this.ordinal() + 1, vals.length - 1);
              return vals[index];
         }
+        // correspond to ordinals
+        static final int[] duration = { 20, 8, 8, 8, 15, 0, 10 };
     }
 
-    private SlotState ss = SlotState.STASIS;
+    private static SlotState ss = SlotState.STASIS;
 
     static {
         // recieves iepMap from server ONCE. its a lookup by name.
+        iepMap = ItemEffect.lookup;
     }
 
     GachaClient() {}
@@ -101,6 +111,8 @@ public class GachaClient {
     private static int lerp(double start, double end, double t) {
         return (int)Math.round((1 - t) * start + t * end);
     }
+
+//    static void triggerNoMoney() { ss = SlotState.NOMONEY; }    
     
     // Invariant: none = 00, c = 01, p = 10, s = 11
     static boolean satisfyState(int treel, int rarityIndex) {
@@ -144,21 +156,43 @@ public class GachaClient {
         return ItemEffect.IEProperty.Rarity.values()[0];
     }
 
-    SlotState tickSlot(SlotState s) { ss = s.next(); return s.next(); }
+    SlotState tickNext(boolean startMachine) { 
+        boolean reachedMaxDuration = (stateTick >= SlotState.duration[ss.ordinal()]);
+        boolean jumpstartFromStasis = (startMachine && ss == SlotState.STASIS);
+        boolean notInStasis = ss != SlotState.STASIS;
+    
+        stateTick += (reachedMaxDuration || jumpstartFromStasis) ? (-stateTick) : 1;
+    
+        if (jumpstartFromStasis)
+            // plauer eligible? go to Spin
+            // else go to NM
+            ss = (eligible) ? SlotState.SPIN : SlotState.NOMONEY;
+        else if (notInStasis && reachedMaxDuration)
+            ss = ss.next(); // terminates at STASIS
+        return ss;
+    }
+    
     SlotState currentSlotState() { return ss; }    
 
     boolean active() { return ss != SlotState.STASIS; }
 
-    void updateInternalDataWith(JSONObject jao, String authorID) {
-        JSONArray ja = new JSONArray(jao.getJSONArray("notifs"));
-        if (ja == null) return;
-       
+    void updateInternalDataWith(JSONObject jao) {
+       JSONArray ja = new JSONArray(jao.getJSONArray("notifs"));
+       if (ja == null) return;
+
+       eligible = false;
+
        for (int i = 0; i < ja.length(); i++) {
             if (ja.getJSONObject(i) == null) continue;
             JSONObject j = ja.getJSONObject(i);
             if (j == null) continue;
             String pullerID = j.optString("pullerID");
             data.put(pullerID, j);
+
+            // for author
+            if (pullerID != authorID) continue;
+            eligible = true; // if authro is elegible for the gacha, the notif must send to here, and logic must reach here, to which i can recah out and set `eligible` back!
+            // if they not eligible, we cant reach this section/line, then  sentinel/tombstone-like guard assumes we cannot pull. voila!
        }
     }
 
