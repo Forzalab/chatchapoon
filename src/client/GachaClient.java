@@ -156,18 +156,21 @@ public class GachaClient {
         return ItemEffect.IEProperty.Rarity.values()[0];
     }
 
-    SlotState tickNext(boolean startMachine) { 
+    SlotState tickNext(boolean forceNextState) { 
         boolean reachedMaxDuration = (stateTick >= SlotState.duration[ss.ordinal()]);
-        boolean jumpstartFromStasis = (startMachine && ss == SlotState.STASIS);
-        boolean notInStasis = ss != SlotState.STASIS;
+        boolean canJumpstartFromStasis = (forceNextState && ss == SlotState.STASIS);
+        boolean inStasis = ss == SlotState.STASIS;
+        boolean inEndState = (ss == SlotState.NOMONEY) || (ss == SlotState.REVEAL);
+        boolean userReadyExitGacha = inEndState && forceNextState;
     
-        stateTick += (reachedMaxDuration || jumpstartFromStasis) ? (-stateTick) : 1;
-        if (jumpstartFromStasis)
+        stateTick += (reachedMaxDuration || canJumpstartFromStasis || userReadyExitGacha) ? (-stateTick) : 1;
+        
+        if (canJumpstartFromStasis)
             // plauer eligible? go to Spin
             // else go to NM
             ss = (eligible) ? SlotState.SPIN : SlotState.NOMONEY;
-        else if (notInStasis && reachedMaxDuration)
-            ss = ss.next(); // terminates at STASIS
+        else if (userReadyExitGacha || (!inStasis && reachedMaxDuration && !inEndState))
+            ss = ss.next(); // terminates at R or NM as checkpoints
         return ss;
     }
     

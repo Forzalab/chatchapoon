@@ -1003,7 +1003,8 @@ TextColor.RGB(80,90,125));
                         // on otger state, esc is ignored!
                         // flow naturally on all stages.
                         // wont reach this block on state STASIS bcs big brain
-                        if (gc.currentSlotState() == GachaClient.SlotState.NOMONEY || gc.currentSlotState() == GachaClient.SlotState.REVEAL) gc.tickNext(false); // immediately switch to STASIS, to whcih it will exit. skips NOMONY frames.
+                        if (gc.currentSlotState() == GachaClient.SlotState.NOMONEY || gc.currentSlotState() == GachaClient.SlotState.REVEAL)
+                        gc.tickNext(true); // immediately switch to STASIS, to whcih it will exit. we wait for userr at reveal/NM.
                         // STASIS -> ... -> Reveal [wait here] -> STASIS
                         // STASIS -> No Money [wait here] -> STASIS
                         continue;
