@@ -20,7 +20,7 @@ import shared.*;
 
 public class GachaClient {
     private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 42);
-    private static final TextColor.RGB panel = new TextColor.RGB(22, 28, 48);
+    private static final TextColor.RGB panel = new TextColor.RGB(2, 8, 25);
     private static final TextColor.RGB paleGold = new TextColor.RGB(255, 248, 200);
     private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
     private static final TextColor.RGB white = new TextColor.RGB(205, 205, 205);
@@ -298,8 +298,8 @@ public class GachaClient {
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
        
-        String pullerName = GameClient.playerName + " is trying to unlock vault, hehe...";
-        String spinnerChar = Character.toString("|/—\\".charAt(stateTick/4 % 4));
+        String pullerName = " da vault ";
+        String spinnerChar = Character.toString("|/—\\".charAt(stateTick % 4));
 
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
         StartX = xs + 1; EndX = xe - 1;
@@ -354,16 +354,22 @@ public class GachaClient {
             int rowIdx = Utility.mod(spinFactor + dy + reelsLength/2, reelsLength);
             int reelElem = reels[rowIdx]; 
             
-            syms[i] = (reelElem & 48 >> (i << 1)) >> (4 - i << 1);
+            syms[i] = (reelElem >> (4 - (i << 1))) & 3;
             if (syms[i] == 0) syms[i] = 1;
             TextCharacter tc = symbolMap.get(syms[i]);
             if (tc == null) continue;
 
             // fadibg char and stuff
             TextColor bkg = tc.getBackgroundColor(), frg = tc.getForegroundColor();
-            bkg = ChatClient.getLERP(bkg, panel, 1 - dimFactor); frg = ChatClient.getLERP(frg, panel, 1-dimFactor);            
-            tc = tc.withBackgroundColor(bkg).withForegroundColor(frg);
-            tg.setCharacter(rX[i], rY, tc);
+            bkg = ChatClient.getLERP(bkg, panel, 1 - dimFactor);
+            frg = ChatClient.getLERP(frg, panel, 1 - dimFactor);            
+            if (dy == 0) {
+//                bkg = ChatClient.getLERP(bkg, REVEAL_FLASH, 0.15f);
+            }
+            tg.setForegroundColor(frg).setBackgroundColor(bkg);            
+//            tg.putString(rX[i] - 1, rY-1, " " + tc.getCharacter() + " ");            
+            tg.putString(rX[i] - 1, rY, " " + tc.getCharacter() + " ");
+//            tg.putString(rX[i] - 1, rY+1, " " + tc.getCharacter() + " ");            
         }}
         tg.setBackgroundColor(panel);
     }

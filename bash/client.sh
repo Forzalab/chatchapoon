@@ -9,6 +9,8 @@ for f in "$PARENT_DIR"/src/*/*.java; do
     ln -sf "$f" "$PARENT_DIR/$(basename "$f")"
 done
 
+printf '\033]50;xft:Monospace:size=18\007'
+
 # build and run
 find src -name "*.java" > sources.txt
 if javac -cp .:lib/* @sources.txt -d out/ 2>&1; then

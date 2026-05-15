@@ -46,7 +46,7 @@ public class Protocol {
     public static final int DESPAWN_TIMER = 2400;
 
     public static final int GACHA_COST = 10;
-    public static final int GACHA_REVEAL_IN = 70;
+    public static final int GACHA_REVEAL_IN = 350;
     public static final int PLAYER_RESPAWN_ATTEMPT = 3;
 
     // chat
@@ -54,10 +54,10 @@ public class Protocol {
     public static final int HIT_FLASH_TICK = 2;
 
     // gacha
-    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/3.0f);
+    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/8.0f);
     public static final int GACHA_HEIGHT = (int)Math.round(ARENA_HEIGHT/3.0f);
 
-    public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/6.0f);
+    public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/8.0f);
     public static final int GACHA_HEIGHT_SMALL = (int)Math.round(ARENA_HEIGHT/8.0f);    
 
     public static final int GACHA_ROWS_HALF = (int)Math.round(GACHA_HEIGHT/100.0f * 60.0f * 0.5f);
