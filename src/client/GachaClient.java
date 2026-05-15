@@ -287,7 +287,7 @@ public class GachaClient {
         tg.setForegroundColor(white);
      
         float scale = (s == SlotState.REVEAL) ? 3.0f : 2.0f;
-        for (int y = sY; y <= eY; y++) { for (int x = sX; x <= eX; x++, aniTick++) {
+        for (int y = sY; y <= eY; y++) { for (int x = sX; x <= eX; x++) {
             int charIndex = (x-sX + (int)Math.round((y-sY) * 1.5f * aniTick)) % dollarString.length();
             int colorIndex = (x-sX + (int)Math.round((y-sY) * 1.5f * aniTick * scale)) % dollarColors.length;
             TextColor dc = s == SlotState.NOMONEY ? dollarDullColors[colorIndex] : dollarColors[colorIndex];
@@ -295,7 +295,7 @@ public class GachaClient {
             tg.setForegroundColor(dc);
             tg.setCharacter(x, y, c);
         }}
-
+        aniTick++;
         tg.setBackgroundColor(bkg); 
         tg.setForegroundColor(whiteDefault);
     }
@@ -330,7 +330,7 @@ public class GachaClient {
 
         if (s == SlotState.STASIS) return;
 
-        drawFrameBox(tg, xs, xe, s, 1);
+        drawFrameBox(tg, xs, ys, s, 1);
         
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
