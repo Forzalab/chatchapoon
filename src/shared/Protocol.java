@@ -5,15 +5,15 @@ import com.googlecode.lanterna.TerminalSize;
 public class Protocol {
     public static final int PORT = 4267;
     public static final int TICK_MS = 45;
-    public static int ARENA_WIDTH = 160; // can chsnge later if too small
-    public static int ARENA_HEIGHT = 45;
+    public static int ARENA_WIDTH = 225; // can chsnge later if too small
+    public static int ARENA_HEIGHT = 85;
     public static final int MIN_COLS = 80;
     public static final int MIN_ROWS = 40;
     public static final int MAX_PLAYERS = 1;
 
     // for GameState
     public static final int LEVEL_DURATION_TICKS = 4800;
-    public static final int SIDEBAR_WIDTH = 50;
+    public static final int SIDEBAR_WIDTH = (int)Math.round(ARENA_WIDTH/3.0f);
     public static final int HUD_HEIGHT = 1;
     public static final int BORDER = 1;
     public static final int FIRE_COOLDOWN_TICKS = 5;
@@ -54,9 +54,9 @@ public class Protocol {
     public static final int HIT_FLASH_TICK = 2;
 
     // gacha
-    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/4.0f*3.0f);
-    public static final int GACHA_HEIGHT = (int)Math.round(ARENA_HEIGHT/4.0f*3.0f);
+    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/3.0f);
+    public static final int GACHA_HEIGHT = (int)Math.round(ARENA_HEIGHT/3.0f);
 
-    public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/4.0f);
-    public static final int GACHA_HEIGHT_SMALL = (int)Math.round(ARENA_HEIGHT/6.0f);    
+    public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/6.0f);
+    public static final int GACHA_HEIGHT_SMALL = (int)Math.round(ARENA_HEIGHT/8.0f);    
 }
