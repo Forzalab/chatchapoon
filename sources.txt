@@ -20,6 +20,7 @@ src/shared/Utility.java
 src/shared/CoinMagnet.java
 src/shared/Actor.java
 src/shared/AmmoRefill.java
+src/shared/BankFlyer.java
 src/shared/Player.java
 src/shared/Entity.java
 src/shared/Enemy.java

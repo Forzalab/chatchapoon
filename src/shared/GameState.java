@@ -433,6 +433,10 @@ List<Player/Enemy/  Bullet> + playerById + nextId() + colorTaken[] + tickCounter
             Class.forName("shared.Shield");
             Class.forName("shared.SmallHeal");
             Class.forName("shared.FullHeal");
+            Class.forName("shared.BankFlyer");
+            Class.forName("shared.PlasticGun");
+            Class.forName("shared.SpeedBoost");
+            Class.forName("shared.CoinPouch");
             // no need json sharing property
         } catch (Exception e) { e.printStackTrace(); }
         avatarMatrix = new Entity.Avatar[Protocol.ARENA_WIDTH][Protocol.ARENA_HEIGHT];

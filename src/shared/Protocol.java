@@ -21,7 +21,7 @@ public class Protocol {
     public static final int LOBBY_CLOSE_IN = 60000 * TICK_MS;
     public static final int ONE_USE_ITEM_TIME = -76;
     public static final int ONE_USE_ITEM_TIME_ACTIVE = -84; // can be enum but idc
-    public static final int NEW_MONEY = 100;    
+    public static final int NEW_MONEY = 0;    
     
 //    public static final int WAVE_INTERVAL_TICKS = 600;
     public static final int MAX_BULLETS = 1000;
@@ -63,5 +63,5 @@ public class Protocol {
     public static final int GACHA_ROWS_HALF = 4;
 
     public static final double GACHA_TITLE_RATIO = 0.2;
-    public static final double GACHA_REELS_RATIO = 0.65;    
+    public static final double GACHA_REELS_RATIO = 0.8;    
 }
