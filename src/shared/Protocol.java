@@ -63,5 +63,5 @@ public class Protocol {
     public static final int GACHA_ROWS_HALF = (int)Math.round(GACHA_HEIGHT/100.0f * 60.0f * 0.5f);
 
     public static final double GACHA_TITLE_RATIO = 0.2;
-    public static final double GACHA_REELS_RATIO = 0.9;    
+    public static final double GACHA_REELS_RATIO = 0.65;    
 }

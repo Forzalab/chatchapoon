@@ -19,8 +19,8 @@ import com.googlecode.lanterna.*;
 import shared.*;
 
 public class GachaClient {
-    private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 42);
-    private static final TextColor.RGB panel = new TextColor.RGB(2, 8, 25);
+    private static final TextColor.RGB bkg = new TextColor.RGB(15, 23, 45);
+    private static final TextColor.RGB panel = new TextColor.RGB(5, 13, 15);
     private static final TextColor.RGB paleGold = new TextColor.RGB(255, 248, 200);
     private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
     private static final TextColor.RGB white = new TextColor.RGB(205, 205, 205);
@@ -283,7 +283,7 @@ public class GachaClient {
         int scale = (s == SlotState.REVEAL) ? 3 : 2;
         for (int y = sY; y <= eY; y++) { for (int x = sX; x <= eX; x++) {
             int charIndex = Utility.mod(x-sX + (aniTick/5), dollarString.length());
-            int colorIndex = Utility.mod(x-sX + scale * (aniTick/5 * (y%3)/3) * ((y%2)*(-1) + (y+1)%2), dollarColors.length);
+            int colorIndex = Utility.mod(x-sX + scale * (aniTick/5 * (y/7)%7) * ((y%2)*(-1) + (y+1)%2), dollarColors.length);
             TextColor dc = s == SlotState.NOMONEY ? dollarDullColors[colorIndex] : dollarColors[colorIndex];
             char c = dollarString.charAt(charIndex);
             tg.setForegroundColor(dc);
@@ -299,7 +299,6 @@ public class GachaClient {
         tg.setForegroundColor(white);
        
         String pullerName = " da vault ";
-        String spinnerChar = Character.toString("|/—\\".charAt(stateTick % 4));
 
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
         StartX = xs + 1; EndX = xe - 1;
@@ -309,15 +308,31 @@ public class GachaClient {
 
         drawDollarBkg(tg, s, StartX, StartY, EndX, EndY);
         
-        String titleCenter = "   " + spinnerChar + " " + pullerName + " " + spinnerChar + "   ";
+//        String titleCenter = "   " + spinnerChar + " " + pullerName + " " + spinnerChar + "   ";
+        char sp = "|/-\\".charAt((aniTick/4) % 4);
+        TextColor spColor = (aniTick % 6 < 3) ? REVEAL_FLASH : rLegendary;
 
+        String spinL = "< " + sp + " >";
+        String spinR = "< " + sp + " >";
+        String full  = spinL + " " + pullerName + " " + spinR;
+
+        int drawX = mid(StartX, EndX) - full.length()/2;
+        tg.setBackgroundColor(panel);
+        tg.setForegroundColor(spColor);
+
+        tg.fillRectangle(new TerminalPosition(midX - full.length()/2, midY - 1), new TerminalSize(full.length(), 3), ' ');
+        tg.putString(drawX, midY, spinL);
+        tg.setForegroundColor(s == SlotState.REVEAL ? REVEAL_FLASH : whiteDefault);
+        tg.putString(drawX + spinL.length() + 1, midY, pullerName);
+        tg.setForegroundColor(spColor);
+        tg.putString(drawX + spinL.length() + 1 + pullerName.length() + 1, midY, spinR);
+/*
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(s == SlotState.REVEAL?REVEAL_FLASH:white);
 
-        tg.fillRectangle(new TerminalPosition(midX - titleCenter.length()/2, midY - 1), new TerminalSize(titleCenter.length(), 3), ' ');
 
         tg.putString(midX - titleCenter.length()/2, midY, titleCenter);
-
+*/
         // draw dolar bkg first
         // then draw txt
 
@@ -350,7 +365,7 @@ public class GachaClient {
         for (int i = 0; i < 3; i++) {
         
             // index each RC, noting that a col can be locked or not
-            int spinFactor = (s.ordinal() <= i) ? aniTick : 1;
+            int spinFactor = (s.ordinal() <= i) ? (aniTick + 17 * i) : 0;
             int rowIdx = Utility.mod(spinFactor + dy + reelsLength/2, reelsLength);
             int reelElem = reels[rowIdx]; 
             
@@ -373,6 +388,39 @@ public class GachaClient {
         }}
         tg.setBackgroundColor(panel);
     }
+
+    void drawSlotResult(TextGraphics tg, SlotState s) {
+        int StartX = xs+1, EndX = xe-1;
+        int startRZ = Utility.lerp(ys, ye, Protocol.GACHA_REELS_RATIO) + 1;
+        int endRZ = ye - 1;
+        int midRZY = mid(startRZ, endRZ);
+        int midRZX = mid(StartX, EndX);
+
+        tg.setBackgroundColor(panel);
+        tg.fillRectangle(new TerminalPosition(StartX, startRZ), new TerminalSize(EndX-StartX, endRZ-startRZ+1), ' ');
+
+        JSONObject author = getAuthorGacha();
+        if (s == SlotState.REVEAL && author != null) {
+            String displayName = author.optString("itemDisplayName", "???");
+            String rarityStr = author.optString("itemRarity", "");
+            String desc = author.optString("itemDesc", "");
+
+            TextColor rarityColor
+            = ("LEGENDARY".equals(rarityStr)) ? rLegendary
+            : ("RARE".equals(rarityStr)) ? rRare
+            : ("COMMON".equals(rarityStr)) ? rCommon
+            : ("NA".equals(rarityStr)) ? rDud : white;
+
+            tg.setForegroundColor(rarityColor);
+            tg.putString(midRZX - rarityStr.length()/2, midRZY - 1, rarityStr);
+            tg.setForegroundColor(whiteDefault);
+            tg.putString(midRZX - displayName.length()/2, midRZY, displayName);
+            int maxW = EndX - StartX - 2;
+            String truncDesc = desc.length() > maxW ? desc.substring(0, maxW-3)+"..." : desc;
+            tg.setForegroundColor(white);
+            tg.putString(midRZX - truncDesc.length()/2, midRZY + 1, truncDesc);
+        }
+    }
     
     // bit 0 int state is redundant rn, but leave it for later usr    
     void drawSlot(TextGraphics tg, SlotState s) {
@@ -385,6 +433,7 @@ public class GachaClient {
         drawFrameBox(tg, xs, ys, s, true);
         drawSlotTitle(tg, s);
         drawSlotReels(tg, s);
+        drawSlotResult(tg, s);
         
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
