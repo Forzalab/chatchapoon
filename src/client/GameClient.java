@@ -54,6 +54,20 @@ public class GameClient {
         Matcher mg = ptrn.matcher(gameTooltip), mc = ptrn.matcher(chatTooltip);
         while (mg.find()) grl.add(mg.group().strip());
         while (mc.find()) crl.add(mc.group().strip());        
+        // awaken static block in ItemEffect subclass
+         try {
+            Class.forName("shared.AmmoRefill");
+            Class.forName("shared.BulletStorm");
+            Class.forName("shared.Ghost");
+            Class.forName("shared.CoinMagnet");
+            Class.forName("shared.AreaBomb");
+            Class.forName("shared.RapidFire");
+            Class.forName("shared.ExtraMag");
+            Class.forName("shared.Shield");
+            Class.forName("shared.SmallHeal");
+            Class.forName("shared.FullHeal");
+            // no need json sharing property
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private static void renderHighlightTooltip(int index, TextGraphics tg) {
