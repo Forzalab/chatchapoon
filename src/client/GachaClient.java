@@ -175,24 +175,14 @@ public class GachaClient {
 
     boolean active() { return ss != SlotState.STASIS; }
 
-    synchronized void updateInternalDataWith(JSONObject jao) {
+    synchronized void updateInternalDataWith(JSONObject jao, JSONObject author_jo) {
         JSONArray ja = new JSONArray(jao.getJSONArray("notifs"));
-        JSONArray jap = new JSONArray(jao.getJSONArray("players"));
-        if (ja == null || jap == null) return;
+        if (ja == null) return;
 
-        eligible = false;
-        
-        for (int i = 0; i < jap.length(); i++) {
-            if (jap.getJSONObject(i) == null) continue;
-            JSONObject j = jap.getJSONObject(i);
-            if (j == null) continue;
-            String id = j.optString("id");
-            
-            if (!authorID.equals(id)) continue;
+        if (author_jo != null) {
             int gachaCost = Protocol.GACHA_COST;
-            int coinsHave = (new JSONArray(jao.getJSONArray("players")).getJSONObject(i).optInt("currency", -1));
+            int coinsHave = author_jo.optInt("currency", -1);
             eligible = (coinsHave >= gachaCost); 
-            break;
         }
        
         for (int i = 0; i < ja.length(); i++) {

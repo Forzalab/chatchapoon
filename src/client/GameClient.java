@@ -76,6 +76,7 @@ public class GameClient {
     }
 
     private static GachaClient gc = new GachaClient();  
+    private static JSONObject author_jo = null;
 
     private static void renderHighlightTooltip(int index, TextGraphics tg) {
         if (index < 0) return;
@@ -306,6 +307,8 @@ public class GameClient {
             if ("player".equals(type) && !playerColor.containsKey(playerId)) {
                 if (playerID.equals(Utility.optString(j, "id"))) {
                     playerColor.put(playerId, new TextColor.RGB(255, 255, 255));
+                    // also hitch a quick ride to Gacha-town
+                    author_jo = new JSONObject(j, JSONObject.getNames(j));
                 } else {
                 TextColor color = ChatClient.getColor(playerId);
                 playerColor.put(playerId, color);
@@ -884,8 +887,6 @@ TextColor.RGB(80,90,125));
                     tg.putString(0,0,"┌");
                     tg.putString(Protocol.ARENA_WIDTH+1,0,"┐");            
 
-                    gc.updateInternalDataWith(to_render);                                        gc.tickNext(false);
-
                     JSONArray jap = new JSONArray(to_render.getJSONArray("players"));
                     JSONArray jab = new JSONArray(to_render.getJSONArray("bullets"));
                     JSONArray jae = new JSONArray(to_render.getJSONArray("enemies"));      
@@ -894,6 +895,8 @@ TextColor.RGB(80,90,125));
                     if (jae != null) processPlayersArrayRender(jae, tg, "x", to_render);
                     if (jap != null) processPlayersArrayRender(jap, tg, "o", to_render);
                     if (jab != null) processPlayersArrayRender(jab, tg, "•", to_render);
+                    gc.updateInternalDataWith(to_render, author_jo);
+                    gc.tickNext(false);
                 }
                 else if ("LEADERBOARD".equals(Utility.optString(to_render, "type"))) {
                     renderLeaderboard(tg);
