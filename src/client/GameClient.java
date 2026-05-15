@@ -845,9 +845,9 @@ TextColor.RGB(80,90,125));
 "                   -..:%++%:..-    ",
 "                     @.%--%.@      ",
 "                      @@@%        ",
-"                    "
-
-        };
+"                    ",
+//  "          git clone https:\/\/github.com/Forzalab/chatchapoon.git"
+"       git clone https://github.com/Forzalab/chatchapoon.git"        };
         
         int length = lines[9].length();
 
