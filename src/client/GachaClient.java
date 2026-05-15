@@ -204,13 +204,13 @@ public class GachaClient {
     }
 
     // state: LSD is author, 2nd LSD is flahsing
-    void drawFrameBox(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
+    void drawFrameBox(TextGraphics tg, int fromX, int fromY, SlotState s, boolean fullSize) {
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
 
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
-        if ((state & 0b1) == 1) {
+        if (fullSize) {
             StartX = fromX; EndX = StartX + Protocol.GACHA_WIDTH;
             StartY = fromY; EndY = StartY + Protocol.GACHA_HEIGHT;
         } else {
@@ -225,7 +225,7 @@ public class GachaClient {
         tg.setForegroundColor(white);
 
         // flahsing frame
-        if ((state & 0b10) != 0b10) {
+        if (ss != SlotState.REVEAL) {
             tg.setForegroundColor(white);
         } else {
             tg.setForegroundColor(REVEAL_FLASH);
@@ -255,7 +255,7 @@ public class GachaClient {
 //        try {} catch (Exception e) {}
     }
 
-    void drawSideSlot(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
+    void drawSideSlot(TextGraphics tg, int fromX, int fromY, SlotState s) {
     
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
@@ -292,7 +292,7 @@ public class GachaClient {
         tg.setForegroundColor(whiteDefault);
     }
     
-    void drawSlotTitle(TextGraphics tg, SlotState s, int state) {
+    void drawSlotTitle(TextGraphics tg, SlotState s) {
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
        
@@ -311,6 +311,9 @@ public class GachaClient {
 
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(s == SlotState.REVEAL?REVEAL_FLASH:white);
+
+        tg.fillRectangle(new TerminalPosition(midX - titleCenter.length()/2, midY - 1), new TerminalSize(titleCenter.length(), 3), ' ');
+
         tg.putString(midX - titleCenter.length()/2, midY, titleCenter);
 
         // draw dolar bkg first
@@ -320,20 +323,20 @@ public class GachaClient {
         tg.setForegroundColor(whiteDefault);
     }
 
-    void drawSlotReels(TextGraphics tg, SlotState s, int state) {
+    void drawSlotReels(TextGraphics tg, SlotState s) {
         tg.setBackgroundColor(panel);
 
         int StartX = 0, StartRY = 0, StartY = 0, EndX = 0, EndTY = 0, EndRY = 0;
         StartX = xs + 1; EndX = xe - 1;
-        StartY = ys + 1;
-        EndTY = Utility.lerp(ys, ye, Protocol.GACHA_TITLE_RATIO) - 1; EndRY = Utility.lerp(ys, ye, Protocol.GACHA_REELS_RATIO) - 1;
-        StartRY = EndTY + 2;
+        StartY = ys+1;
+        EndTY = Utility.lerp(ys, ye, Protocol.GACHA_TITLE_RATIO) - 1; EndRY = Utility.lerp(ys, ye, Protocol.GACHA_REELS_RATIO) - 2;
+        StartRY = EndTY + 3;
         
         int midRY = mid(StartRY, EndRY);
         int colW = Utility.lerp(StartX, EndX, 0.333);
         int[] rX = {StartX+colW/2, StartX+colW+colW/2, StartX+2*colW+colW/2};
 
-        tg.fillRectangle(new TerminalPosition(StartX, EndTY+1), new TerminalSize(EndX-StartX-1, EndRY-EndTY-1), ' ');
+        tg.fillRectangle(new TerminalPosition(StartX, StartRY), new TerminalSize(EndX-StartX-1, EndRY-EndTY-1), ' ');
 
         int[] syms = new int[3];
         
@@ -356,24 +359,24 @@ public class GachaClient {
 
             // fadibg char and stuff
             TextColor bkg = tc.getBackgroundColor(), frg = tc.getForegroundColor();
-            bkg = ChatClient.getLERP(panel, bkg, dimFactor); frg = ChatClient.getLERP(panel, frg, dimFactor);            
+            bkg = ChatClient.getLERP(bkg, panel, 1 - dimFactor); frg = ChatClient.getLERP(frg, panel, 1-dimFactor);            
             tc = tc.withBackgroundColor(bkg).withForegroundColor(frg);
-            tg.setBackgroundColor(panel);
             tg.setCharacter(rX[i], rY, tc);
-            
         }}
+        tg.setBackgroundColor(panel);
     }
     
     // bit 0 int state is redundant rn, but leave it for later usr    
-    void drawSlot(TextGraphics tg, SlotState s, int state) {
+    void drawSlot(TextGraphics tg, SlotState s) {
         xs = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; xe = xs + Protocol.GACHA_WIDTH;
         ys = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; ye = ys + Protocol.GACHA_HEIGHT;
 
         // DO NOT CHANGE XS YS FROM THIS STAGE
         if (s == SlotState.STASIS) return;
 
-        drawFrameBox(tg, xs, ys, s, 1);
-        drawSlotTitle(tg, s, 1);
+        drawFrameBox(tg, xs, ys, s, true);
+        drawSlotTitle(tg, s);
+        drawSlotReels(tg, s);
 
         aniTick++;
         

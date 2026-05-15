@@ -60,8 +60,8 @@ public class Protocol {
     public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/6.0f);
     public static final int GACHA_HEIGHT_SMALL = (int)Math.round(ARENA_HEIGHT/8.0f);    
 
-    public static final int GACHA_ROWS_HALF = (int)Math.round(GACHA_HEIGHT/100.0f * 70.0f * 0.5f);
+    public static final int GACHA_ROWS_HALF = (int)Math.round(GACHA_HEIGHT/100.0f * 60.0f * 0.5f);
 
-    public static final double GACHA_TITLE_RATIO = 0.18;
+    public static final double GACHA_TITLE_RATIO = 0.2;
     public static final double GACHA_REELS_RATIO = 0.9;    
 }

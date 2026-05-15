@@ -935,7 +935,7 @@ TextColor.RGB(80,90,125));
 // only main player can get this
 //                int flag = ((int)()) << 0;
 
-                gc.drawSlot(tg, gc.currentSlotState(), 1); }
+                gc.drawSlot(tg, gc.currentSlotState()); }
 // conditionally fters for non-main MUST CHANGE BRACKET
                 // gc.drawSlot(tg, 2, Protocol.ARENA_HEIGHT + Protocol.BORDER - 3, GachaClient.SlotState.SPIN, 1);
 
