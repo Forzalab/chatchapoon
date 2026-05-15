@@ -63,11 +63,12 @@ public class GachaClient {
         return data.get(GameClient.playerID);
     }
 
+    private static boolean stripsBuilt = false; // prevent rebuilding every tick! we only need it to build on gacha CALLS
     private static boolean eligible = false;
     private static int stateTick = 0;
     private static int xs = 0, xe = 0, ys = 0, ye = 0;
     private static Random r = new Random();
-    private static final int reelsLength = (int)Math.round(Protocol.GACHA_ROWS_HALF * 2 * 2);
+    private static final int reelsLength = (int)Math.round(Protocol.GACHA_ROWS_HALF * 2 * 3);
     private static int[] reels = new int[reelsLength];
     
     static enum SlotState {
@@ -163,6 +164,7 @@ public class GachaClient {
         
         stateTick += (reachedMaxDuration || canJumpstartFromStasis || userReadyExitGacha) ? (-stateTick) : 1;
         aniTick++;
+
         if (canJumpstartFromStasis)
             // plauer eligible? go to Spin
             // else go to NM
@@ -187,7 +189,7 @@ public class GachaClient {
             int coinsHave = author_jo.optInt("currency", -1);
             eligible = (coinsHave >= gachaCost); 
         }
-       
+
         for (int i = 0; i < ja.length(); i++) {
             if (ja.getJSONObject(i) == null) continue;
             JSONObject j = ja.getJSONObject(i);
@@ -359,7 +361,7 @@ public class GachaClient {
         
           // 5 rows 3 col
         for (int dy = -Protocol.GACHA_ROWS_HALF; dy <= Protocol.GACHA_ROWS_HALF; dy++) {
-            int rY = midRY + dy;
+            int rY = midRY + dy - 1;
             float dimFactor = 1.0f - (float)Math.abs(dy) / (Protocol.GACHA_ROWS_HALF + 1.0f);
 
 
@@ -406,7 +408,7 @@ public class GachaClient {
             String displayName = author.optString("itemDisplayName", "???");
             String rarityStr = author.optString("itemRarity", "");
             String desc = author.optString("itemDesc", "");
-
+System.err.println("[RESULT] " + displayName + " | " + rarityStr);
             TextColor rarityColor
             = ("LEGENDARY".equals(rarityStr)) ? rLegendary
             : ("RARE".equals(rarityStr)) ? rRare
