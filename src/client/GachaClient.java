@@ -176,14 +176,13 @@ public class GachaClient {
     boolean active() { return ss != SlotState.STASIS; }
 
     synchronized void updateInternalDataWith(JSONObject jao) {
-       JSONArray ja = new JSONArray(jao.getJSONArray("notifs"));
-       JSONArray jap = new JSONArray(jao.getJSONArray("players"));
-       
-       if (ja == null) return;
+        JSONArray ja = new JSONArray(jao.getJSONArray("notifs"));
+        JSONArray jap = new JSONArray(jao.getJSONArray("players"));
+        if (ja == null || jap == null) return;
 
-       eligible = false;
+        eligible = false;
         
-       for (int i = 0; i < jap.length(); i++) {
+        for (int i = 0; i < jap.length(); i++) {
             if (jap.getJSONObject(i) == null) continue;
             JSONObject j = jap.getJSONObject(i);
             if (j == null) continue;
@@ -194,9 +193,9 @@ public class GachaClient {
             int coinsHave = (new JSONArray(jao.getJSONArray("players")).getJSONObject(i).optInt("currency", -1));
             eligible = (coinsHave >= gachaCost); 
             break;
-       }
+        }
        
-       for (int i = 0; i < ja.length(); i++) {
+        for (int i = 0; i < ja.length(); i++) {
             if (ja.getJSONObject(i) == null) continue;
             JSONObject j = ja.getJSONObject(i);
             if (j == null) continue;
@@ -205,9 +204,13 @@ public class GachaClient {
 
             // for author
             if (!authorID.equals(pullerID)) continue;            
-       }
-    }
 
+            // start to slot up
+            String itemName = j.optString("itemName");
+            ItemEffect.IEProperty prop = ItemEffect.lookup.get(itemName);
+            if (prop != null) reels = buildStrips(prop.rarity);
+        }
+    }
 
     // state: LSD is author, 2nd LSD is flahsing
     void drawFrameBox(TextGraphics tg, int fromX, int fromY, SlotState s, int state) {
@@ -265,8 +268,7 @@ public class GachaClient {
     
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
-
-        if ((state & 0b1) != 1) return;
+        if ((state & 0b1) != 1) return; // is NOT author
         else if (s == SlotState.STASIS) return;
         
         StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
@@ -284,8 +286,7 @@ public class GachaClient {
         StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
         StartY = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; EndY = StartY + Protocol.GACHA_HEIGHT;
 
-        if ((state & 0b1) != 1) return;
-        else if (s == SlotState.STASIS) return;
+        if (s == SlotState.STASIS) return;
 
         drawFrameBox(tg, StartX, StartY, s, state);
         
