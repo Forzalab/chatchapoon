@@ -25,20 +25,20 @@ public class GachaClient {
     private static final TextColor.RGB whiteDefault = new TextColor.RGB(255, 255, 255);
     private static final TextColor.RGB white = new TextColor.RGB(205, 205, 205);
     
-    private static final TextColor.RGB C_BKG = new TextColor.RGB(90, 10, 10);
-    private static final TextColor.RGB C_FG = new TextColor.RGB(255, 110, 110);
+    private static final TextColor.RGB C_BKG = new TextColor.RGB(80, 10, 10);
+    private static final TextColor.RGB C_FG = new TextColor.RGB(255, 120, 120);
 
-    private static final TextColor.RGB S_BKG = new TextColor.RGB(55, 58, 68);
-    private static final TextColor.RGB S_FG = new TextColor.RGB(210, 215, 225);
+    private static final TextColor.RGB S_BKG = new TextColor.RGB(30, 38, 55);
+    private static final TextColor.RGB S_FG = new TextColor.RGB(220, 225, 240);
 
-    private static final TextColor.RGB P_BKG = new TextColor.RGB(102, 88, 102);
-    private static final TextColor.RGB P_FG = new TextColor.RGB(215, 175, 215);
+    private static final TextColor.RGB P_BKG = new TextColor.RGB(55, 20, 80);
+    private static final TextColor.RGB P_FG = new TextColor.RGB(210, 160, 255);
 
     private static final TextColor.RGB REVEAL_FLASH = new TextColor.RGB(255, 235, 90);
 
     private static final TextColor.RGB rDud = new TextColor.RGB(80, 80, 80);
     private static final TextColor.RGB rCommon = new TextColor.RGB(160, 160, 160);
-    private static final TextColor.RGB rRare = new TextColor.RGB(90, 140, 255);
+    private static final TextColor.RGB rRare = new TextColor.RGB(80, 160, 255);
     private static final TextColor.RGB rLegendary = new TextColor.RGB(255, 195, 0);
 
     private static HashMap<String, ItemEffect.IEProperty> iepMap = new LinkedHashMap<>();
