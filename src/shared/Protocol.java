@@ -54,13 +54,13 @@ public class Protocol {
     public static final int HIT_FLASH_TICK = 2;
 
     // gacha
-    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/8.0f);
+    public static final int GACHA_WIDTH = (int)Math.round(ARENA_WIDTH/6.0f);
     public static final int GACHA_HEIGHT = (int)Math.round(ARENA_HEIGHT/3.0f);
 
     public static final int GACHA_WIDTH_SMALL = (int)Math.round(ARENA_WIDTH/8.0f);
     public static final int GACHA_HEIGHT_SMALL = (int)Math.round(ARENA_HEIGHT/8.0f);    
 
-    public static final int GACHA_ROWS_HALF = 4;
+    public static final int GACHA_ROWS_HALF = 5;
 
     public static final double GACHA_TITLE_RATIO = 0.2;
     public static final double GACHA_REELS_RATIO = 0.8;    

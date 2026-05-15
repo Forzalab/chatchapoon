@@ -76,7 +76,7 @@ public class GameClient {
             Class.forName("shared.FullHeal");
             Class.forName("shared.BankFlyer");
             Class.forName("shared.PlasticGun");
-            Class.forName("shared.SpeedBoost");
+//            Class.forName("shared.SpeedBoost");
             Class.forName("shared.CoinPouch");
             // no need json sharing property
         } catch (Exception e) { e.printStackTrace(); }
