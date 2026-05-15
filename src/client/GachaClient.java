@@ -138,7 +138,7 @@ public class GachaClient {
         int[] reels = new int[reelsLength];
         for (int i = 0; i < reelsLength; i++) {
             do { reels[i] = r.nextInt(63); }
-            while (!satisfyState(reels[i], rarity.getVal()) && (i == (int)Math.round(reelsLength/2.0f)));
+            while (!satisfyState(reels[i], rarity.getVal()) && (i == (int)Math.round(reelsLength/2.0f)) || (rarity.getVal() < 3 && satisfyState(reels[i], rarity.getVal()+1)) );
         }
         return reels;
     }
@@ -148,7 +148,8 @@ public class GachaClient {
         reel += symbolMapInverse.get(c1); reel <<= 2;
         reel += symbolMapInverse.get(c2); reel <<= 2;
         reel += symbolMapInverse.get(c3);        
-        for (int i = 1; i <= 3; i++)
+        // check L -> R -> C or everyone will lose their mibds
+        for (int i = 3; i >= 1; i++)
             if (satisfyState(reel, i)) return ItemEffect.IEProperty.Rarity.values()[i];
         return ItemEffect.IEProperty.Rarity.values()[0];
     }
