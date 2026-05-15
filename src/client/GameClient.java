@@ -952,7 +952,7 @@ TextColor.RGB(80,90,125));
     //tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(Protocol.ARENA_WIDTH, 0), '─');
                   tg.drawLine(
                         new TerminalPosition(0, Protocol.ARENA_HEIGHT + Protocol.BORDER),
-                        new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
+                            new TerminalPosition(Protocol.ARENA_WIDTH+1, Protocol.ARENA_HEIGHT + Protocol.BORDER),
                         '─'
                     );
                   tg.drawRectangle(new TerminalPosition(0, 0), new TerminalSize(0, Protocol.ARENA_HEIGHT +  Protocol.BORDER), '│');
