@@ -18,7 +18,6 @@ src/shared/ExtraMag.java
 src/shared/CoinPouch.java
 src/shared/AreaBomb.java
 src/shared/Utility.java
-src/shared/SpeedBoost.java
 src/shared/CoinMagnet.java
 src/shared/Actor.java
 src/shared/AmmoRefill.java

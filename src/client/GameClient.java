@@ -331,10 +331,13 @@ public class GameClient {
                     author_jo = new JSONObject(j, JSONObject.getNames(j));
                    // System.err.println("cli 327 " + author_jo.optInt("currency",-69) + " time: " + System.currentTimeMillis());
                     playerName = j.optString("name");
-                } else {
+                } 
+            }
+            else { 
                 TextColor color = ChatClient.getColor(playerId);
                 playerColor.put(playerId, color);
-            }}
+
+            }
 
 //            System.err.println(playerColor.keySet());
 
