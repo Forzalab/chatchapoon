@@ -423,7 +423,7 @@ public class GachaClient {
         int StartX = xs+1, EndX = xe-1;
         int startRZ = ys + (int)Math.round((ye - ys) * Protocol.GACHA_REELS_RATIO) + 1;
         int endRZ = ye - 1;
-        int midRZY = mid(startRZ, endRZ);
+        int midRZY = mid(startRZ, endRZ) - 1;
         int midRZX = mid(StartX, EndX);
 
         tg.setBackgroundColor(panel);
@@ -448,9 +448,16 @@ public class GachaClient {
             tg.setForegroundColor(whiteDefault);
             tg.putString(midRZX - displayName.length()/2, midRZY, displayName);
             int maxW = EndX - StartX - 2;
-            String truncDesc = desc.length() > maxW ? desc.substring(0, maxW-3)+"..." : desc;
+            
+            String[] dParts = desc.split("\\n", 2);
+            String d1 = dParts[0].trim();
+            String d2 = dParts.length > 1 ? dParts[1].trim() : "";
+            if (d1.length() > maxW) d1 = d1.substring(0, maxW-3) + "...";
+            if (d2.length() > maxW) d2 = d2.substring(0, maxW-3) + "...";
+
             tg.setForegroundColor(white);
-            tg.putString(midRZX - truncDesc.length()/2, midRZY + 1, truncDesc);
+            tg.putString(midRZX - d1.length()/2, midRZY + 1, d1);
+            tg.putString(midRZX - d2.length()/2, midRZY + 2, d2);         
         }
     }
     
