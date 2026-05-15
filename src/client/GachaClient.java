@@ -354,7 +354,7 @@ public class GachaClient {
             int rowIdx = Utility.mod(spinFactor + dy + reelsLength/2, reelsLength);
             int reelElem = reels[rowIdx]; 
             
-            syms[i] = reelElem & (0b110000 >> (i << 1));
+            syms[i] = (reelElem & 48 >> (i << 1)) >> (4 - i << 1);
             if (syms[i] == 0) syms[i] = 1;
             TextCharacter tc = symbolMap.get(syms[i]);
             if (tc == null) continue;

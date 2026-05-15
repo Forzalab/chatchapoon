@@ -324,6 +324,7 @@ public class GameClient {
                     playerColor.put(playerId, new TextColor.RGB(255, 255, 255));
                     // also hitch a quick ride to Gacha-town
                     author_jo = new JSONObject(j, JSONObject.getNames(j));
+                    playerName = j.optString("name");
                 } else {
                 TextColor color = ChatClient.getColor(playerId);
                 playerColor.put(playerId, color);
@@ -818,7 +819,7 @@ TextColor.RGB(80,90,125));
 
     } catch (Exception e) {} }
         
-    // main({player_name, host})
+    // main({playerName, host})
     // player instance is "isolated" in each thread's main()
     public static void main(String[] args) {
         try {
@@ -839,8 +840,8 @@ TextColor.RGB(80,90,125));
             reader = new BufferedReader(new InputStreamReader(istream));
             
             // join the server by sending a request first
-            String player_name = args.length > 0 ? args[0] : "anon";
-            String join = new JSONObject().put("type", "JOIN").put("playerId", playerID).put("cols", cols).put("rows", rows).put("name", player_name).toString();
+            playerName = args.length > 0 ? args[0] : "anon";
+            String join = new JSONObject().put("type", "JOIN").put("playerId", playerID).put("cols", cols).put("rows", rows).put("name", playerName).toString();
             writer.println(join);
 
             // prepare renderer
@@ -858,7 +859,7 @@ TextColor.RGB(80,90,125));
             }); listener.start();            
 
             // --- Thread 2: Render-keystroke loop ---
-            while (!((!( "render".equals(to_render) && !"localhost".equals(host)) && !(!Utility.isJSONValid(join) && !"anon".equals(player_name))) && !(!("render".equals(to_render) || !Utility.isJSONValid(join)) || ("localhost".equals(host) || "anon".equals(player_name))))) {         
+            while (!((!( "render".equals(to_render) && !"localhost".equals(host)) && !(!Utility.isJSONValid(join) && !"anon".equals(playerName))) && !(!("render".equals(to_render) || !Utility.isJSONValid(join)) || ("localhost".equals(host) || "anon".equals(playerName))))) {         
 
                 // ==== RENDER ====
                 tg.setBackgroundColor(new TextColor.RGB(15,23,45));
@@ -1028,7 +1029,7 @@ TextColor.RGB(80,90,125));
                 if (state == State.CHAT) {
                     if (keystroke.getKeyType() == KeyType.Enter) {
                         ChatClient.msgBuffer = ChatClient.msgBuffer.replace("\n", "");
-                        ChatClient.send(ChatClient.msgBuffer, playerID, player_name, "");
+                        ChatClient.send(ChatClient.msgBuffer, playerID, playerName, "");
                         ChatClient.resetCursor();
                     }
                     else if (keystroke.getKeyType() == KeyType.Backspace) {
