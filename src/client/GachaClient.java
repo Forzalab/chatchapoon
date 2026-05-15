@@ -36,7 +36,7 @@ public class GachaClient {
 
     private static final TextColor.RGB REVEAL_FLASH = new TextColor.RGB(255, 235, 90);
 
-    private static final TextColor.RGB rDud = new TextColor.RGB(80, 80, 80);
+    static final TextColor.RGB rDud = new TextColor.RGB(80, 80, 80);
     private static final TextColor.RGB rCommon = new TextColor.RGB(160, 160, 160);
     private static final TextColor.RGB rRare = new TextColor.RGB(80, 160, 255);
     private static final TextColor.RGB rLegendary = new TextColor.RGB(255, 195, 0);
@@ -54,6 +54,9 @@ public class GachaClient {
         put('P', 2);        
         put('S', 3);        
     }};
+
+    static String lastEffectName = "";
+    static TextColor lastEffectColor = null;
 
     // id - gacha data
     private static Map<String, JSONObject> data = new LinkedHashMap<>();
@@ -210,6 +213,10 @@ public class GachaClient {
                 reels = buildStrips(prop.rarity);
 //                stripsBuilt = true;
             }
+
+            lastEffectName  = j.optString("itemDisplayName", "");
+            String _rar = j.optString("itemRarity","");
+            lastEffectColor = _rar.equals("LEGENDARY") ? rLegendary : _rar.equals("RARE") ?rRare : _rar.equals("COMMON") ? rCommon : rDud;
         }
     }
 

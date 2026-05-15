@@ -448,12 +448,33 @@ public class GameClient {
             tg.putString(Protocol.ARENA_WIDTH-17 + player.length(), Protocol.ARENA_HEIGHT-1- shift++, score);                                                               
             tg.setBackgroundColor(bkg);
 
+            int efX = Protocol.ARENA_WIDTH + 2;
+            int efY = 2;
 
+            tg.setBackgroundColor(GachaClient.panel);
+            tg.setForegroundColor(GachaClient.rDud);
+            tg.putString(efX, efY, "effects");
+//            tg.drawLine(efX, efY+1, efX + Protocol.SIDEBAR_WIDTH - 4, efY+1, '─');
+
+            String _en = GachaClient.lastEffectName;
+            TextColor _ec = GachaClient.lastEffectColor;
+            if (_en != null && !_en.isEmpty() && _ec != null) {
+                tg.setForegroundColor(_ec);
+                tg.putString(efX, efY+2, _en);
+                int _ticks = (GachaClient.getAuthorGacha() != null) ? GachaClient.getAuthorGacha().optInt("itemGachaReveal", 0) : 0;
+                tg.setForegroundColor(GachaClient.rDud);
+                tg.putString(efX + Protocol.SIDEBAR_WIDTH - 6, efY+2, String.valueOf(_ticks));
+            } else {
+                tg.setForegroundColor(GachaClient.rDud);
+                tg.putString(efX, efY+2, "(none)");
+            }
             boolean toEmphasizeChat = (state == State.CHAT);
             if (!toEmphasizeChat) tg.setForegroundColor(new TextColor.RGB(225,225,225));
             else tg.setForegroundColor(new
 TextColor.RGB(80,90,125));
 
+            tg.setBackgroundColor(15,23,45);
+            
           // HUD bar
           tg.drawLine(
                 new TerminalPosition(1, 0),
