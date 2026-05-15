@@ -1,8 +1,9 @@
 # lets-see
 
-// Hello! This is Team...uhh IDK. Featuring...IDK
+Tony: Coded all systems in this repo, including everything in src, shared, and client folders.
 
-// Our goal is to make a bullet hell game with gacha mechanics and a...chat function
+Duran, Rangel: Tested game mechanics.
 
-// WTF does any of that mean code wise? IDK LMAO
+Undone: none afaik
 
+(up to may 15th)
