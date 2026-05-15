@@ -34,10 +34,6 @@ public class GachaClient {
     private static final TextColor.RGB P_BKG = new TextColor.RGB(18, 18, 22);
     private static final TextColor.RGB P_FG = new TextColor.RGB(75, 75, 90);
 
-    private static final TextColor.RGB REEL_FG_MID = new TextColor.RGB(110, 110, 120); 
-    private static final TextColor.RGB REEL_FG_FAR = new TextColor.RGB(45, 45, 52);
-    private static final TextColor.RGB REEL_HIGHLIGHT = new TextColor.RGB(160, 140, 50);
-
     private static final TextColor.RGB REVEAL_FLASH = new TextColor.RGB(255, 235, 90);
 
     private static final TextColor.RGB rDud = new TextColor.RGB(80, 80, 80);
@@ -72,7 +68,7 @@ public class GachaClient {
     private static int stateTick = 0;
     private static int xs = 0, xe = 0, ys = 0, ye = 0;
     private static Random r = new Random();
-    private static final int reelsLength = 11;
+    private static final int reelsLength = (int)Math.round(Protocol.GACHA_ROWS_HALF * 2 * 2);
     private static int[] reels = new int[reelsLength];
     
     static enum SlotState {
@@ -244,7 +240,7 @@ public class GachaClient {
         tg.setCharacter(StartX, EndY, '╰');
         tg.setCharacter(EndX, EndY, '╯');
         // subframe
-        final int boundTitleY = Utility.lerp(StartY, EndY, 0.14), boundReelY = Utility.lerp(StartY, EndY, 0.9);
+        final int boundTitleY = Utility.lerp(StartY, EndY, Protocol.GACHA_TITLE_RATIO), boundReelY = Utility.lerp(StartY, EndY, Protocol.GACHA_REELS_RATIO);
         tg.drawLine(StartX, boundTitleY, EndX, boundTitleY, '━');
         tg.drawLine(StartX, boundReelY, EndX, boundReelY, '━');
         tg.setCharacter(StartX, boundTitleY, '┝');
@@ -291,7 +287,7 @@ public class GachaClient {
             tg.setForegroundColor(dc);
             tg.setCharacter(x, y, c);
         }}
-        aniTick++;
+       
         tg.setBackgroundColor(bkg); 
         tg.setForegroundColor(whiteDefault);
     }
@@ -305,7 +301,7 @@ public class GachaClient {
 
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
         StartX = xs + 1; EndX = xe - 1;
-        StartY = ys + 1; EndY = Utility.lerp(ys, ye, 0.14) - 1;
+        StartY = ys + 1; EndY = Utility.lerp(ys, ye, Protocol.GACHA_TITLE_RATIO) - 1;
 
         int midX = mid(StartX, EndX), midY = mid(StartY, EndY);
 
@@ -324,6 +320,50 @@ public class GachaClient {
         tg.setForegroundColor(whiteDefault);
     }
 
+    void drawSlotReels(TextGraphics tg, SlotState s, int state) {
+        tg.setBackgroundColor(panel);
+
+        int StartX = 0, StartRY = 0, StartY = 0, EndX = 0, EndTY = 0, EndRY = 0;
+        StartX = xs + 1; EndX = xe - 1;
+        StartY = ys + 1;
+        EndTY = Utility.lerp(ys, ye, Protocol.GACHA_TITLE_RATIO) - 1; EndRY = Utility.lerp(ys, ye, Protocol.GACHA_REELS_RATIO) - 1;
+        StartRY = EndTY + 2;
+        
+        int midRY = mid(StartRY, EndRY);
+        int colW = Utility.lerp(StartX, EndX, 0.333);
+        int[] rX = {StartX+colW/2, StartX+colW+colW/2, StartX+2*colW+colW/2};
+
+        tg.fillRectangle(new TerminalPosition(StartX, EndTY+1), new TerminalSize(EndX-StartX-1, EndRY-EndTY-1), ' ');
+
+        int[] syms = new int[3];
+        
+          // 5 rows 3 col
+        for (int dy = -Protocol.GACHA_ROWS_HALF; dy <= Protocol.GACHA_ROWS_HALF; dy++) {
+            int rY = midRY + dy;
+            float dimFactor = (float)Math.pow(1.0/Math.abs(dy), Math.abs(dy));      
+
+        for (int i = 0; i < 3; i++) {
+        
+            // index each RC, noting that a col can be locked or not
+            int spinFactor = (s.ordinal() <= i) ? aniTick : 1;
+            int rowIdx = Utility.mod(spinFactor + dy + reelsLength/2, reelsLength);
+            int reelElem = reels[rowIdx]; 
+            
+            syms[i] = reelElem & (0b110000 >> i);
+            if (syms[i] == 0) syms[i] = 1;
+            TextCharacter tc = symbolMap.get(syms[i]);
+            if (tc == null) continue;
+
+            // fadibg char and stuff
+            TextColor bkg = tc.getBackgroundColor(), frg = tc.getForegroundColor();
+            bkg = ChatClient.getLERP(panel, bkg, dimFactor); frg = ChatClient.getLERP(panel, frg, dimFactor);            
+            tc = tc.withBackgroundColor(bkg).withForegroundColor(frg);
+            tg.setBackgroundColor(panel);
+            tg.setCharacter(rX[i], rY, tc);
+            
+        }}
+    }
+    
     // bit 0 int state is redundant rn, but leave it for later usr    
     void drawSlot(TextGraphics tg, SlotState s, int state) {
         xs = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; xe = xs + Protocol.GACHA_WIDTH;
@@ -334,6 +374,8 @@ public class GachaClient {
 
         drawFrameBox(tg, xs, ys, s, 1);
         drawSlotTitle(tg, s, 1);
+
+        aniTick++;
         
         tg.setBackgroundColor(panel);
         tg.setForegroundColor(white);
