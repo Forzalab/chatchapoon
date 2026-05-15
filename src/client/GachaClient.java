@@ -261,8 +261,7 @@ public class GachaClient {
     
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;
 
-        if ((state & 0b1) != 1) return; // is NOT author
-        else if (s == SlotState.STASIS) return;
+        // exclude author fron popup
         
         StartX = Protocol.ARENA_WIDTH/2 - Protocol.GACHA_WIDTH/2; EndX = StartX + Protocol.GACHA_WIDTH;
         StartY = Protocol.ARENA_HEIGHT/2 - Protocol.GACHA_HEIGHT/2; EndY = StartY + Protocol.GACHA_HEIGHT;
@@ -272,7 +271,8 @@ public class GachaClient {
         tg.setBackgroundColor(bkg);
         tg.setForegroundColor(whiteDefault);
     }
-    
+
+    // bit 0 int state is redundant rn, but leave it for later usr    
     void drawSlot(TextGraphics tg, SlotState s, int state) {
         
         int StartX = 0, StartY = 0, EndX = 0, EndY = 0;

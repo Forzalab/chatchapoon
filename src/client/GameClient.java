@@ -46,9 +46,9 @@ public class GameClient {
 
     // keyboard mode    
     private static State state = State.BLOCK;
-    private static String gameTooltip = "  [w/a/s/d] move  [q/e] rotate  [space] shoot  [g]acha  [c]hat  [esc] end session  ";
-    private static String chatTooltip = "  [esc] exit chat & game on  ";
-    private static String gachaTooltip = "  [esc] exit vault ";    
+    private static String gameTooltip = " [w/a/s/d] move  [q/e] rotate  [space] shoot  [g]acha  [c]hat  [esc] end session ";
+    private static String chatTooltip = " [esc] exit chat & game on ";
+    private static String gachaTooltip = " [c]hat  [esc] exit vault ";    
     private static List<String> grl= new ArrayList<>();
     private static List<String> crl= new ArrayList<>();
     private static List<String> gcrl= new ArrayList<>();    
@@ -58,7 +58,7 @@ public class GameClient {
 
     static {
         Pattern ptrn = Pattern.compile("\\[[^\\]]+\\][^\\[]*"); // wtf regex
-        Matcher mg = ptrn.matcher(gameTooltip), mc = ptrn.matcher(chatTooltip), mgc = ptrn.matcher(chatTooltip);
+        Matcher mg = ptrn.matcher(gameTooltip), mc = ptrn.matcher(chatTooltip), mgc = ptrn.matcher(gachaTooltip);
         while (mg.find()) grl.add(mg.group().strip());
         while (mc.find()) crl.add(mc.group().strip());        
         while (mgc.find()) gcrl.add(mgc.group().strip());                
@@ -933,7 +933,9 @@ TextColor.RGB(80,90,125));
                 }
 
 // only main player can get this
-                gc.drawSlot(tg, GachaClient.SlotState.SPIN, 1); }
+//                int flag = ((int)()) << 0;
+
+                gc.drawSlot(tg, gc.currentSlotState(), 1); }
 // conditionally fters for non-main MUST CHANGE BRACKET
                 // gc.drawSlot(tg, 2, Protocol.ARENA_HEIGHT + Protocol.BORDER - 3, GachaClient.SlotState.SPIN, 1);
 
@@ -971,13 +973,15 @@ TextColor.RGB(80,90,125));
 
 
                     // gacha OR game render tt first, chat later
-                    if (gc.active()) {
-                        if (gc.currentSlotState() == GachaClient.SlotState.NOMONEY || gc.currentSlotState() == GachaClient.SlotState.REVEAL) tg.putString(glength - gachaTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gachaTooltip);
-                        else {/* dont render even if in gameState */}
-                    }
-                    else if (state == State.GAME) tg.putString(glength - gameTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gameTooltip);
+                    if (gc.active() && state == State.CHAT)
+                        tg.putString(clength - chatTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, chatTooltip);                      
+                    else if (gc.active() && gc.currentSlotState() == GachaClient.SlotState.NOMONEY || gc.currentSlotState() == GachaClient.SlotState.REVEAL)
+                        tg.putString(glength - gachaTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gachaTooltip);
+                    else if (state == State.GAME)
+                        tg.putString(glength - gameTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, gameTooltip);
+                    else if (state == State.CHAT)
+                        tg.putString(clength - chatTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, chatTooltip);                        
 
-                    if (state == State.CHAT) tg.putString(clength - chatTooltip.length()/2, Protocol.ARENA_HEIGHT + Protocol.BORDER, chatTooltip);
 
 
                 
@@ -993,13 +997,13 @@ TextColor.RGB(80,90,125));
                     // can only exit gacha when reached a concluding screen
                     if (state == State.CHAT) {
                         renderHighlightTooltip(0, tg);
-                        state = state.mutate(State.GAME);
+                        switchState(State.GAME);
                         screen.refresh();
                         Thread.sleep(Protocol.TICK_MS);
                         continue;
                     }
                     else if (gc.active()) {
-                        renderHighlightTooltip(0, tg);
+                        renderHighlightTooltip(1, tg);                        
                         // on otger state, esc is ignored!
                         // flow naturally on all stages.
                         // wont reach this block on state STASIS bcs big brain
@@ -1007,6 +1011,7 @@ TextColor.RGB(80,90,125));
                         gc.tickNext(true); // immediately switch to STASIS, to whcih it will exit. we wait for userr at reveal/NM.
                         // STASIS -> ... -> Reveal [wait here] -> STASIS
                         // STASIS -> No Money [wait here] -> STASIS
+                        switchState(State.GAME);
                         continue;
                     }
                     else if (state == State.GAME) renderHighlightTooltip(5, tg);
@@ -1046,16 +1051,18 @@ TextColor.RGB(80,90,125));
                     continue;
                 }                
                 
-                // Handle chat switch
-                if (state == State.GAME && keystroke.getKeyType() == KeyType.Character && 'c' == keystroke.getCharacter()) {
-                    renderHighlightTooltip(4, tg);
+                // Handle chat switch - c
+                if ((state == State.GAME || gc.active()) && keystroke.getKeyType() == KeyType.Character && 'c' == keystroke.getCharacter()) {
+                    int index = gc.active() ? 0 : 4;
+                    renderHighlightTooltip(index, tg);
                     switchState(State.CHAT);
                     screen.refresh();
                     Thread.sleep(Protocol.TICK_MS);
                     continue;
                 }
+                // g key
                 else if (state == State.GAME && keystroke.getKeyType() == KeyType.Character && 'g' == keystroke.getCharacter() && gc.currentSlotState() == GachaClient.SlotState.STASIS) {
-                    renderHighlightTooltip(4, tg);
+                    renderHighlightTooltip(3, tg);
                     String key = KEYBIND_MAP.getOrDefault(keystroke, "");
                     String sendMsg = new JSONObject().put("type", "INPUT").put("playerId", playerID).put("key", key).toString();
                     writer.println(sendMsg);                    
@@ -1111,3 +1118,4 @@ TextColor.RGB(80,90,125));
         }
     }
 }
+
